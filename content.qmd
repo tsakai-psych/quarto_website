@@ -1,0 +1,14 @@
+---
+title: "Content"
+listing:
+  contents: posts
+  sort:
+    - "date desc"
+    - "file-modified desc"
+  type: default
+  categories: true
+  sort-ui: true
+  filter-ui: false
+---
+
+大体の投稿がRについての個人的な備忘録とかメモです。

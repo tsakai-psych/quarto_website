@@ -1,0 +1,40 @@
+project:
+  type: website
+  output-dir: website
+
+website:
+  title: "さかいの備忘録"
+  navbar:
+    left: 
+      - about.qmd
+      - content.qmd
+    right:
+      - icon: twitter-x
+        href: https://x.com/tsakai_psych
+        target: _blank # open new tab
+      - text: researchmap
+        href: https://researchmap.jp/takutosakai
+        target: _blank
+      - icon: github
+        href: https://github.com/tsakai-psych
+        target: _blank
+  page-footer: 
+    background: light
+    left: |
+      Copyright 2025 Takuto Sakai<br>
+      Content on this website is licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.en).<br>
+      Code is released under the [MIT License](/LICENSE.md).
+    right: |
+      Please contact me via [X (Twitter)](https://x.com/tsakai_psych).
+
+format:
+  html:
+    theme: darkly
+    highlight-style: breezedark
+    page-layout: full
+    css: styles.css
+    link-external-newwindow: true
+    date-format: "YYYY-MM-DD"
+
+
+

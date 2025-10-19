@@ -1,0 +1,37 @@
+---
+title: "About"
+image: files/pictures/about_page/my_logo.png
+about:
+  template: trestles
+---
+
+# 名前
+酒井拓人 (SAKAI, Takuto)
+
+# 現所属
+- 愛知学院大学心理学部 実験助手（教員）
+  - （教員）までが正式な職位です。
+
+# 研究領域
+- 言い方や言葉遣いが印象にどのような影響を与えるかについて興味があります。
+    - 自分は心理学科で育ったので心理学の人だと思っているのですが、やっている内容はなんかそうじゃない気もします。
+
+# Links
+  - [reseachmap.jp](https://researchmap.jp/takutosakai){.external target="_blank"}
+    - 業績などはresearchmapにまとめてあります。学会発表のポスター（pdf）もなるべくアップロードするようにしています。
+  -  <a
+    id="cy-effective-orcid-url"
+    class="underline"
+     href="https://orcid.org/0009-0004-0736-5229"
+     target="orcid.widget"
+     rel="me noopener noreferrer"
+     style="vertical-align: top">
+     <img
+        src="https://orcid.org/sites/default/files/images/orcid_16x16.png"
+        style="width: 1em; margin-inline-start: 0.5em"
+        alt="ORCID iD icon"/>
+      https://orcid.org/0009-0004-0736-5229
+    </a>
+      - E-mailアドレスはORCIDに掲載しています。
+  - [OSF](https://osf.io/eq4gy/){.external target="_blank"}
+    - 一部の発表資料はOSFに置いています。

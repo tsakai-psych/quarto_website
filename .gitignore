@@ -1,0 +1,10 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# for Quarto
+/.quarto/
+
+# for renderd files
+/website/
