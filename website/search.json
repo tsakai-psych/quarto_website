@@ -1,0 +1,37 @@
+[
+  {
+    "objectID": "posts/20251019_start_website/index.html",
+    "href": "posts/20251019_start_website/index.html",
+    "title": "個人ウェブサイトを立ち上げてみました",
+    "section": "",
+    "text": "Quartoの機能を使って個人のウェブサイトを作ってみました。\nRのメモについては、今までX（Twitter）にコードをスクショしたものを上げていたのですが、それもちょっと不便に感じてきたので、これからはコードについてはこのウェブサイトで公開しようと思います。"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "さかいの備忘録",
+    "section": "",
+    "text": "Welcom to my website!\n社会心理学者・社会言語学者（？）の酒井拓人のウェブサイトです。\nX (Twitter)で発信できる量にも限界がある（特にRのコード）ので、ウェブサイトを作ってみました。\n\nAbout：私について\nContent：大体の投稿がRの個人的なメモです。"
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "名前\n酒井拓人 (SAKAI, Takuto)\n\n\n現所属\n\n愛知学院大学心理学部 実験助手（教員）\n\n（教員）までが正式な職位です。\n\n\n\n\n研究領域\n\n言い方や言葉遣いが印象にどのような影響を与えるかについて興味があります。\n\n自分は心理学科で育ったので心理学の人だと思っているのですが、やっている内容はなんかそうじゃない気もします。\n\n\n\n\nLinks\n\nreseachmap.jp\n\n業績などはresearchmapにまとめてあります。学会発表のポスター（pdf）もなるべくアップロードするようにしています。\n\n  https://orcid.org/0009-0004-0736-5229 \n\nE-mailアドレスはORCIDに掲載しています。\n\nOSF\n\n一部の発表資料はOSFに置いています。"
+  },
+  {
+    "objectID": "content.html",
+    "href": "content.html",
+    "title": "Content",
+    "section": "",
+    "text": "大体の投稿がRについての個人的な備忘録とかメモです。\n\n\n\n\n\n\n   \n    \n    \n      Order By\n      Default\n      \n        Title\n      \n      \n        Date - Oldest\n      \n      \n        Date - Newest\n      \n      \n        Author\n      \n    \n  \n\n\n\n\n\n\n\n\n\n\n個人ウェブサイトを立ち上げてみました\n\n\n\nannouncement\n\n\n\nQuartoの機能を使って、個人のウェブサイトを作ってみました。\n\n\n\n\n\n2025-10-19\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "LICENSE.html",
+    "href": "LICENSE.html",
+    "title": "LICENSE",
+    "section": "",
+    "text": "MIT License\nCopyright 2025 Takuto SAKAI\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\nTHE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
+  }
+]
