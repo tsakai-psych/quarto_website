@@ -1,0 +1,358 @@
+---
+title: "purrr::mapを使ってpsych::alphaを一気に処理する"
+date: 2025-10-25
+abstract: |
+  `purrr::map()`の中で`psych::alpha()`を使って、元のdfから一気にα係数の処理をしてみた。
+categories: [R memo, preprocess, analysis]
+format: html
+knitr:
+  opts_knit: 
+    R.options:
+      width: 120
+editor_options: 
+  chunk_output_type: console
+---
+
+# Packages
+```{r}
+pacman::p_load(
+  tidyverse,
+  psych
+)
+```
+
+# Content
+デモデータとして`psych::bfi`を使います。
+```{r}
+data(bfi, package = "psych")
+```
+ロードされるデータのうち、`bfi`は2800行28列のデータで、列の最初の25項目は5因子に分かれるパーソナリティに関する項目が各5つずつ、残りの3列は性別、学歴、年齢が含まれています。
+```{r}
+str(bfi)
+```
+`bfi.keys`の方は、25項目のパーソナリティに関する項目がそれぞれのど下位尺度を構成するのかという情報がlist形式で収められています。頭に-がついているのは、逆転項目のしるしです。
+```{r}
+bfi.keys
+```
+
+このデータのそれぞれの下位尺度ごとにα係数を求めたいとなった場合、ふつうはこんな感じになると思います。
+```{r}
+#| eval: false
+res_alpha_a <- bfi |>
+  select(A1:A5) |>
+  psych::alpha(
+    keys = "A1"
+  )
+
+res_alpha_a
+
+res_alpha_c <- bfi |>
+  select(C1:C5) |>
+  psych::alpha(
+    keys = c("C4", "C5")
+  )
+
+res_alpha_c
+```
+列名選択と逆転項目の指定を自分で頑張る方法です。これを5因子分繰り返します。可読性は悪くないので、これでも十分な気がします。
+
+ただ、せっかくなのでほとんどをRに任せて１回の処理でできたら、それもそれでいい気がします。ということで試してみました。
+
+## やりやすいデータの場合
+まず、処理しやすいようにデータをlong型にします。ついでに`tibble::rownames_to_column()`でrownameをid列に変えておきます。id列がないと`tidyr::pivot_wider()`出来なくなるので、少なくともその処理の前にはやっておきます。
+```{r}
+bfi |>
+  rownames_to_column(var = "id") |>
+  pivot_longer(
+    cols = matches("\\w\\d"), # <1>
+    names_to = "items"
+  )
+```
+1. 引数`cols`はtidy-selectの文法なので`-c(id, gender, education, age)`でもいいです。longにしたい列名が「文字1文字数字1文字」なのがわかっているので、`dplyr::matches()`で正規表現を使って絞りました。
+
+次に、nest用の列を作ってnestします。今回は列名に下位尺度が入っているので、それを抽出すれば簡単にnest用の列が完成です。やりやすいデータとはこのことを言っています。
+```{r}
+bfi |>
+  rownames_to_column(var = "id") |>
+  pivot_longer(
+    cols = matches("\\w\\d"),
+    names_to = "items"
+  ) |>
+  mutate(
+    nest_key = str_extract(items, "^.") |> # <1>
+      tolower() # <2>
+  ) |>
+  nest(.by = nest_key) # <3>
+```
+1. items（列名のベクトル）の各要素から最初の一文字だけ抜ければいいので、`stringr::str_extract()`でいいです。
+2. あとで`bfi.keys`から抽出しやすくすために、小文字にします。
+3. nestに使った列以外の残りは、引数`.keys`を指定しなければdata列にまとまります。
+
+nestされたデータを処理します。data列はlistなので、中の各要素を処理したいときは`purrr::map()`が使えます。data列の各要素はデータフレームで、しかもaの行はAで始まる項目だけ、cの行はCで始まる項目だけ、eの行は…のlongデータになっています。そのため、`map()`の中でwide型に直して必要列以外取り除き、`psych::alpha()`に入れてあげればいいわけです。
+```{r}
+bfi |>
+  rownames_to_column(var = "id") |>
+  pivot_longer(
+    cols = matches("\\w\\d"),
+    names_to = "items"
+  ) |>
+  mutate(
+    nest_key = str_extract(items, "^.") |>
+      tolower()
+  ) |>
+  nest(.by = nest_key) |>
+  mutate(
+    bfi_key_name = str_subset( # <1>
+      names(bfi.keys), # <1>
+      pattern = paste0("^", nest_key) # <1>
+    ), # <1>
+    res_alpha = map(
+      .x = data,
+      .f = \(x) {
+         x |>
+          pivot_wider(
+            names_from = items,
+            values_from = value
+          ) |>
+          select(matches("\\w\\d")) |>
+          psych::alpha(
+            keys = bfi.keys[[bfi_key_name]] |> # <2>
+              str_subset(pattern = "^-") |> # <3>
+              str_remove(pattern = "^-") # <3>
+          )
+      }
+    ) |>
+      set_names(bfi_key_name), # <4>
+    .by = nest_key # <5>
+  )
+```
+1. `alpha()`の中で`bfi.keys`の要素名を使えるようにしたいので、ここで抜き出しておきます。
+2. まさに上の処理で抜き出した要素名をここで使います。
+3. 引数`keys`は、逆転する項目の項目名を文字列ベクトルで入れるか、逆転する項目は-1、そのままの項目は1にした数値ベクトルを入れます。今回は前者で入れるので、`bfi.keys`の各要素（文字列ベクトル）のうち、`stringr::str_subset()`を使って-で始まる項目だけを抽出して、`str_remove()`で-を取り除きます。
+4. `map()`の戻り値のlistに名前を付けたいので`map() |> purrr::set_names()`とします。nestデータのほかの列の要素を使えるので、`dplyr::group_map() |> set_names()`よりもいい気がします。
+5. 引数`.by`にnest_key列を指定して、実質rowwise処理をします。これを指定することで、(2)の処理で`[[bfi_key_name]]`のところにbfi_key_name列の要素が1つだけ入ります。これがないと、(2)の処理で要素5の文字列ベクトル`c（"agree", "conscientious", ...）`が`[[`の中に入ってしまうのでエラーになります。
+
+最後に結果が詰まったres_alpha列だけ取り出します。データフレームからある1列の要素を取り出すときは`dplyr::pull()`が使えます。res_alpha列は`map()`を使って作ったので、各下位尺度のα係数が入ったlistが返ってきます。
+```{r}
+bfi |>
+  rownames_to_column(var = "id") |>
+  pivot_longer(
+    cols = matches("\\w\\d"),
+    names_to = "items"
+  ) |>
+  mutate(
+    nest_key = str_extract(items, "^.") |>
+      tolower()
+  ) |>
+  nest(.by = nest_key) |>
+  mutate(
+    bfi_key_name = str_subset(
+      names(bfi.keys),
+      pattern = paste0("^", nest_key)
+    ),
+    res_alpha = map(
+      .x = data,
+      .f = \(x) {
+         x |>
+          pivot_wider(
+            names_from = items,
+            values_from = value
+          ) |>
+          select(matches("\\w\\d")) |>
+          psych::alpha(
+            keys = bfi.keys[[bfi_key_name]] |> 
+              str_subset(pattern = "^-") |> 
+              str_remove(pattern = "^-")
+          )
+      }
+    ) |>
+      set_names(bfi_key_name),
+    .by = nest_key
+  ) |>
+  pull(res_alpha) # <1>
+```
+1. `pull`は最後に作られた列を返すので、実は`pull()`だけでもres_alpha列を引っ張ってこれます。
+
+ということで、元のdfからmapを使って一気にα係数を求めることができました。一つのnamed listに下位尺度5つ分の出力が詰まっているので、オブジェクトに入れた際にGrobal Env.がオブジェクトだらけにならないというのはいい点かもしれないです。
+
+## やりやすくなさそうなデータの場合
+`bfi`データは列名に下位尺度の分類が含まれていたのでやりやすかったのですが、実際に扱うデータだとそうはいかない場合もあると思います。というわけで、`bfi`を少しいじってこんなデータを用意してみました。
+
+::: {.callout-note collapse="true"}
+### 改造の処理はこちら
+`bfi`の列をデモグラフィック列（26-28）以外ランダムに並べ替えるために、列番号をシャッフルします。
+```{r}
+set.seed(20251025)
+
+(vec_col_order <- c(sample(1:25), 26:28))
+```
+
+後でkeyを作る用のベクトルを作成。チェック用に元の`bfi`の列名を名前に付けておきます。
+```{r}
+vec_names_df_test <- c(
+  paste0("q1_x", 1:25),
+  paste0("q2_x", 1:3)
+) |>
+  setNames(
+    colnames(bfi[, vec_col_order])
+  )
+
+vec_names_df_test
+```
+
+列番号をシャッフルしたベクトルを使って、列を並び替えたdfを作ります。ついでにid列もつけておきます。
+```{r}
+df_test <- bfi[, vec_col_order] |>
+  `colnames<-`(vec_names_df_test) |>
+  rownames_to_column(var = "id")
+
+colnames(df_test)
+```
+
+構成要素の分類を示すkeyを作ります。実際の場合はnamed listを自力で作成すればいいと思います（それか、`psych::make.keys()`あたりを使うか）。今回は手入力したくないのでゴリ押します。
+```{r}
+list_test_keys <-
+  names(bfi.keys) |>
+  str_extract(pattern = "^.") |>
+  toupper() |>
+  set_names() |>
+  map(
+    .f = \(x){
+      temp_vec <- vec_names_df_test[1:25]
+      temp_vec[str_starts(names(temp_vec), x)]
+    }
+  ) |>
+  map(
+    .f = \(x) {
+      if_else(
+        names(x) %in% unlist(bfi.keys),
+        x,
+        paste0("-", x) |>
+          set_names(names(x))
+      )
+    }
+  )
+
+list_test_keys
+```
+手入力の方がむしろ省コードだし楽だろ！！という指摘は今回はなかったことにします。
+
+ちなみに逆転項目の設定はちゃんとできています。
+```{r}
+data.frame(
+  enframe(
+    unlist(list_test_keys)
+  ) |>
+    arrange(name),
+  enframe(
+    unlist(bfi.keys)
+  )
+)
+```
+:::
+
+元のデータと行数列数は一緒ですが、列名と順番が変わりました。コードブックの作成が必須ですね。
+```{r}
+str(df_test)
+```
+
+そして構成要素の分類のkeyも用意しました。要素のベクトルに名前がついているのはチェックのためで、本来はないと思ってください。QualtricsとかMicrosoft Formsとかには項目をランダムに提示する機能があるので、それを使えば列をこんなにシャッフルする必要はないんですが、「よくわからなかったので、尺度の項目の順番を自分で頑張ってシャッフルしちゃいました…」という事案はあると思います。
+```{r}
+list_test_keys
+```
+
+というわけで、こちらのデータでも`map()`で`alpha()`を一気に処理してみようと思います。先ほどはデータセットの列名に下位尺度の分類が入っていたので処理が少なく済みましたが、今回はそうではないので処理が少し増えます。
+
+まずlong型にした後、新たにマッチ用の列を作って逆転項目に-をつけます。（別にわざわざ新しい列を作らなくてもいいのですが、`alpha()`の出力のときに項目名の前後に-がつくのが気になるので、あえてマッチ用の列を作っています。）
+```{r}
+df_test |>
+  pivot_longer(
+    cols = starts_with("q1"),
+    names_to = "items"
+  ) |>
+  mutate(
+    match_items = if_else(
+      items %in% unlist(list_test_keys),
+      items,
+      str_c("-", items)
+    )
+  )
+```
+
+次に、マッチ用の列を`dplyr::case_match()`に入れて、分類用のリストと照合します。`case_match()`は、第一引数`.x`にマッチさせたいベクトル、以降はtwo-sided formula形式で処理を書いていきます。左側（LHS）はマッチさせたい要素、右側（RHS）にはマッチしたものに対する出力を入れます。このformulaの部分だけは頑張って書かないといけません。今回は分類リストがnamed listでその要素は文字列ベクトルなので、各要素にマッチしたらその要素のリスト名（＝下位尺度の分類）を返すようにします。
+```{r}
+df_test |>
+  pivot_longer(
+    cols = starts_with("q1"),
+    names_to = "items"
+  ) |>
+  mutate(
+    match_items = if_else(
+      items %in% unlist(list_test_keys),
+      items,
+      str_c("-", items)
+    ),
+    nest_key = case_match(
+      match_items,
+      list_test_keys[["A"]] ~ "A",
+      list_test_keys[["C"]] ~ "C",
+      list_test_keys[["E"]] ~ "E",
+      list_test_keys[["N"]] ~ "N",
+      list_test_keys[["O"]] ~ "O",
+    )
+  )
+```
+後の処理は先ほどと変わりません。nestしたうえでmap処理をしていけばいいです。
+```{r}
+df_test |>
+  pivot_longer(
+    cols = starts_with("q1"),
+    names_to = "items"
+  ) |>
+  mutate(
+    match_items = if_else(
+      items %in% unlist(list_test_keys),
+      items,
+      str_c("-", items)
+    ),
+    nest_key = case_match(
+      match_items,
+      list_test_keys[["A"]] ~ "A",
+      list_test_keys[["C"]] ~ "C",
+      list_test_keys[["E"]] ~ "E",
+      list_test_keys[["N"]] ~ "N",
+      list_test_keys[["O"]] ~ "O"
+    )
+  ) |>
+  nest(.by = nest_key) |>
+  arrange(nest_key) |> # <1>
+  mutate(
+    res_alpha = map(
+      .x = data,
+      .f = \(x) {
+        x |>
+          select(-match_items) |> # <2>
+          pivot_wider(
+            names_from = items,
+            values_from = value
+          ) |>
+          select(starts_with("q1")) |>
+          psych::alpha(
+            keys = list_test_keys[[nest_key]] |>
+              str_subset("^-") |>
+              str_remove("^-")
+          )
+      }
+    ) |>
+      set_names(nest_key),
+    .by = nest_key
+  ) |>
+  pull(res_alpha)
+```
+1. dplyrとかで実装されている引数`.by`はデータを出現順に並べるので、データによっては出力がきれいな順番（A, B, C, ... ）にならないです。なので見やすくするために`dplyr::arrange()`でソートしておきます。
+2. マッチ用の列は残しておくとwide型にしたときにデータがズレるので外しておきます。マッチ用の列を作っていなかったら省略してOKです。
+
+こちらのデータでもうまくできました。
+
+# Conclusion
+というわけで、`purrr::map()`の中で`psych::alpha()`を使って、元のdfから一気にα係数の処理をしてみました。コードの可読性という観点からみると下位尺度ごとに処理をしてオブジェクトに入れていく方法の方が見てわかりやすいし、コードの量もそれほど多くならないので、map処理で一気にやる方法が実用的かはわかりません。ただ、パイプフローの中でシーケンシャルに進められる点やミスの原因となる要素の手入力を減らせる点が個人的にはいいと思います。
