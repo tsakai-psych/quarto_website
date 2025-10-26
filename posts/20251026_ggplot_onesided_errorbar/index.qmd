@@ -1,0 +1,390 @@
+---
+title: "ggplot2で片側だけ（上にあるやつは上、下にあるやつは下）にエラーバーをつける"
+date: 2025-10-26
+abstract: |
+  ggplot2でもExcelみたいに片側だけ（上にあるやつは上、下にあるやつは下）にエラーバーをつけてみた。
+categories: [R memo, visualization]
+image: false
+format:
+  html:
+    fig-dpi: 200
+knitr:
+  opts_chunk: 
+    fig.align: center
+  opts_knit: 
+    R.options:
+      width: 140
+editor_options: 
+  chunk_output_type: console
+---
+
+# Packages
+```{r}
+#| message: false
+#| warning: false
+library(tidyverse)
+```
+
+# Content
+補助で入っている授業で、学生には2要因2水準の実験データのグラフをExcelで作ってもらっています。Excelは重なりよけの位置ずらしができないので、誤差範囲については片側にして作ってもらっています。それをggplotでもやりたいという話です。
+
+## Problem
+まず、データをテキトーに用意します。実験データを読み込んで集計した後だと思ってください。
+```{r}
+test_df <-
+  tibble(
+    group_line = rep(letters[1:2], each = 2),
+    group_axis = rep(letters[3:4], times = 2),
+    y = c(3, 3, 4, 5),
+    sd = rep(1.5, 4),
+    ymin = y - sd,
+    ymax = y + sd
+  )
+
+test_df
+```
+`ymin`は誤差範囲の下側、`ymax`は誤差範囲の上側の数値です。実際のデータでは`dplyr::reframe()`や`dplyr::summarise()`の中で、`ggplot2::mean_sdl(..., mult = 1)`とすれば、平均値と平均値±1SDの値が一発で得られます。
+
+::: {.callout-tip collapse="true"}
+### `ggplot2::mean_sdl()`の例
+```{r}
+iris |>
+  reframe(
+    check_mean = mean(Sepal.Length),
+    check_sd = sd(Sepal.Length),
+    ggplot2::mean_sdl(Sepal.Length, mult = 1),
+    .by = Species
+  )
+```
+`mean_sdl()`のHelpを見るとわかりますが、もともとは`Hmisc::smean.sdl()`なのでその引数（`mult`、`na.rm`）が使えます。引数`mult`は標準偏差を何倍して平均値に加えるかなので1でいいです。
+:::
+
+普通にggplotで作るならこんな感じでしょうか。
+```{r}
+test_df |>
+  ggplot(aes(x = group_axis, y = y, group = group_line)) +
+  theme_classic() +
+  geom_errorbar(
+    aes(ymin = ymin, ymax = ymax),
+    width = .2,
+    alpha = .5,
+    position = position_dodge(.2)
+  ) +
+  geom_line(position = position_dodge(.2)) +
+  geom_point(
+    aes(shape = group_line),
+    position = position_dodge(.2),
+    size = 3,
+    fill = "white"
+  ) +
+  scale_shape_manual(
+    values = c(19, 21)
+  )
+```
+普段の自分で使う用のグラフならこれでいいです。ただ、誤差範囲が両側なのと、Excelでは（簡単に）できない位置ずらしがあるので、答え合わせ用としてはよくないですね。というわけで、位置ずらしせず誤差範囲を片側にしたグラフをggplotでも作りたいわけです。
+
+## Solution
+まず、`ggplot2::geom_errorbar()`は要素として`ymin`と`ymax`が必須です。なので、例えば上下のどちらかを消そうとして`aes()`の中で省いてしまうとエラーになります。
+```{r}
+#| error: true
+test_df |>
+  ggplot(aes(x = group_axis, y = y, group = group_line)) +
+  geom_errorbar(
+    aes(ymax = ymax)
+  )
+```
+ということで、`ymin`と`ymax`に適切な値を設定する必要があります。
+
+まず、横軸の水準ごとに値が小さい方がTRUEを返す列を作り、値が小さい方はymaxがNAに、値が大きい方はyminがNAになるようにします。
+```{r}
+test_df |>
+  mutate(
+    is_smaller = rank(y, ties.method = "first") == 1,
+    .by = group_axis # <1>
+  ) |>
+  mutate(
+    ymin = if_else(is_smaller, ymin, NA),
+    ymax = if_else(!is_smaller, ymax, NA)
+  )
+```
+1. 横軸の水準ごとになので、ここの`.by`は必須。それか`group_by() |> mutate() |> ungroup()`。
+
+この状態で`geom_errorbar()`を使うとこうなります。
+```{r}
+test_df |>
+  mutate(
+    is_smaller = rank(y, ties.method = "first") == 1,
+    .by = group_axis
+  ) |>
+  mutate(
+    ymin = if_else(is_smaller, ymin, NA),
+    ymax = if_else(!is_smaller, ymax, NA)
+  ) |>
+  ggplot(aes(x = group_axis, y = y, group = group_line)) +
+  theme_classic() +
+  geom_errorbar(
+    aes(ymin = ymin, ymax = ymax),
+    width = .2,
+    alpha = .5
+  )
+```
+片側だけにひげができていますが、線分が消えてしまっています。ではNAの代わりにyの値を入れるとどうなるでしょうか。
+```{r}
+test_df |>
+  mutate(
+    is_smaller = rank(y, ties.method = "first") == 1,
+    .by = group_axis
+  ) |>
+  mutate(
+    ymin = if_else(is_smaller, ymin, y),
+    ymax = if_else(!is_smaller, ymax, y)
+  ) |>
+  ggplot(aes(x = group_axis, y = y, group = group_line)) +
+  theme_classic() +
+  geom_errorbar(
+    aes(ymin = ymin, ymax = ymax),
+    width = .2,
+    alpha = .5
+  )
+```
+線分の表示が戻りました。一見よさそうに見えるのですが、これをマーカーと合わせるとこうなります。
+```{r}
+test_df |>
+  mutate(
+    is_smaller = rank(y, ties.method = "first") == 1,
+    .by = group_axis
+  ) |>
+  mutate(
+    ymin = if_else(is_smaller, ymin, y),
+    ymax = if_else(!is_smaller, ymax, y)
+  ) |>
+  ggplot(aes(x = group_axis, y = y, group = group_line)) +
+  theme_classic() +
+  geom_errorbar(
+    aes(ymin = ymin, ymax = ymax),
+    width = .2,
+    alpha = .5
+  ) +
+  geom_line() +
+  geom_point(
+    size = 3,
+    fill = "white"
+  )
+```
+マーカーにひげが重なってしまい見栄えが悪いです。ということで、`geom::errorbar()`にはyを渡すよりはNAを渡す方が作りたいグラフに近いことになります。では、同じことを`geom_linerange()`でやるとどうなるでしょう。
+```{r}
+test_df |>
+  mutate(
+    is_smaller = rank(y, ties.method = "first") == 1,
+    .by = group_axis
+  ) |>
+  mutate(
+    ymin = if_else(is_smaller, ymin, y),
+    ymax = if_else(!is_smaller, ymax, y)
+  ) |>
+  ggplot(aes(x = group_axis, y = y, group = group_line)) +
+  theme_classic() +
+  geom_linerange(
+    aes(ymin = ymin, ymax = ymax),
+    alpha = .5
+  ) +
+  geom_line() +
+  geom_point(
+    size = 3,
+    fill = "white"
+  )
+```
+こちらは線分が表示されていますね。
+
+ということは、`geom_errorbar()`にNAを入れて片方のひげだけ作り、`geom_linerange()`にyを入れて線分を描いてもらえば解決しそうな気がします。というわけで、`geom_errorbar()`用の参照列と`geom_linerange()`用の参照列を作ってグラフを描いてもらいます。
+```{r}
+test_df |>
+  mutate(
+    is_smaller = rank(y, ties.method = "first") == 1,
+    .by = group_axis
+  ) |>
+  mutate(
+    ymin_lr = if_else(is_smaller, ymin, y),
+    ymin_eb = if_else(is_smaller, ymin, NA),
+    ymax_lr = if_else(!is_smaller, ymax, y),
+    ymax_eb = if_else(!is_smaller, ymax, NA)
+  ) |>
+  ggplot(aes(x = group_axis, y = y, group = group_line)) +
+  theme_classic() +
+  geom_linerange(
+    aes(ymin = ymin_lr, ymax = ymax_lr),
+  ) +
+  geom_errorbar(
+    aes(ymin = ymin_eb, ymax = ymax_eb),
+    width = .2,
+    alpha = .5
+  ) +
+  geom_line() +
+  geom_point(size = 3)
+```
+求めていたものができました。後はいろいろ調整すれば完成です。
+```{r}
+#| label: preview
+#| code-fold: true
+test_df |>
+  mutate(
+    is_smaller = rank(y, ties.method = "first") == 1,
+    .by = group_axis
+  ) |>
+  mutate(
+    ymin_lr = if_else(is_smaller, ymin, y),
+    ymin_eb = if_else(is_smaller, ymin, NA),
+    ymax_lr = if_else(!is_smaller, ymax, y),
+    ymax_eb = if_else(!is_smaller, ymax, NA)
+  ) |>
+  ggplot(aes(x = group_axis, y = y, group = group_line)) +
+  theme_classic() +
+  geom_linerange(
+    aes(ymin = ymin_lr, ymax = ymax_lr),
+  ) +
+  geom_errorbar(
+    aes(ymin = ymin_eb, ymax = ymax_eb),
+    width = .2,
+    alpha = .5
+  ) +
+  geom_line() +
+  geom_point(
+    aes(shape = group_line),
+    size = 3,
+    fill = "white"
+  ) +
+  scale_shape_manual(
+    values = c(19, 21)
+  ) +
+  scale_y_continuous(
+    limits = c(0, 8),
+    expand = expansion()
+  )
+```
+
+こんな風に微妙にクロスしているデータでもうまくいきます。
+```{r}
+test_df_cross <-
+  tibble(
+    group_line = rep(letters[1:2], each = 2),
+    group_axis = rep(letters[3:4], times = 2),
+    y = c(2.1, 2, 2, 4),
+    sd = c(1.7, 1, .5, .2),
+    ymin = y - sd,
+    ymax = y + sd
+  )
+
+test_df_cross
+```
+
+```{r}
+#| code-fold: true
+test_df_cross |>
+  mutate(
+    is_smaller = rank(y, ties.method = "first") == 1,
+    .by = group_axis
+  ) |>
+  mutate(
+    ymin_lr = if_else(is_smaller, ymin, y),
+    ymin_eb = if_else(is_smaller, ymin, NA),
+    ymax_lr = if_else(!is_smaller, ymax, y),
+    ymax_eb = if_else(!is_smaller, ymax, NA)
+  ) |>
+  ggplot(aes(x = group_axis, y = y, group = group_line)) +
+  theme_classic() +
+  geom_linerange(
+    aes(ymin = ymin_lr, ymax = ymax_lr),
+    alpha = .5
+  ) +
+  geom_errorbar(
+    aes(ymin = ymin_eb, ymax = ymax_eb),
+    width = .2,
+    alpha = .5
+  ) +
+  geom_line() +
+  geom_point(
+    aes(shape = group_line),
+    size = 3
+  )
+```
+::: {.callout-tip collapse="true"}
+### Excelで同じことをする場合
+ちなみに、Excelで誤差範囲を片側にしているときにデータがクロスしている場合、誤差範囲の値の片方を負の値にする必要があります。
+
+|平均値|水準c|水準d|
+|:-:|-:|-:|
+|条件A|2.1|2|
+|条件B|2|4|
+
+|標準偏差|水準c|水準d|
+|:-:|-:|-:|
+|条件A|1.7|1|
+|条件B|0.5|0.2|
+
+こんな感じでグラフ作成用にデータを配置していた場合、以下のように標準偏差の方のどちらかの水準の列を負の値にすると、誤差範囲の向きが反転します。
+
+|標準偏差|水準c|水準d|
+|:-:|-:|-:|
+|条件A| -1.7|1|
+|条件B|-0.5|0.2|
+:::
+
+横軸の要因が2要因以上あっても大丈夫です。
+```{r}
+set.seed(20251026)
+
+test_df_2x4 <- 
+  tibble(
+    group_line = rep(letters[1:2], each = 4),
+    group_axis = rep(LETTERS[1:4], times = 2),
+    y = runif(8, min = 3, max = 5),
+    sd = runif(8, min = .5, max = 2),
+    ymin = y - sd,
+    ymax = y + sd
+  )
+
+test_df_2x4
+```
+
+```{r}
+#| code-fold: true
+test_df_2x4 |>
+  mutate(
+    is_smaller = rank(y, ties.method = "first") == 1,
+    .by = group_axis
+  ) |>
+  mutate(
+    ymin_lr = if_else(is_smaller, ymin, y),
+    ymin_eb = if_else(is_smaller, ymin, NA),
+    ymax_lr = if_else(!is_smaller, ymax, y),
+    ymax_eb = if_else(!is_smaller, ymax, NA)
+  ) |>
+  ggplot(aes(x = group_axis, y = y, group = group_line)) +
+  theme_classic() +
+  geom_linerange(
+    aes(ymin = ymin_lr, ymax = ymax_lr),
+    alpha = .5
+  ) +
+  geom_errorbar(
+    aes(ymin = ymin_eb, ymax = ymax_eb),
+    width = .2,
+    alpha = .5
+  ) +
+  geom_line() +
+  geom_point(
+    aes(shape = group_line),
+    size = 3
+  )
+```
+
+# Conclusion
+というわけで、ggplot2でも片側だけにエラーバーをつけたグラフができました。伸ばしたくない方向については`geom_errorbar()`にはNAを、`geom_linerange()`にはマーカーの値（今回は平均値）をそのまま入れればいいということでした。
+
+個人的には`dplyr::if_else()`のところをもっとスマートに書けたらうれしいなーと思ったので、まだまだ勉強します。
+
+# Session Infomation
+```{r}
+#| echo: false
+sessionInfo()
+```
+
