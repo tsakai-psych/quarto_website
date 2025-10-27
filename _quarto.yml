@@ -26,6 +26,9 @@ website:
       Code is released under the [MIT License](/LICENSE.md).
     right: |
       Please contact me via [X (Twitter)](https://x.com/tsakai_psych).
+  # website tools
+  twitter-card: true
+  open-graph: true
 
 format:
   html:
