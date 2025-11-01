@@ -27,6 +27,7 @@ website:
     right: |
       Please contact me via [X (Twitter)](https://x.com/tsakai_psych).
   # website tools
+  site-url: https://tsakai-website.pages.dev
   twitter-card: true
   open-graph: true
 
@@ -36,6 +37,7 @@ format:
     highlight-style: breezedark
     page-layout: full
     css: styles.css
+    link-external-icon: true
     link-external-newwindow: true
     date-format: "YYYY-MM-DD"
 
