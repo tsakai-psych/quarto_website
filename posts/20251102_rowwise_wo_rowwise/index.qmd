@@ -1,0 +1,421 @@
+---
+title: "dplyr::rowwiseを使わないで個人の尺度得点を算出する"
+date: 2025-11-02
+abstract: |
+  `dplyr::rowwise()`を使わずに、個人の尺度得点を算出する方法を試してみた。`rowMeans(pick(...))`が速くていいかも。
+categories: [R memo, preprocess]
+format:
+  html:
+    fig-dpi: 200
+knitr:
+  opts_chunk: 
+    fig.align: center
+    R.options:
+      width: 110
+editor_options: 
+  chunk_output_type: console
+---
+
+# Packages
+```{r}
+pacman::p_load(
+  tidyverse,
+  psych,
+  microbenchmark
+)
+```
+
+# Contents
+tidyverseの関数群を使って心理学のデータの処理をするとして、各個人の尺度得点をそれぞれ出したい場合はおそらく`dplyr::rowwise()`とそれに関連する関数を使って処理すると思います。今回は別のアプローチでトライしてみました。
+
+## demo data
+`psych::bfi`がちょうどいいので、逆転処理などをしておいてデモデータにします。
+```{r}
+#| code-fold: true
+df_bfi <- 
+  psych::bfi |>
+  relocate(
+    gender, education, age
+  ) |>
+  rownames_to_column(var = "id") |>
+  mutate(
+    across(
+      .cols = all_of(
+        unlist(bfi.keys) |>
+          str_subset(pattern = "^-") |> # extract reverse item
+          str_remove(pattern = "^-")
+      ),
+      .fns = \(x) {7 - x} # six point scale, so subtract from seven.
+    )
+  ) |>
+  rename( # <1>
+    q_education = education,  # <1>
+    q_age = age, # <1>
+    q_gender = gender # <1>
+  ) |> # <1>
+  as_tibble() # for better printing
+```
+1. わざわざ列名を変えなくてもいいのですが、`tidyselect::starts_with()`でいちいち`ignore.case = TRUE`としないとageとA\*、educationとE\*の区別をつけてもらえなくてめんどくさいので、変えておきます。
+
+```{r}
+df_bfi
+```
+
+## `rowwise()`
+心理学のデータ処理で因子分析とα係数の確認を終えたら、次に行うのは尺度得点の計算だと思います。参加者ごとに下位尺度の得点を算出していくのですが、その場合は調べてみるとたいていは`dplyr::rowise()`[^rowwise]と`dplyr::c_across()`[^c_across]を使った処理に行き着くと思います。つまり、`rowwise()`で行ごとにグルーピングして、`c_across`でまとめたい要素をまとめて、それで処理するという方法です。
+```{r}
+df_bfi |>
+  rowwise() |>
+  mutate(
+    score_A = mean(c_across(starts_with("A"))),
+    score_C = mean(c_across(starts_with("C"))),
+    score_E = mean(c_across(starts_with("E"))),
+    score_N = mean(c_across(starts_with("N"))),
+    score_O = mean(c_across(starts_with("O"))),
+    .after = q_age
+  ) |>
+  ungroup()
+```
+これで処理できるのでそれはそれでいいのですが、いくつか気になる点があります。
+
+1. `dplyr::ungroup()`が必要
+
+    `ungroup()`を忘れるとrowwiseグループが維持されるので、その後の処理で面倒なことが起こる可能性があります。
+
+2. 行数によっては遅い
+
+    行数が少なければ気にならないと思いますが、行数が多いデータだと`rowwise()`処理は体感できるレベルで遅いです。今回の2800行のデータだと4秒程度かかります。
+```{r}
+microbenchmark::microbenchmark(
+  "rowwise" = {
+    df_bfi |>
+      rowwise() |>
+      mutate(
+        score_A = mean(c_across(starts_with("A"))),
+        score_C = mean(c_across(starts_with("C"))),
+        score_E = mean(c_across(starts_with("E"))),
+        score_N = mean(c_across(starts_with("N"))),
+        score_O = mean(c_across(starts_with("O"))),
+        .after = q_age
+      ) |>
+      ungroup()
+  },
+  times = 5L # <1>
+)
+```
+1. レンダリングの際にこの処理だけであまりにも時間がかかるので、ベンチマークの反復はデフォルトの100回から5回に減らしました。
+
+というわけで、別のやり方がないか模索したわけです。
+
+[^rowwise]: <https://dplyr.tidyverse.org/reference/rowwise.html>
+[^c_across]: <https://dplyr.tidyverse.org/reference/c_across.html>
+
+## `.by` argument
+グルーピングに`.by`[^dplyr_by]引数を用いるやり方です。`dplyr::group_by()`や`rowwise`は関数としてパイプフローに組み込んで、処理の後もグルーピングを維持するのに対して`.by = ...`/`by = ...`は処理の関数の引数で設定し、その処理限りのグルーピングを行います。戻ってくるdataframeはグループ化されていないので、個人的にはその後の処理がやりやすい感じがしてよく使っています。変数選択にはtidy-selectの文法が使えます。
+
+なお、`.by`引数に突っ込める`rowwise()`ってある？という質問が[Posit Communityのforum](https://forum.posit.co/t/whats-a-good-way-to-replicate-rowwise-within-the-by-argument-of-mutate/168538)に投げられているのですが、悲しいことに回答なしでclosedになっています。おそらく現時点ではそのようなものは実装されてないみたいなので、質問者の方が提示しているように`.by`には一意のID列を設定すればいいのだと思います。
+そして、このID列を`.by`に入れたときは実質rowwise処理になるので、なんと`c_across()`がちゃんと動きます。
+```{r}
+df_bfi |>
+  mutate(
+      score_A = mean(c_across(starts_with("A"))),
+      score_C = mean(c_across(starts_with("C"))),
+      score_E = mean(c_across(starts_with("E"))),
+      score_N = mean(c_across(starts_with("N"))),
+      score_O = mean(c_across(starts_with("O"))),
+      .after = q_age,
+      .by = id
+    )
+```
+先ほどの`rowwise()`の書き方と全く同じ結果が返ってきています。ID列をちゃんと作ってあれば、`.by`引数にそれを入れることでもできるわけです。
+ただし、実はこの方法も時間がかかる処理で、`rowwise()`のときと同じくらいの処理時間がかかります。
+```{r}
+#| code-fold: true
+microbenchmark::microbenchmark(
+  ".by" = {
+    df_bfi |>
+      mutate(
+        score_A = mean(c_across(starts_with("A"))),
+        score_C = mean(c_across(starts_with("C"))),
+        score_E = mean(c_across(starts_with("E"))),
+        score_N = mean(c_across(starts_with("N"))),
+        score_O = mean(c_across(starts_with("O"))),
+        .after = q_age,
+        .by = id
+      )
+  },
+  times = 5L # for saving time
+)
+```
+
+[^dplyr_by]: <https://dplyr.tidyverse.org/reference/dplyr_by.html>
+
+## `rowMeans(pick(...))`
+上記の`.by`引数に突っ込める`rowwise()`みたいな関数ってないのかな～と探していたときに、たまたまこんな記事を見つけました。
+
+- [Row-wise means in dplyr](https://affcom.ku.edu/posts/rowwise2023/)
+
+`base::rowMeans()`に`dplyr::pick()`[^pick]で列を選択して入れるという技です。`pick()`は`mutate()`や`dplyr::summrise()`のような関数の中でtidy-selectの文法を使ってdataframe列を選択できる関数です。`pick()`の戻り値がdataframeであること、`rowMeans()`は引数にdataframeも入れられること、`rowMeans()`の戻り値は各行の値の平均値を収めたベクトルであることを利用して、`rowwise()`を使わずに実質的にrowwise処理をしてしまおうというわけですね。
+```{r}
+df_bfi |>
+  mutate(
+    score_A = rowMeans(pick(starts_with("A"))),
+    score_C = rowMeans(pick(starts_with("C"))),
+    score_E = rowMeans(pick(starts_with("E"))),
+    score_N = rowMeans(pick(starts_with("N"))),
+    score_O = rowMeans(pick(starts_with("O"))),
+    .after = q_age
+  )
+```
+これもまた今までの書き方と同じ結果が返ってきています。`mean()`が`rowMeans`に、`c_across()`が`pick()`に変わっただけなので、コードの可読性も悪くない気がします。
+
+そして処理速度ですが、上記２つに比べてとても速いです。
+```{r}
+#| code-fold: true
+microbenchmark::microbenchmark(
+  "base::rowMeans" = {
+    df_bfi |>
+      mutate(
+        score_A = rowMeans(pick(starts_with("A"))),
+        score_C = rowMeans(pick(starts_with("C"))),
+        score_E = rowMeans(pick(starts_with("E"))),
+        score_N = rowMeans(pick(starts_with("N"))),
+        score_O = rowMeans(pick(starts_with("O"))),
+        .after = q_age
+      )
+  }
+)
+```
+上記2つは単位が秒だったのに、こちらの単位はミリ秒です。つまり、4ミリ秒程度で処理が終わっています。
+
+ちなみに、もし各項目の合計得点が尺度得点である場合は、`base::rowSums()`を使えばいいです。
+
+[^pick]: <https://dplyr.tidyverse.org/reference/pick.html>
+
+## `apply(MARGIN = 1)`
+そういえば、行での計算は`base::apply(MARGIN = 1)`でもできるのを思い出しました。引数には同じく`pick()`で選んだ列を入れて、関数に`mean()`を選択すれば同じ結果が得られるはずです。
+```{r}
+df_bfi |>
+  mutate(
+    score_A = apply(
+      pick(starts_with("A")),
+      MARGIN = 1,
+      FUN = mean
+    ),
+    score_C = apply(
+      pick(starts_with("C")),
+      MARGIN = 1,
+      FUN = mean
+    ),
+    score_E = apply(
+      pick(starts_with("E")),
+      MARGIN = 1,
+      FUN = mean
+    ),
+    score_N = apply(
+      pick(starts_with("N")),
+      MARGIN = 1,
+      FUN = mean
+    ),
+    score_O = apply(
+      pick(starts_with("O")),
+      MARGIN = 1,
+      FUN = mean
+    ),
+    .after = q_age
+  )
+```
+これまでの方法と同じ結果が返ってきました。`apply()`は引数`MARGIN`に入れるのって0or1だっけ1or2だっけ？どっちが行でどっちが列だっけ？となるので、あんまり使ってないです。（覚えればいいんですけど指定は1or2で、1が行に対して、2が列に対しての計算です。）
+
+処理速度に関してはどうでしょうか。
+```{r}
+#| code-fold: true
+microbenchmark::microbenchmark(
+  "apply_margin1" = {
+    df_bfi |>
+      mutate(
+        score_A = apply(
+          pick(starts_with("A")),
+          MARGIN = 1,
+          FUN = mean
+        ),
+        score_C = apply(
+          pick(starts_with("C")),
+          MARGIN = 1,
+          FUN = mean
+        ),
+        score_E = apply(
+          pick(starts_with("E")),
+          MARGIN = 1,
+          FUN = mean
+        ),
+        score_N = apply(
+          pick(starts_with("N")),
+          MARGIN = 1,
+          FUN = mean
+        ),
+        score_O = apply(
+          pick(starts_with("O")),
+          MARGIN = 1,
+          FUN = mean
+        ),
+        .after = q_age
+      )
+  }
+)
+```
+`bfi`データだと70ミリ秒くらいで済むみたいです。`rowMeans()`よりは遅いですが、`rowwise()`と`.by`よりは速いみたいですね。
+
+## Comparison
+せっかくなので処理速度を一度に比べてみます。ただし、このまま`bfi`データでベンチマークするととんでもない時間がかかるので、もっと数が少ない`iris`データで比較します。
+```{r}
+df_iris <- iris |>
+  as_tibble() |> # for better printing
+  rowid_to_column() # for equal results
+
+head(df_iris)
+```
+
+```{r}
+#| code-fold: true
+res <- microbenchmark::microbenchmark(
+  "rowwise" = {
+    df_iris |>
+      rowwise() |>
+      mutate(
+        sepal = mean(c_across(starts_with("Sepal"))),
+        petal = mean(c_across(starts_with("Petal")))
+      ) |>
+      ungroup()
+  },
+  ".by" = {
+    df_iris |>
+      mutate(
+        sepal = mean(c_across(starts_with("Sepal"))),
+        petal = mean(c_across(starts_with("Petal"))),
+        .by = rowid
+      )
+  },
+  "rowMeans" = {
+    df_iris |>
+      mutate(
+        sepal = rowMeans(pick(starts_with("Sepal"))),
+        petal = rowMeans(pick(starts_with("Petal")))
+      )
+  },
+  "apply_margin1" = {
+    df_iris |>
+      mutate(
+        sepal = apply(
+          pick(starts_with("Sepal")),
+          MARGIN = 1,
+          FUN = mean
+        ),
+        petal = apply(
+          pick(starts_with("Petal")),
+          MARGIN = 1,
+          FUN = mean
+        )
+      )
+  },
+  check = "equal"
+)
+
+res
+```
+
+```{r}
+#| label: preview
+autoplot(res)
+```
+圧倒的に`rowMeans()`が速いです。桁が違います。元記事の比較データだと、10000行のデータでも`rowMeans()`を使う方法が圧倒的に速いです。`dplyr`のarticle（[Row-wise operations](https://dplyr.tidyverse.org/articles/rowwise.html?q=rowwise#row-wise-summary-functions)）にも書いてありましたが、速さを求めるならこっちと言うのもわかります。base関数はやはり侮れません。`apply()`も行数が少なければ高速っぽいです。
+
+:::{.callout-tip collapse="true"}
+### 番外編：`Rfast::rowmeans()`
+同じノリで`Rfast::rowmeans()`もイケるか…？と思って試してみました。`Rfast`[^Rfast]パッケージの関数は基本はmatrixかつ`NA`なしじゃないと使えない（内部で使ってるCppの都合で`NA`があると良くないとのこと）のですが、Helpを見る限り`rowmeans()`はdataframeでも計算してくれそうな感じっぽいので試してみました。
+```{r}
+#| error: true
+df_bfi |>
+  mutate(
+    score_A = Rfast::rowmeans(pick(starts_with("A")))
+  )
+```
+ダメでした。ということで、無理やりmatrixにして再挑戦します。
+```{r}
+df_bfi |>
+  mutate(
+    score_A = pick(starts_with("A")) |>
+      as.matrix() |>
+      Rfast::rowmeans(),
+    .after = q_age
+  )
+```
+できました。でも、わざわざmatrixにしなきゃいけいないのはめんどくさいです。
+
+ちなみに、`bfi`データの場合、`rowMeans()`の方法と処理時間には差がつきません。同じくらい速いです。
+```{r}
+#| code-fold: true
+microbenchmark::microbenchmark(
+  "base::rowMeans" = {
+    df_bfi |>
+      mutate(
+        score_A = rowMeans(pick(starts_with("A"))),
+        score_C = rowMeans(pick(starts_with("C"))),
+        score_E = rowMeans(pick(starts_with("E"))),
+        score_N = rowMeans(pick(starts_with("N"))),
+        score_O = rowMeans(pick(starts_with("O"))),
+        .after = q_age
+      )
+  },
+  "Rfast::rowmeans" = {
+    df_bfi |>
+      mutate(
+        score_A = pick(starts_with("A")) |>
+          as.matrix() |>
+          Rfast::rowmeans(),
+        score_C = pick(starts_with("C")) |>
+          as.matrix() |>
+          Rfast::rowmeans(),
+        score_E = pick(starts_with("E")) |>
+          as.matrix() |>
+          Rfast::rowmeans(),
+        score_N = pick(starts_with("N")) |>
+          as.matrix() |>
+          Rfast::rowmeans(),
+        score_O = pick(starts_with("O")) |>
+          as.matrix() |>
+          Rfast::rowmeans(),
+        .after = q_age
+      )
+  }
+)
+```
+
+`ggplot2::diamonds`は約54000行あるんですが、計算させてみると`rowMeans()`よりも微妙に速かったりします。ただし1ミリ秒も差がつかないので体感できないです。
+```{r}
+microbenchmark::microbenchmark(
+  "base::rowMeans" = {
+    diamonds |>
+      mutate(
+        res = pick(depth:z) |>
+          rowMeans()
+      )
+  },
+  "Rfast::rowmeans" = {
+    diamonds |>
+      mutate(
+        res = pick(depth:z) |>
+          as.matrix() |>
+          Rfast::rowmeans()
+      )
+  },
+  check = "equal"
+)
+```
+ものすごくデータ数が多いときなら、選択肢に入る方法かもしれません。
+:::
+
+[^Rfast]: <https://github.com/RfastOfficial/Rfast?tab=readme-ov-file#readme>
+
+# Conclusion
+今回はwideなデータにおいて`dplyr::rowwise()`を使わないで尺度得点の算出というrowwiseな処理をしてみました。個人的には`base::row*(pick(...))`を使うのもありだと思いました。可読性もそんなに悪くないと思います。一方で、個人ごとに計算しているというのを明示したい場合は、`rowwise()`を挟んだり`.by = ID列`の方が分かりやすい気もします。サンプルサイズやコードを共有するか否かなどを考慮して使い分けるのがいいかもしれません。
