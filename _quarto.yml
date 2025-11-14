@@ -1,6 +1,8 @@
 project:
   type: website
   output-dir: website
+  resources: 
+    - google927d5dc827273984.html
 
 website:
   title: "さかいの備忘録"
