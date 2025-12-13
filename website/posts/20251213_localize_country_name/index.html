@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2025-12-13">
+
+<title>Rでデータの国名を日本語名にする – さかいの備忘録</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-1c1298d4aec20b932e1c4c12e9ecd263.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-0bd6bd4cbde67017807ea45c3bc8f802.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<link href="../../site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet">
+
+<script src="../../site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+
+
+
+<link rel="stylesheet" href="../../styles.css">
+<meta property="og:title" content="Rでデータの国名を日本語名にする – さかいの備忘録">
+<meta property="og:description" content="countrycodeパッケージやcountriesパッケージを使って、データに含まれている国名を日本語名にしてみた。">
+<meta property="og:image" content="https://tsakai-website.pages.dev/posts/20251213_localize_country_name/20251213_thumbnail.jpeg">
+<meta property="og:site_name" content="さかいの備忘録">
+<meta name="twitter:title" content="Rでデータの国名を日本語名にする – さかいの備忘録">
+<meta name="twitter:description" content="countrycodeパッケージやcountriesパッケージを使って、データに含まれている国名を日本語名にしてみた。">
+<meta name="twitter:image" content="https://tsakai-website.pages.dev/posts/20251213_localize_country_name/20251213_thumbnail.jpeg">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">さかいの備忘録</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../content.html"> 
+<span class="menu-text">Content</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://x.com/tsakai_psych" target="_blank"> <i class="bi bi-twitter-x" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://researchmap.jp/takutosakai" target="_blank"> 
+<span class="menu-text">researchmap</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/tsakai-psych" target="_blank"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-page-left">
+      <h1 class="title">Rでデータの国名を日本語名にする</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">R memo</div>
+                <div class="quarto-category">preprocess</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta column-page-left">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">2025-12-13</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  <div>
+    <div class="abstract">
+      <div class="block-title">Abstract</div>
+      <p><code>countrycode</code>パッケージや<code>countries</code>パッケージを使って、データに含まれている国名を日本語名にしてみた。</p>
+    </div>
+  </div>
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#packages" id="toc-packages" class="nav-link active" data-scroll-target="#packages">Packages</a></li>
+  <li><a href="#contents" id="toc-contents" class="nav-link" data-scroll-target="#contents">Contents</a>
+  <ul class="collapse">
+  <li><a href="#background" id="toc-background" class="nav-link" data-scroll-target="#background">Background</a></li>
+  <li><a href="#countrycodecountrycode" id="toc-countrycodecountrycode" class="nav-link" data-scroll-target="#countrycodecountrycode"><code>countrycode::countrycode</code></a></li>
+  <li><a href="#countriescountry_name" id="toc-countriescountry_name" class="nav-link" data-scroll-target="#countriescountry_name"><code>countries::country_name</code></a></li>
+  </ul></li>
+  <li><a href="#solution" id="toc-solution" class="nav-link" data-scroll-target="#solution">Solution</a>
+  <ul class="collapse">
+  <li><a href="#supplement" id="toc-supplement" class="nav-link" data-scroll-target="#supplement">Supplement</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  <li><a href="#session-infomation" id="toc-session-infomation" class="nav-link" data-scroll-target="#session-infomation">Session Infomation</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block column-page-left" id="quarto-document-content">
+
+
+
+
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="20251213_thumbnail.jpeg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
+</figure>
+</div>
+<p>サムネイルはcopilotに作ってもらいました。</p>
+<section id="packages" class="level2">
+<h2 class="anchored" data-anchor-id="packages">Packages</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(</span>
+<span id="cb1-2"><a href="#cb1-2"></a>  tidyverse,</span>
+<span id="cb1-3"><a href="#cb1-3"></a>  countrycode,</span>
+<span id="cb1-4"><a href="#cb1-4"></a>  countries</span>
+<span id="cb1-5"><a href="#cb1-5"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="contents" class="level2">
+<h2 class="anchored" data-anchor-id="contents">Contents</h2>
+<section id="background" class="level3">
+<h3 class="anchored" data-anchor-id="background">Background</h3>
+<p>補助に入っている授業で、学生たちはオープンデータを使ってRの練習をしています。使用しているデータはYamada et al.&nbsp;(2021)<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>によるCOVIDiSTRESS Global Surveyデータセットです。データセットは<a href="https://doi.org/10.17605/OSF.IO/Z39US">OSF</a>で公開されています。そのうち最終データ（COVIDiSTRESS_May_30_cleaned.csv）を利用しています。</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>df_covid <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(</span>
+<span id="cb2-2"><a href="#cb2-2"></a>  <span class="fu">list.files</span>(<span class="st">"~/datasets/Yamada_etal_2020"</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-3"><a href="#cb2-3"></a>)</span>
+<span id="cb2-4"><a href="#cb2-4"></a></span>
+<span id="cb2-5"><a href="#cb2-5"></a>df_covid</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 125,306 × 154
+      ID answered_all Duration..in.seconds. RecordedDate        UserLanguage Dem_age Dem_gender     
+   &lt;dbl&gt; &lt;chr&gt;                        &lt;dbl&gt; &lt;dttm&gt;              &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;          
+ 1     1 No                             180 2020-05-30 23:47:17 SAR               29 Female         
+ 2     2 No                            3100 2020-05-29 23:30:15 UR                20 Male           
+ 3     3 No                             127 2020-05-30 22:40:15 SAR               47 Female         
+ 4     4 No                            1710 2020-05-29 22:47:17 BG                79 Male           
+ 5     5 No                            2239 2020-05-29 22:42:30 SAR               61 Female         
+ 6     6 Yes                           1221 2020-05-29 21:25:09 IT                68 Male           
+ 7     7 Yes                           1283 2020-05-29 21:25:37 SAR               29 Other/would ra…
+ 8     8 Yes                           1442 2020-05-29 21:25:17 SAR               38 Female         
+ 9     9 No                            1952 2020-05-29 21:18:48 SME               35 Female         
+10    10 No                             144 2020-05-30 20:24:41 SAR               23 Female         
+# ℹ 125,296 more rows
+# ℹ 147 more variables: Dem_edu &lt;chr&gt;, Dem_edu_mom &lt;chr&gt;, Dem_employment &lt;chr&gt;, Country &lt;chr&gt;,
+#   Dem_Expat &lt;chr&gt;, Dem_state &lt;chr&gt;, Dem_maritalstatus &lt;chr&gt;, Dem_dependents &lt;dbl&gt;,
+#   Dem_riskgroup &lt;chr&gt;, Dem_isolation &lt;chr&gt;, Dem_isolation_adults &lt;dbl&gt;, Dem_isolation_kids &lt;dbl&gt;,
+#   AD_gain &lt;chr&gt;, AD_loss &lt;chr&gt;, AD_check &lt;chr&gt;, Scale_PSS10_UCLA_1 &lt;dbl&gt;,
+#   Scale_PSS10_UCLA_2 &lt;dbl&gt;, Scale_PSS10_UCLA_3 &lt;dbl&gt;, Scale_PSS10_UCLA_4 &lt;dbl&gt;,
+#   Scale_PSS10_UCLA_5 &lt;dbl&gt;, Scale_PSS10_UCLA_6 &lt;dbl&gt;, Scale_PSS10_UCLA_7 &lt;dbl&gt;, …</code></pre>
+</div>
+</div>
+<p>学生たちは課題として推しグラフを1枚作るのですが、そのときにどこの国とどこの国を比較すると面白いかということで、国を選ぶ作業があります。データには参加者の居住国（<code>Country</code>）が英語で収められているのですが、学生たちが国を選ぶときに日本語化されていると見やすいかなと思ったのが今回の背景です。</p>
+<p>実は、この事象は去年の段階で遭遇していて、テキトーにメモを取っておいてそのままにしておいたのですが、今年もまた需要が出てきたので、改めて備忘録として残しておこうということになりました。</p>
+<blockquote class="twitter-tweet blockquote" data-theme="dark">
+<p lang="ja" dir="ltr">
+Rの備忘録<br>授業のお手伝いしてるときに、国名一覧をオブジェクトに入れてくれてるパッケージないかな～とか思ってたんですが、やっぱりありました ⇒ {countrycode}<br>日本語含むいろんな言語が収録されてて便利<a href="https://t.co/CQC7C0MqPp">https://t.co/CQC7C0MqPp</a><a href="https://t.co/kDYHaZsOL5">https://t.co/kDYHaZsOL5</a> <a href="https://t.co/rpcXU8ru51">pic.twitter.com/rpcXU8ru51</a>
+</p>
+— Takuto SAKAI (<span class="citation" data-cites="tsakai_psych">@tsakai_psych</span>) <a href="https://twitter.com/tsakai_psych/status/1802237658636431708?ref_src=twsrc%5Etfw">June 16, 2024</a>
+</blockquote>
+<script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<p>まず<code>dplyr::count()</code>で<code>Country</code>列を集計してみます。</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>df_covid <span class="sc">|&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a>  <span class="fu">count</span>(Country, <span class="at">sort =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a>  <span class="fu">filter</span>(<span class="sc">!</span>Country <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"other"</span>, <span class="cn">NA</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a>  rmarkdown<span class="sc">::</span><span class="fu">paged_table</span>() <span class="co"># for better view on website</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":["Country"],"name":[1],"type":["chr"],"align":["left"]},{"label":["n"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"Finland","2":"22933"},{"1":"France","2":"13475"},{"1":"Denmark","2":"10891"},{"1":"Mexico","2":"9169"},{"1":"Lithuania","2":"8255"},{"1":"Argentina","2":"5923"},{"1":"Japan","2":"5072"},{"1":"Bulgaria","2":"4785"},{"1":"Poland","2":"3088"},{"1":"Sweden","2":"3055"},{"1":"Croatia","2":"2965"},{"1":"Taiwan","2":"2745"},{"1":"Kosovo","2":"2707"},{"1":"United States","2":"2314"},{"1":"Czech Republic","2":"1995"},{"1":"Italy","2":"1749"},{"1":"Indonesia","2":"1569"},{"1":"United Kingdom","2":"1500"},{"1":"Germany","2":"1443"},{"1":"Hungary","2":"1438"},{"1":"Netherlands","2":"1433"},{"1":"Bosnia and Herzegovina","2":"1288"},{"1":"Turkey","2":"1199"},{"1":"Switzerland","2":"1188"},{"1":"Portugal","2":"1067"},{"1":"Slovakia","2":"942"},{"1":"Panama","2":"759"},{"1":"Brazil","2":"731"},{"1":"Greece","2":"642"},{"1":"Belgium","2":"622"},{"1":"Spain","2":"615"},{"1":"Philippines","2":"570"},{"1":"Malaysia","2":"567"},{"1":"Korea, South","2":"487"},{"1":"Canada","2":"470"},{"1":"Bangladesh","2":"421"},{"1":"Pakistan","2":"360"},{"1":"Australia","2":"327"},{"1":"Austria","2":"319"},{"1":"Romania","2":"282"},{"1":"Serbia","2":"266"},{"1":"Ireland","2":"216"},{"1":"Colombia","2":"195"},{"1":"Vietnam","2":"173"},{"1":"Norway","2":"172"},{"1":"South Africa","2":"135"},{"1":"Russia","2":"132"},{"1":"New Zealand","2":"119"},{"1":"Afghanistan","2":"114"},{"1":"Albania","2":"79"},{"1":"China","2":"74"},{"1":"Egypt","2":"74"},{"1":"Chile","2":"72"},{"1":"India","2":"72"},{"1":"North Macedonia","2":"63"},{"1":"Luxembourg","2":"62"},{"1":"United Arab Emirates","2":"56"},{"1":"Cyprus","2":"52"},{"1":"Morocco","2":"44"},{"1":"Peru","2":"40"},{"1":"Estonia","2":"39"},{"1":"Algeria","2":"38"},{"1":"Guatemala","2":"35"},{"1":"Kyrgyzstan","2":"35"},{"1":"Ukraine","2":"35"},{"1":"Ecuador","2":"34"},{"1":"Singapore","2":"34"},{"1":"Costa Rica","2":"26"},{"1":"Grenada","2":"25"},{"1":"Iceland","2":"25"},{"1":"Israel","2":"24"},{"1":"Slovenia","2":"23"},{"1":"Latvia","2":"22"},{"1":"Malta","2":"22"},{"1":"El Salvador","2":"20"},{"1":"Qatar","2":"20"},{"1":"Georgia","2":"19"},{"1":"Nigeria","2":"19"},{"1":"Thailand","2":"19"},{"1":"Jordan","2":"18"},{"1":"Uganda","2":"17"},{"1":"Montenegro","2":"16"},{"1":"Andorra","2":"15"},{"1":"Azerbaijan","2":"15"},{"1":"Kenya","2":"15"},{"1":"San Marino","2":"14"},{"1":"Belarus","2":"13"},{"1":"Saudi Arabia","2":"13"},{"1":"Monaco","2":"12"},{"1":"Angola","2":"11"},{"1":"Honduras","2":"11"},{"1":"Venezuela","2":"11"},{"1":"Armenia","2":"10"},{"1":"Lebanon","2":"10"},{"1":"Nicaragua","2":"10"},{"1":"Ghana","2":"9"},{"1":"Lesotho","2":"9"},{"1":"Brunei","2":"8"},{"1":"Iran","2":"8"},{"1":"Tunisia","2":"8"},{"1":"Bahrain","2":"7"},{"1":"Belize","2":"7"},{"1":"Bolivia","2":"7"},{"1":"Nepal","2":"7"},{"1":"C\\xf4te d\\x92Ivoire","2":"6"},{"1":"Trinidad and Tobago","2":"6"},{"1":"Antigua and Barbuda","2":"5"},{"1":"Fiji","2":"5"},{"1":"Gabon","2":"5"},{"1":"Laos","2":"5"},{"1":"Liechtenstein","2":"5"},{"1":"Uruguay","2":"5"},{"1":"Burkina Faso","2":"4"},{"1":"Djibouti","2":"4"},{"1":"Dominican Republic","2":"4"},{"1":"Haiti","2":"4"},{"1":"Kazakhstan","2":"4"},{"1":"Kuwait","2":"4"},{"1":"Madagascar","2":"4"},{"1":"Maldives","2":"4"},{"1":"Oman","2":"4"},{"1":"Paraguay","2":"4"},{"1":"Zambia","2":"4"},{"1":"Zimbabwe","2":"4"},{"1":"Barbados","2":"3"},{"1":"Cambodia","2":"3"},{"1":"Cameroon","2":"3"},{"1":"Cuba","2":"3"},{"1":"Mauritius","2":"3"},{"1":"Micronesia, Federated States of","2":"3"},{"1":"Moldova","2":"3"},{"1":"Senegal","2":"3"},{"1":"Sri Lanka","2":"3"},{"1":"Suriname","2":"3"},{"1":"Benin","2":"2"},{"1":"Burundi","2":"2"},{"1":"Comoros","2":"2"},{"1":"Congo, Republic of the","2":"2"},{"1":"Ethiopia","2":"2"},{"1":"Jamaica","2":"2"},{"1":"Korea, North","2":"2"},{"1":"Rwanda","2":"2"},{"1":"Tanzania","2":"2"},{"1":"The Bahamas","2":"2"},{"1":"Uzbekistan","2":"2"},{"1":"Bhutan","2":"1"},{"1":"Cabo Verde","2":"1"},{"1":"Congo, Democratic Republic of the","2":"1"},{"1":"Dominica","2":"1"},{"1":"East Timor (Timor-Leste)","2":"1"},{"1":"Eritrea","2":"1"},{"1":"Guinea","2":"1"},{"1":"Guinea-Bissau","2":"1"},{"1":"Guyana","2":"1"},{"1":"Iraq","2":"1"},{"1":"Kiribati","2":"1"},{"1":"Libya","2":"1"},{"1":"Malawi","2":"1"},{"1":"Mali","2":"1"},{"1":"Mauritania","2":"1"},{"1":"Mozambique","2":"1"},{"1":"Myanmar (Burma)","2":"1"},{"1":"Namibia","2":"1"},{"1":"Nauru","2":"1"},{"1":"Niger","2":"1"},{"1":"Saint Lucia","2":"1"},{"1":"Saint Vincent and the Grenadines","2":"1"},{"1":"Sao Tome and Principe","2":"1"},{"1":"Seychelles","2":"1"},{"1":"Solomon Islands","2":"1"},{"1":"Somalia","2":"1"},{"1":"Sudan","2":"1"},{"1":"Sudan, South","2":"1"},{"1":"Tajikistan","2":"1"},{"1":"The Gambia","2":"1"},{"1":"Turkmenistan","2":"1"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<p>どうやらフィンランドからの回答が一番多いようです。ちなみに、私の環境では<code>readr::read_csv()</code>で<code>locale</code>を特に設定せずデータを読み込むと、コートジボワール（n = 6）だけ文字化けします。</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="fu">unique</span>(df_covid<span class="sc">$</span>Country) <span class="sc">|&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a>  <span class="fu">sort</span>() <span class="sc">|&gt;</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a>  _[<span class="dv">1</span>] <span class="sc">|&gt;</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a>  <span class="fu">assign</span>(<span class="st">"cotedivoire"</span>, <span class="at">value =</span> _) <span class="sc">|&gt;</span> </span>
+<span id="cb5-5"><a href="#cb5-5"></a>  <span class="fu">print</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "C\xf4te d\x92Ivoire"</code></pre>
+</div>
+</div>
+<p><code>stringi::stri_enc_detect()</code>を使って文字コードを推測します。</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="annotated-cell-5"><pre class="sourceCode numberSource r code-annotation-code number-lines code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-5-1" class="code-annotation-target"><a href="#annotated-cell-5-1"></a>stringi<span class="sc">::</span><span class="fu">stri_enc_detect</span>(cotedivoire) <span class="sc">|&gt;</span></span>
+<span id="annotated-cell-5-2"><a href="#annotated-cell-5-2"></a>  _[[<span class="dv">1</span>]] <span class="sc">|&gt;</span></span>
+<span id="annotated-cell-5-3"><a href="#annotated-cell-5-3"></a>  <span class="fu">mutate</span>(</span>
+<span id="annotated-cell-5-4"><a href="#annotated-cell-5-4"></a>    <span class="at">result =</span> <span class="fu">str_conv</span>(cotedivoire, <span class="at">encoding =</span> Encoding),</span>
+<span id="annotated-cell-5-5"><a href="#annotated-cell-5-5"></a>    <span class="at">.by =</span> Encoding</span>
+<span id="annotated-cell-5-6"><a href="#annotated-cell-5-6"></a>  )</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-5" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-5" data-code-lines="1,2" data-code-annotation="1"><code>stri_enc_detect()</code>は引数<code>str</code>に入れた要素の数に合わせたdf入りlistを返すみたいです。今回は1個だけなので<code>[[</code>で抽出してdfにしておきます。</span>
+</dd>
+</dl>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>      Encoding Language Confidence          result
+1 windows-1252       fr       0.64 Côte d’Ivoire
+2 windows-1250       ro       0.64 Côte d’Ivoire
+3     UTF-16BE                0.10     䏴瑥⁤鉉癯楲�
+4     UTF-16LE                0.10    整搠䦒潶物�
+5    Shift_JIS       ja       0.10    Ce d棚voire
+6      GB18030       zh       0.10   C魌e d扞voire
+7         Big5       zh       0.10    C矌e dvoire</code></pre>
+</div>
+</div>
+<p>この結果を見る限り、<code>windows-1252</code>でエンコードすればよさそうですね。というわけで、国名と人数だけのdfを作ります。</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>df_country_name <span class="ot">&lt;-</span></span>
+<span id="cb8-2"><a href="#cb8-2"></a>  df_covid <span class="sc">|&gt;</span></span>
+<span id="cb8-3"><a href="#cb8-3"></a>  <span class="fu">count</span>(Country, <span class="at">sort =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb8-4"><a href="#cb8-4"></a>  <span class="fu">filter</span>(<span class="sc">!</span>Country <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"other"</span>, <span class="cn">NA</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb8-5"><a href="#cb8-5"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb8-6"><a href="#cb8-6"></a>    <span class="at">Country =</span> <span class="fu">if_else</span>(</span>
+<span id="cb8-7"><a href="#cb8-7"></a>      <span class="fu">str_detect</span>(Country, <span class="st">"voire$"</span>),</span>
+<span id="cb8-8"><a href="#cb8-8"></a>      <span class="fu">str_conv</span>(Country, <span class="at">encoding =</span> <span class="st">"windows-1252"</span>),</span>
+<span id="cb8-9"><a href="#cb8-9"></a>      Country</span>
+<span id="cb8-10"><a href="#cb8-10"></a>    )</span>
+<span id="cb8-11"><a href="#cb8-11"></a>  )</span>
+<span id="cb8-12"><a href="#cb8-12"></a></span>
+<span id="cb8-13"><a href="#cb8-13"></a>df_country_name</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 176 × 2
+   Country       n
+   &lt;chr&gt;     &lt;int&gt;
+ 1 Finland   22933
+ 2 France    13475
+ 3 Denmark   10891
+ 4 Mexico     9169
+ 5 Lithuania  8255
+ 6 Argentina  5923
+ 7 Japan      5072
+ 8 Bulgaria   4785
+ 9 Poland     3088
+10 Sweden     3055
+# ℹ 166 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="countrycodecountrycode" class="level3">
+<h3 class="anchored" data-anchor-id="countrycodecountrycode"><code>countrycode::countrycode</code></h3>
+<p><code>countrycode::countrycode()</code><a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>を使って国名を日本語にします。<code>countrycode::countryname()</code>という関数もあるんですが、こちらの方がsaferみたいなことがHelpに記載されていたのでこちらを使うことにします。</p>
+<ul>
+<li><code>sourcevar</code>：国のコードもしくは国名が含まれているベクトル。</li>
+<li><code>origin</code>：<code>sourcevar</code>のコーディングスキーム。</li>
+<li><code>destination</code>: 変換したいコーディングスキーム。
+<ul>
+<li>ベクトルで入れた場合は第1要素から順にマッチングしていく。</li>
+</ul></li>
+<li><code>warn</code>: デフォルトで<code>TRUE</code>。マッチしなかったものについて教えてくれる。</li>
+</ul>
+<p>日本語の国名は、<code>cldr.name.ja</code>、<code>cldr.short.ja</code>、<code>cldr.variant.ja</code>の三種類あります。とりあえず<code>cldr.name.ja</code>にしておきます。</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>df_country_name <span class="sc">|&gt;</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb10-3"><a href="#cb10-3"></a>    <span class="at">res =</span> countrycode<span class="sc">::</span><span class="fu">countrycode</span>(</span>
+<span id="cb10-4"><a href="#cb10-4"></a>      Country,</span>
+<span id="cb10-5"><a href="#cb10-5"></a>      <span class="at">origin =</span> <span class="st">"country.name"</span>,</span>
+<span id="cb10-6"><a href="#cb10-6"></a>      <span class="at">destination =</span> <span class="st">"cldr.name.ja"</span></span>
+<span id="cb10-7"><a href="#cb10-7"></a>    )</span>
+<span id="cb10-8"><a href="#cb10-8"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb10-9"><a href="#cb10-9"></a>  rmarkdown<span class="sc">::</span><span class="fu">paged_table</span>() <span class="co"># for better view on website</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: There was 1 warning in `mutate()`.
+ℹ In argument: `res = countrycode::countrycode(Country, origin = "country.name", destination =
+  "cldr.name.ja")`.
+Caused by warning:
+! Some values were not matched unambiguously: Micronesia, Federated States of, Sudan, South</code></pre>
+</div>
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":["Country"],"name":[1],"type":["chr"],"align":["left"]},{"label":["n"],"name":[2],"type":["int"],"align":["right"]},{"label":["res"],"name":[3],"type":["chr"],"align":["left"]}],"data":[{"1":"Finland","2":"22933","3":"フィンランド"},{"1":"France","2":"13475","3":"フランス"},{"1":"Denmark","2":"10891","3":"デンマーク"},{"1":"Mexico","2":"9169","3":"メキシコ"},{"1":"Lithuania","2":"8255","3":"リトアニア"},{"1":"Argentina","2":"5923","3":"アルゼンチン"},{"1":"Japan","2":"5072","3":"日本"},{"1":"Bulgaria","2":"4785","3":"ブルガリア"},{"1":"Poland","2":"3088","3":"ポーランド"},{"1":"Sweden","2":"3055","3":"スウェーデン"},{"1":"Croatia","2":"2965","3":"クロアチア"},{"1":"Taiwan","2":"2745","3":"台湾"},{"1":"Kosovo","2":"2707","3":"コソボ"},{"1":"United States","2":"2314","3":"アメリカ合衆国"},{"1":"Czech Republic","2":"1995","3":"チェコ"},{"1":"Italy","2":"1749","3":"イタリア"},{"1":"Indonesia","2":"1569","3":"インドネシア"},{"1":"United Kingdom","2":"1500","3":"イギリス"},{"1":"Germany","2":"1443","3":"ドイツ"},{"1":"Hungary","2":"1438","3":"ハンガリー"},{"1":"Netherlands","2":"1433","3":"オランダ"},{"1":"Bosnia and Herzegovina","2":"1288","3":"ボスニア・ヘルツェゴビナ"},{"1":"Turkey","2":"1199","3":"トルコ"},{"1":"Switzerland","2":"1188","3":"スイス"},{"1":"Portugal","2":"1067","3":"ポルトガル"},{"1":"Slovakia","2":"942","3":"スロバキア"},{"1":"Panama","2":"759","3":"パナマ"},{"1":"Brazil","2":"731","3":"ブラジル"},{"1":"Greece","2":"642","3":"ギリシャ"},{"1":"Belgium","2":"622","3":"ベルギー"},{"1":"Spain","2":"615","3":"スペイン"},{"1":"Philippines","2":"570","3":"フィリピン"},{"1":"Malaysia","2":"567","3":"マレーシア"},{"1":"Korea, South","2":"487","3":"韓国"},{"1":"Canada","2":"470","3":"カナダ"},{"1":"Bangladesh","2":"421","3":"バングラデシュ"},{"1":"Pakistan","2":"360","3":"パキスタン"},{"1":"Australia","2":"327","3":"オーストラリア"},{"1":"Austria","2":"319","3":"オーストリア"},{"1":"Romania","2":"282","3":"ルーマニア"},{"1":"Serbia","2":"266","3":"セルビア"},{"1":"Ireland","2":"216","3":"アイルランド"},{"1":"Colombia","2":"195","3":"コロンビア"},{"1":"Vietnam","2":"173","3":"ベトナム"},{"1":"Norway","2":"172","3":"ノルウェー"},{"1":"South Africa","2":"135","3":"南アフリカ"},{"1":"Russia","2":"132","3":"ロシア"},{"1":"New Zealand","2":"119","3":"ニュージーランド"},{"1":"Afghanistan","2":"114","3":"アフガニスタン"},{"1":"Albania","2":"79","3":"アルバニア"},{"1":"China","2":"74","3":"中国"},{"1":"Egypt","2":"74","3":"エジプト"},{"1":"Chile","2":"72","3":"チリ"},{"1":"India","2":"72","3":"インド"},{"1":"North Macedonia","2":"63","3":"北マケドニア"},{"1":"Luxembourg","2":"62","3":"ルクセンブルク"},{"1":"United Arab Emirates","2":"56","3":"アラブ首長国連邦"},{"1":"Cyprus","2":"52","3":"キプロス"},{"1":"Morocco","2":"44","3":"モロッコ"},{"1":"Peru","2":"40","3":"ペルー"},{"1":"Estonia","2":"39","3":"エストニア"},{"1":"Algeria","2":"38","3":"アルジェリア"},{"1":"Guatemala","2":"35","3":"グアテマラ"},{"1":"Kyrgyzstan","2":"35","3":"キルギス"},{"1":"Ukraine","2":"35","3":"ウクライナ"},{"1":"Ecuador","2":"34","3":"エクアドル"},{"1":"Singapore","2":"34","3":"シンガポール"},{"1":"Costa Rica","2":"26","3":"コスタリカ"},{"1":"Grenada","2":"25","3":"グレナダ"},{"1":"Iceland","2":"25","3":"アイスランド"},{"1":"Israel","2":"24","3":"イスラエル"},{"1":"Slovenia","2":"23","3":"スロベニア"},{"1":"Latvia","2":"22","3":"ラトビア"},{"1":"Malta","2":"22","3":"マルタ"},{"1":"El Salvador","2":"20","3":"エルサルバドル"},{"1":"Qatar","2":"20","3":"カタール"},{"1":"Georgia","2":"19","3":"ジョージア"},{"1":"Nigeria","2":"19","3":"ナイジェリア"},{"1":"Thailand","2":"19","3":"タイ"},{"1":"Jordan","2":"18","3":"ヨルダン"},{"1":"Uganda","2":"17","3":"ウガンダ"},{"1":"Montenegro","2":"16","3":"モンテネグロ"},{"1":"Andorra","2":"15","3":"アンドラ"},{"1":"Azerbaijan","2":"15","3":"アゼルバイジャン"},{"1":"Kenya","2":"15","3":"ケニア"},{"1":"San Marino","2":"14","3":"サンマリノ"},{"1":"Belarus","2":"13","3":"ベラルーシ"},{"1":"Saudi Arabia","2":"13","3":"サウジアラビア"},{"1":"Monaco","2":"12","3":"モナコ"},{"1":"Angola","2":"11","3":"アンゴラ"},{"1":"Honduras","2":"11","3":"ホンジュラス"},{"1":"Venezuela","2":"11","3":"ベネズエラ"},{"1":"Armenia","2":"10","3":"アルメニア"},{"1":"Lebanon","2":"10","3":"レバノン"},{"1":"Nicaragua","2":"10","3":"ニカラグア"},{"1":"Ghana","2":"9","3":"ガーナ"},{"1":"Lesotho","2":"9","3":"レソト"},{"1":"Brunei","2":"8","3":"ブルネイ"},{"1":"Iran","2":"8","3":"イラン"},{"1":"Tunisia","2":"8","3":"チュニジア"},{"1":"Bahrain","2":"7","3":"バーレーン"},{"1":"Belize","2":"7","3":"ベリーズ"},{"1":"Bolivia","2":"7","3":"ボリビア"},{"1":"Nepal","2":"7","3":"ネパール"},{"1":"Côte d’Ivoire","2":"6","3":"コートジボワール"},{"1":"Trinidad and Tobago","2":"6","3":"トリニダード・トバゴ"},{"1":"Antigua and Barbuda","2":"5","3":"アンティグア・バーブーダ"},{"1":"Fiji","2":"5","3":"フィジー"},{"1":"Gabon","2":"5","3":"ガボン"},{"1":"Laos","2":"5","3":"ラオス"},{"1":"Liechtenstein","2":"5","3":"リヒテンシュタイン"},{"1":"Uruguay","2":"5","3":"ウルグアイ"},{"1":"Burkina Faso","2":"4","3":"ブルキナファソ"},{"1":"Djibouti","2":"4","3":"ジブチ"},{"1":"Dominican Republic","2":"4","3":"ドミニカ共和国"},{"1":"Haiti","2":"4","3":"ハイチ"},{"1":"Kazakhstan","2":"4","3":"カザフスタン"},{"1":"Kuwait","2":"4","3":"クウェート"},{"1":"Madagascar","2":"4","3":"マダガスカル"},{"1":"Maldives","2":"4","3":"モルディブ"},{"1":"Oman","2":"4","3":"オマーン"},{"1":"Paraguay","2":"4","3":"パラグアイ"},{"1":"Zambia","2":"4","3":"ザンビア"},{"1":"Zimbabwe","2":"4","3":"ジンバブエ"},{"1":"Barbados","2":"3","3":"バルバドス"},{"1":"Cambodia","2":"3","3":"カンボジア"},{"1":"Cameroon","2":"3","3":"カメルーン"},{"1":"Cuba","2":"3","3":"キューバ"},{"1":"Mauritius","2":"3","3":"モーリシャス"},{"1":"Micronesia, Federated States of","2":"3","3":"NA"},{"1":"Moldova","2":"3","3":"モルドバ"},{"1":"Senegal","2":"3","3":"セネガル"},{"1":"Sri Lanka","2":"3","3":"スリランカ"},{"1":"Suriname","2":"3","3":"スリナム"},{"1":"Benin","2":"2","3":"ベナン"},{"1":"Burundi","2":"2","3":"ブルンジ"},{"1":"Comoros","2":"2","3":"コモロ"},{"1":"Congo, Republic of the","2":"2","3":"コンゴ共和国(ブラザビル)"},{"1":"Ethiopia","2":"2","3":"エチオピア"},{"1":"Jamaica","2":"2","3":"ジャマイカ"},{"1":"Korea, North","2":"2","3":"北朝鮮"},{"1":"Rwanda","2":"2","3":"ルワンダ"},{"1":"Tanzania","2":"2","3":"タンザニア"},{"1":"The Bahamas","2":"2","3":"バハマ"},{"1":"Uzbekistan","2":"2","3":"ウズベキスタン"},{"1":"Bhutan","2":"1","3":"ブータン"},{"1":"Cabo Verde","2":"1","3":"カーボベルデ"},{"1":"Congo, Democratic Republic of the","2":"1","3":"コンゴ民主共和国(キンシャサ)"},{"1":"Dominica","2":"1","3":"ドミニカ国"},{"1":"East Timor (Timor-Leste)","2":"1","3":"東ティモール"},{"1":"Eritrea","2":"1","3":"エリトリア"},{"1":"Guinea","2":"1","3":"ギニア"},{"1":"Guinea-Bissau","2":"1","3":"ギニアビサウ"},{"1":"Guyana","2":"1","3":"ガイアナ"},{"1":"Iraq","2":"1","3":"イラク"},{"1":"Kiribati","2":"1","3":"キリバス"},{"1":"Libya","2":"1","3":"リビア"},{"1":"Malawi","2":"1","3":"マラウイ"},{"1":"Mali","2":"1","3":"マリ"},{"1":"Mauritania","2":"1","3":"モーリタニア"},{"1":"Mozambique","2":"1","3":"モザンビーク"},{"1":"Myanmar (Burma)","2":"1","3":"ミャンマー (ビルマ)"},{"1":"Namibia","2":"1","3":"ナミビア"},{"1":"Nauru","2":"1","3":"ナウル"},{"1":"Niger","2":"1","3":"ニジェール"},{"1":"Saint Lucia","2":"1","3":"セントルシア"},{"1":"Saint Vincent and the Grenadines","2":"1","3":"セントビンセント及びグレナディーン諸島"},{"1":"Sao Tome and Principe","2":"1","3":"サントメ・プリンシペ"},{"1":"Seychelles","2":"1","3":"セーシェル"},{"1":"Solomon Islands","2":"1","3":"ソロモン諸島"},{"1":"Somalia","2":"1","3":"ソマリア"},{"1":"Sudan","2":"1","3":"スーダン"},{"1":"Sudan, South","2":"1","3":"NA"},{"1":"Tajikistan","2":"1","3":"タジキスタン"},{"1":"The Gambia","2":"1","3":"ガンビア"},{"1":"Turkmenistan","2":"1","3":"トルクメニスタン"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<p>ミクロネシア連邦と南スーダン以外は日本語化できました。なお、南スーダンは元のデータでは<code>"Sudan, South"</code>で入っていますが、<code>"South Sudan"</code>でマッチさせると日本語化できます。</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>countrycode<span class="sc">::</span><span class="fu">countrycode</span>(</span>
+<span id="cb12-2"><a href="#cb12-2"></a>  <span class="st">"South Sudan"</span>,</span>
+<span id="cb12-3"><a href="#cb12-3"></a>  <span class="at">origin =</span> <span class="st">"country.name"</span>,</span>
+<span id="cb12-4"><a href="#cb12-4"></a>  <span class="at">destination =</span> <span class="st">"cldr.name.ja"</span></span>
+<span id="cb12-5"><a href="#cb12-5"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "南スーダン"</code></pre>
+</div>
+</div>
+<p><code>coutrycode::codelist</code>で変換テーブルを見てみると、ミクロネシア連邦については日本語名が用意されていませんでした。</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>countrycode<span class="sc">::</span>codelist <span class="sc">|&gt;</span></span>
+<span id="cb14-2"><a href="#cb14-2"></a>  <span class="fu">filter</span>(<span class="fu">str_detect</span>(country.name.en, <span class="st">"Micronesia"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb14-3"><a href="#cb14-3"></a>  <span class="fu">select</span>(country.name.en, <span class="fu">ends_with</span>(<span class="st">"ja"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 4
+  country.name.en                  cldr.name.ja cldr.short.ja cldr.variant.ja
+  &lt;chr&gt;                            &lt;chr&gt;        &lt;chr&gt;         &lt;chr&gt;          
+1 Micronesia (Federated States of) &lt;NA&gt;         &lt;NA&gt;          &lt;NA&gt;           </code></pre>
+</div>
+</div>
+<p><code>coutrycode::countrycode()</code>には引数<code>custom_match</code>が用意されていて、ここに名前付きベクトルで<code>origin</code>と<code>destination</code>のマッチング指定すれば、元の結果を上書きできます。</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>df_country_name <span class="sc">|&gt;</span></span>
+<span id="cb16-2"><a href="#cb16-2"></a>  <span class="fu">filter</span>(Country <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Sudan, South"</span>, <span class="st">"Micronesia, Federated States of"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb16-3"><a href="#cb16-3"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb16-4"><a href="#cb16-4"></a>    <span class="at">res =</span> countrycode<span class="sc">::</span><span class="fu">countrycode</span>(</span>
+<span id="cb16-5"><a href="#cb16-5"></a>      Country,</span>
+<span id="cb16-6"><a href="#cb16-6"></a>      <span class="at">origin =</span> <span class="st">"country.name"</span>,</span>
+<span id="cb16-7"><a href="#cb16-7"></a>      <span class="at">destination =</span> <span class="st">"cldr.name.ja"</span>,</span>
+<span id="cb16-8"><a href="#cb16-8"></a>      <span class="at">custom_match =</span> <span class="fu">c</span>(</span>
+<span id="cb16-9"><a href="#cb16-9"></a>        <span class="st">"Sudan, South"</span> <span class="ot">=</span> <span class="st">"南スーダン"</span>,</span>
+<span id="cb16-10"><a href="#cb16-10"></a>        <span class="st">"Micronesia, Federated States of"</span> <span class="ot">=</span> <span class="st">"ミクロネシア連邦"</span></span>
+<span id="cb16-11"><a href="#cb16-11"></a>      )</span>
+<span id="cb16-12"><a href="#cb16-12"></a>    )</span>
+<span id="cb16-13"><a href="#cb16-13"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 3
+  Country                             n res             
+  &lt;chr&gt;                           &lt;int&gt; &lt;chr&gt;           
+1 Micronesia, Federated States of     3 ミクロネシア連邦
+2 Sudan, South                        1 南スーダン      </code></pre>
+</div>
+</div>
+<p>一応この関数だけで事足りるのですが、もう一つパッケージを見つけたのでそちらも使ってみます。</p>
+</section>
+<section id="countriescountry_name" class="level3">
+<h3 class="anchored" data-anchor-id="countriescountry_name"><code>countries::country_name</code></h3>
+<p><code>countries::country_name()</code><a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>も似たような感じで使えます。こちらは変換先だけ指定すればいいです。</p>
+<ul>
+<li><code>x</code>: 国名のベクトル。</li>
+<li><code>to</code>: 変換先。
+<ul>
+<li>日本語の場合は<code>"name_ja"</code>を指定します。</li>
+</ul></li>
+<li><code>verbose</code>: <code>TRUE</code>にしておくと、正確・ファジーにマッチした要素の数やマッチしなかったものについて教えてくれます。</li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>df_country_name <span class="sc">|&gt;</span></span>
+<span id="cb18-2"><a href="#cb18-2"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb18-3"><a href="#cb18-3"></a>    <span class="at">res =</span> countries<span class="sc">::</span><span class="fu">country_name</span>(</span>
+<span id="cb18-4"><a href="#cb18-4"></a>      Country,</span>
+<span id="cb18-5"><a href="#cb18-5"></a>      <span class="at">to =</span> <span class="st">"name_ja"</span>,</span>
+<span id="cb18-6"><a href="#cb18-6"></a>      <span class="at">verbose =</span> <span class="cn">TRUE</span></span>
+<span id="cb18-7"><a href="#cb18-7"></a>    )</span>
+<span id="cb18-8"><a href="#cb18-8"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb18-9"><a href="#cb18-9"></a>  rmarkdown<span class="sc">::</span><span class="fu">paged_table</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+In total 176 unique country names were provided
+173/176 have been matched with EXACT matching
+3/176 have been matched with FUZZY matching
+
+
+The following country IDs do not have a match in one or more of the requested naming conventions,  NA returned:
+(To avoid NAs, use - to = 'simple'- or set - na_fill = TRUE)
+  - Kosovo</code></pre>
+</div>
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":["Country"],"name":[1],"type":["chr"],"align":["left"]},{"label":["n"],"name":[2],"type":["int"],"align":["right"]},{"label":["res"],"name":[3],"type":["chr"],"align":["left"]}],"data":[{"1":"Finland","2":"22933","3":"フィンランド"},{"1":"France","2":"13475","3":"フランス"},{"1":"Denmark","2":"10891","3":"デンマーク"},{"1":"Mexico","2":"9169","3":"メキシコ"},{"1":"Lithuania","2":"8255","3":"リトアニア"},{"1":"Argentina","2":"5923","3":"アルゼンチン"},{"1":"Japan","2":"5072","3":"日本"},{"1":"Bulgaria","2":"4785","3":"ブルガリア"},{"1":"Poland","2":"3088","3":"ポーランド"},{"1":"Sweden","2":"3055","3":"スウェーデン"},{"1":"Croatia","2":"2965","3":"クロアチア"},{"1":"Taiwan","2":"2745","3":"台湾（中華民国）"},{"1":"Kosovo","2":"2707","3":"NA"},{"1":"United States","2":"2314","3":"アメリカ合衆国"},{"1":"Czech Republic","2":"1995","3":"チェコ"},{"1":"Italy","2":"1749","3":"イタリア"},{"1":"Indonesia","2":"1569","3":"インドネシア"},{"1":"United Kingdom","2":"1500","3":"イギリス"},{"1":"Germany","2":"1443","3":"ドイツ"},{"1":"Hungary","2":"1438","3":"ハンガリー"},{"1":"Netherlands","2":"1433","3":"オランダ"},{"1":"Bosnia and Herzegovina","2":"1288","3":"ボスニア・ヘルツェゴビナ"},{"1":"Turkey","2":"1199","3":"トルコ"},{"1":"Switzerland","2":"1188","3":"スイス"},{"1":"Portugal","2":"1067","3":"ポルトガル"},{"1":"Slovakia","2":"942","3":"スロバキア"},{"1":"Panama","2":"759","3":"パナマ"},{"1":"Brazil","2":"731","3":"ブラジル"},{"1":"Greece","2":"642","3":"ギリシャ"},{"1":"Belgium","2":"622","3":"ベルギー"},{"1":"Spain","2":"615","3":"スペイン"},{"1":"Philippines","2":"570","3":"フィリピン"},{"1":"Malaysia","2":"567","3":"マレーシア"},{"1":"Korea, South","2":"487","3":"大韓民国"},{"1":"Canada","2":"470","3":"カナダ"},{"1":"Bangladesh","2":"421","3":"バングラデシュ"},{"1":"Pakistan","2":"360","3":"パキスタン"},{"1":"Australia","2":"327","3":"オーストラリア"},{"1":"Austria","2":"319","3":"オーストリア"},{"1":"Romania","2":"282","3":"ルーマニア"},{"1":"Serbia","2":"266","3":"セルビア"},{"1":"Ireland","2":"216","3":"アイルランド"},{"1":"Colombia","2":"195","3":"コロンビア"},{"1":"Vietnam","2":"173","3":"ベトナム"},{"1":"Norway","2":"172","3":"ノルウェー"},{"1":"South Africa","2":"135","3":"南アフリカ"},{"1":"Russia","2":"132","3":"ロシア連邦"},{"1":"New Zealand","2":"119","3":"ニュージーランド"},{"1":"Afghanistan","2":"114","3":"アフガニスタン"},{"1":"Albania","2":"79","3":"アルバニア"},{"1":"China","2":"74","3":"中華人民共和国"},{"1":"Egypt","2":"74","3":"エジプト"},{"1":"Chile","2":"72","3":"チリ"},{"1":"India","2":"72","3":"インド"},{"1":"North Macedonia","2":"63","3":"北マケドニア"},{"1":"Luxembourg","2":"62","3":"ルクセンブルク"},{"1":"United Arab Emirates","2":"56","3":"アラブ首長国連邦"},{"1":"Cyprus","2":"52","3":"キプロス"},{"1":"Morocco","2":"44","3":"モロッコ"},{"1":"Peru","2":"40","3":"ペルー"},{"1":"Estonia","2":"39","3":"エストニア"},{"1":"Algeria","2":"38","3":"アルジェリア"},{"1":"Guatemala","2":"35","3":"グアテマラ"},{"1":"Kyrgyzstan","2":"35","3":"キルギス"},{"1":"Ukraine","2":"35","3":"ウクライナ"},{"1":"Ecuador","2":"34","3":"エクアドル"},{"1":"Singapore","2":"34","3":"シンガポール"},{"1":"Costa Rica","2":"26","3":"コスタリカ"},{"1":"Grenada","2":"25","3":"グレナダ"},{"1":"Iceland","2":"25","3":"アイスランド"},{"1":"Israel","2":"24","3":"イスラエル"},{"1":"Slovenia","2":"23","3":"スロベニア"},{"1":"Latvia","2":"22","3":"ラトビア"},{"1":"Malta","2":"22","3":"マルタ"},{"1":"El Salvador","2":"20","3":"エルサルバドル"},{"1":"Qatar","2":"20","3":"カタール"},{"1":"Georgia","2":"19","3":"ジョージア"},{"1":"Nigeria","2":"19","3":"ナイジェリア"},{"1":"Thailand","2":"19","3":"タイ"},{"1":"Jordan","2":"18","3":"ヨルダン"},{"1":"Uganda","2":"17","3":"ウガンダ"},{"1":"Montenegro","2":"16","3":"モンテネグロ"},{"1":"Andorra","2":"15","3":"アンドラ"},{"1":"Azerbaijan","2":"15","3":"アゼルバイジャン"},{"1":"Kenya","2":"15","3":"ケニア"},{"1":"San Marino","2":"14","3":"サンマリノ"},{"1":"Belarus","2":"13","3":"ベラルーシ"},{"1":"Saudi Arabia","2":"13","3":"サウジアラビア"},{"1":"Monaco","2":"12","3":"モナコ"},{"1":"Angola","2":"11","3":"アンゴラ"},{"1":"Honduras","2":"11","3":"ホンジュラス"},{"1":"Venezuela","2":"11","3":"ベネズエラ・ボリバル共和国"},{"1":"Armenia","2":"10","3":"アルメニア"},{"1":"Lebanon","2":"10","3":"レバノン"},{"1":"Nicaragua","2":"10","3":"ニカラグア"},{"1":"Ghana","2":"9","3":"ガーナ"},{"1":"Lesotho","2":"9","3":"レソト"},{"1":"Brunei","2":"8","3":"ブルネイ・ダルサラーム"},{"1":"Iran","2":"8","3":"イラン・イスラム共和国"},{"1":"Tunisia","2":"8","3":"チュニジア"},{"1":"Bahrain","2":"7","3":"バーレーン"},{"1":"Belize","2":"7","3":"ベリーズ"},{"1":"Bolivia","2":"7","3":"ボリビア多民族国"},{"1":"Nepal","2":"7","3":"ネパール"},{"1":"Côte d’Ivoire","2":"6","3":"コートジボワール"},{"1":"Trinidad and Tobago","2":"6","3":"トリニダード・トバゴ"},{"1":"Antigua and Barbuda","2":"5","3":"アンティグア・バーブーダ"},{"1":"Fiji","2":"5","3":"フィジー"},{"1":"Gabon","2":"5","3":"ガボン"},{"1":"Laos","2":"5","3":"ラオス人民民主共和国"},{"1":"Liechtenstein","2":"5","3":"リヒテンシュタイン"},{"1":"Uruguay","2":"5","3":"ウルグアイ"},{"1":"Burkina Faso","2":"4","3":"ブルキナファソ"},{"1":"Djibouti","2":"4","3":"ジブチ"},{"1":"Dominican Republic","2":"4","3":"ドミニカ共和国"},{"1":"Haiti","2":"4","3":"ハイチ"},{"1":"Kazakhstan","2":"4","3":"カザフスタン"},{"1":"Kuwait","2":"4","3":"クウェート"},{"1":"Madagascar","2":"4","3":"マダガスカル"},{"1":"Maldives","2":"4","3":"モルディブ"},{"1":"Oman","2":"4","3":"オマーン"},{"1":"Paraguay","2":"4","3":"パラグアイ"},{"1":"Zambia","2":"4","3":"ザンビア"},{"1":"Zimbabwe","2":"4","3":"ジンバブエ"},{"1":"Barbados","2":"3","3":"バルバドス"},{"1":"Cambodia","2":"3","3":"カンボジア"},{"1":"Cameroon","2":"3","3":"カメルーン"},{"1":"Cuba","2":"3","3":"キューバ"},{"1":"Mauritius","2":"3","3":"モーリシャス"},{"1":"Micronesia, Federated States of","2":"3","3":"ミクロネシア連邦"},{"1":"Moldova","2":"3","3":"モルドバ共和国"},{"1":"Senegal","2":"3","3":"セネガル"},{"1":"Sri Lanka","2":"3","3":"スリランカ"},{"1":"Suriname","2":"3","3":"スリナム"},{"1":"Benin","2":"2","3":"ベナン"},{"1":"Burundi","2":"2","3":"ブルンジ"},{"1":"Comoros","2":"2","3":"コモロ"},{"1":"Congo, Republic of the","2":"2","3":"コンゴ共和国"},{"1":"Ethiopia","2":"2","3":"エチオピア"},{"1":"Jamaica","2":"2","3":"ジャマイカ"},{"1":"Korea, North","2":"2","3":"朝鮮民主主義人民共和国"},{"1":"Rwanda","2":"2","3":"ルワンダ"},{"1":"Tanzania","2":"2","3":"タンザニア"},{"1":"The Bahamas","2":"2","3":"バハマ"},{"1":"Uzbekistan","2":"2","3":"ウズベキスタン"},{"1":"Bhutan","2":"1","3":"ブータン"},{"1":"Cabo Verde","2":"1","3":"カーボベルデ"},{"1":"Congo, Democratic Republic of the","2":"1","3":"コンゴ民主共和国"},{"1":"Dominica","2":"1","3":"ドミニカ国"},{"1":"East Timor (Timor-Leste)","2":"1","3":"東ティモール"},{"1":"Eritrea","2":"1","3":"エリトリア"},{"1":"Guinea","2":"1","3":"ギニア"},{"1":"Guinea-Bissau","2":"1","3":"ギニアビサウ"},{"1":"Guyana","2":"1","3":"ガイアナ"},{"1":"Iraq","2":"1","3":"イラク"},{"1":"Kiribati","2":"1","3":"キリバス"},{"1":"Libya","2":"1","3":"リビア"},{"1":"Malawi","2":"1","3":"マラウイ"},{"1":"Mali","2":"1","3":"マリ"},{"1":"Mauritania","2":"1","3":"モーリタニア"},{"1":"Mozambique","2":"1","3":"モザンビーク"},{"1":"Myanmar (Burma)","2":"1","3":"ミャンマー"},{"1":"Namibia","2":"1","3":"ナミビア"},{"1":"Nauru","2":"1","3":"ナウル"},{"1":"Niger","2":"1","3":"ニジェール"},{"1":"Saint Lucia","2":"1","3":"セントルシア"},{"1":"Saint Vincent and the Grenadines","2":"1","3":"セントビンセントおよびグレナディーン諸島"},{"1":"Sao Tome and Principe","2":"1","3":"サントメ・プリンシペ"},{"1":"Seychelles","2":"1","3":"セーシェル"},{"1":"Solomon Islands","2":"1","3":"ソロモン諸島"},{"1":"Somalia","2":"1","3":"ソマリア"},{"1":"Sudan","2":"1","3":"スーダン"},{"1":"Sudan, South","2":"1","3":"南スーダン"},{"1":"Tajikistan","2":"1","3":"タジキスタン"},{"1":"The Gambia","2":"1","3":"ガンビア"},{"1":"Turkmenistan","2":"1","3":"トルクメニスタン"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<p>こちらはコソボがヒットしませんでした。<code>countries::country_reference_list(_long)</code>で変換テーブルを見てみると、他のほとんどの言語でもコソボは用意されていないようです。</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="annotated-cell-12"><pre class="sourceCode numberSource r code-annotation-code number-lines code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-12-1"><a href="#annotated-cell-12-1"></a>countries<span class="sc">::</span>country_reference_list <span class="sc">|&gt;</span></span>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-12" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-12-2" class="code-annotation-target"><a href="#annotated-cell-12-2"></a>  <span class="fu">rowid_to_column</span>() <span class="sc">|&gt;</span></span>
+<span id="annotated-cell-12-3"><a href="#annotated-cell-12-3"></a>  <span class="fu">filter</span>(<span class="fu">if_any</span>(<span class="at">.cols =</span> <span class="fu">everything</span>(), <span class="at">.fns =</span> <span class="sc">~</span><span class="fu">str_detect</span>(.x, <span class="st">"Kosovo"</span>))) <span class="sc">|&gt;</span></span>
+<span id="annotated-cell-12-4"><a href="#annotated-cell-12-4"></a>  <span class="fu">pull</span>(rowid) <span class="sc">|&gt;</span></span>
+<span id="annotated-cell-12-5"><a href="#annotated-cell-12-5"></a>  (\(x) {</span>
+<span id="annotated-cell-12-6"><a href="#annotated-cell-12-6"></a>    countries<span class="sc">::</span>country_reference_list_long <span class="sc">|&gt;</span></span>
+<span id="annotated-cell-12-7"><a href="#annotated-cell-12-7"></a>      <span class="fu">filter</span>(ID <span class="sc">==</span> x)</span>
+<span id="annotated-cell-12-8"><a href="#annotated-cell-12-8"></a>  }) ()</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-annotation">
+<dl class="code-annotation-container-grid">
+<dt data-target-cell="annotated-cell-12" data-target-annotation="1">1</dt>
+<dd>
+<span data-code-cell="annotated-cell-12" data-code-lines="2" data-code-annotation="1"><code>country_reference_list</code>の行番号が<code>country_reference_list_long</code>の<code>ID</code>に対応しているので、行番号をつけておきます。</span>
+</dd>
+</dl>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 3
+   ID    nomenclature name            
+   &lt;chr&gt; &lt;chr&gt;        &lt;chr&gt;           
+ 1 349   simple       Kosovo          
+ 2 349   Name0        Kosovo          
+ 3 349   Name1        kosovo          
+ 4 349   Name2        XKO             
+ 5 349   Name3        Kosovo2         
+ 6 349   Name4        UNMIK/Kosovo    
+ 7 349   Name5        UVK             
+ 8 349   Name6        XK              
+ 9 349   Name7        Република Косово
+10 349   Name8        UNK             </code></pre>
+</div>
+</div>
+<p>こちらの関数もマッチングテーブルを修正して、マッチしない国名を修正することができます<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>。ただ、ちょっとめんどくさいかも。</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="co"># create matching table</span></span>
+<span id="cb21-2"><a href="#cb21-2"></a>temp_df_match <span class="ot">&lt;-</span> countries<span class="sc">::</span><span class="fu">match_table</span>(</span>
+<span id="cb21-3"><a href="#cb21-3"></a>  df_country_name<span class="sc">$</span>Country,</span>
+<span id="cb21-4"><a href="#cb21-4"></a>  <span class="at">to =</span> <span class="st">"name_ja"</span></span>
+<span id="cb21-5"><a href="#cb21-5"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Some country IDs have no match in one or more of the requested country naming conventions, NA returned.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a><span class="co"># search Kosovo</span></span>
+<span id="cb23-2"><a href="#cb23-2"></a>temp_df_match <span class="sc">|&gt;</span></span>
+<span id="cb23-3"><a href="#cb23-3"></a>  <span class="fu">rowid_to_column</span>() <span class="sc">|&gt;</span></span>
+<span id="cb23-4"><a href="#cb23-4"></a>  <span class="fu">filter</span>(list_countries <span class="sc">==</span> <span class="st">"Kosovo"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  rowid list_countries name_ja
+1    86         Kosovo    &lt;NA&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a><span class="co"># correct</span></span>
+<span id="cb25-2"><a href="#cb25-2"></a>temp_df_match<span class="sc">$</span>name_ja[<span class="dv">86</span>] <span class="ot">&lt;-</span> <span class="st">"コソボ"</span></span>
+<span id="cb25-3"><a href="#cb25-3"></a></span>
+<span id="cb25-4"><a href="#cb25-4"></a>df_country_name <span class="sc">|&gt;</span></span>
+<span id="cb25-5"><a href="#cb25-5"></a>  <span class="fu">filter</span>(Country <span class="sc">==</span> <span class="st">"Kosovo"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb25-6"><a href="#cb25-6"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb25-7"><a href="#cb25-7"></a>    <span class="at">res =</span> countries<span class="sc">::</span><span class="fu">country_name</span>(</span>
+<span id="cb25-8"><a href="#cb25-8"></a>      Country,</span>
+<span id="cb25-9"><a href="#cb25-9"></a>      <span class="at">to =</span> <span class="st">"name_ja"</span>,</span>
+<span id="cb25-10"><a href="#cb25-10"></a>      <span class="at">custom_table =</span> temp_df_match</span>
+<span id="cb25-11"><a href="#cb25-11"></a>    )</span>
+<span id="cb25-12"><a href="#cb25-12"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 3
+  Country     n res   
+  &lt;chr&gt;   &lt;int&gt; &lt;chr&gt; 
+1 Kosovo   2707 コソボ</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="solution" class="level2">
+<h2 class="anchored" data-anchor-id="solution">Solution</h2>
+<p>2つの関数で<code>NA</code>になった国が被っていないので、今回はこの2つを使えばやりたいことが達成できます。</p>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a>df_country_name <span class="sc">|&gt;</span></span>
+<span id="cb27-2"><a href="#cb27-2"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb27-3"><a href="#cb27-3"></a>    <span class="at">temp_name_ja_1 =</span> countrycode<span class="sc">::</span><span class="fu">countrycode</span>(</span>
+<span id="cb27-4"><a href="#cb27-4"></a>      Country,</span>
+<span id="cb27-5"><a href="#cb27-5"></a>      <span class="at">origin =</span> <span class="st">"country.name"</span>,</span>
+<span id="cb27-6"><a href="#cb27-6"></a>      <span class="at">destination =</span> <span class="st">"cldr.name.ja"</span></span>
+<span id="cb27-7"><a href="#cb27-7"></a>    ),</span>
+<span id="cb27-8"><a href="#cb27-8"></a>    <span class="at">temp_name_ja_2 =</span> countries<span class="sc">::</span><span class="fu">country_name</span>(</span>
+<span id="cb27-9"><a href="#cb27-9"></a>      Country,</span>
+<span id="cb27-10"><a href="#cb27-10"></a>      <span class="at">to =</span> <span class="st">"name_ja"</span></span>
+<span id="cb27-11"><a href="#cb27-11"></a>    ),</span>
+<span id="cb27-12"><a href="#cb27-12"></a>    <span class="at">res_name_ja =</span> <span class="fu">if_else</span>(</span>
+<span id="cb27-13"><a href="#cb27-13"></a>      <span class="fu">is.na</span>(temp_name_ja_1),</span>
+<span id="cb27-14"><a href="#cb27-14"></a>      temp_name_ja_2,</span>
+<span id="cb27-15"><a href="#cb27-15"></a>      temp_name_ja_1</span>
+<span id="cb27-16"><a href="#cb27-16"></a>    ),</span>
+<span id="cb27-17"><a href="#cb27-17"></a>    <span class="at">.after =</span> Country</span>
+<span id="cb27-18"><a href="#cb27-18"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb27-19"><a href="#cb27-19"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">starts_with</span>(<span class="st">"temp"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb27-20"><a href="#cb27-20"></a>  rmarkdown<span class="sc">::</span><span class="fu">paged_table</span>() <span class="co"># for better view on website</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":["Country"],"name":[1],"type":["chr"],"align":["left"]},{"label":["res_name_ja"],"name":[2],"type":["chr"],"align":["left"]},{"label":["n"],"name":[3],"type":["int"],"align":["right"]}],"data":[{"1":"Finland","2":"フィンランド","3":"22933"},{"1":"France","2":"フランス","3":"13475"},{"1":"Denmark","2":"デンマーク","3":"10891"},{"1":"Mexico","2":"メキシコ","3":"9169"},{"1":"Lithuania","2":"リトアニア","3":"8255"},{"1":"Argentina","2":"アルゼンチン","3":"5923"},{"1":"Japan","2":"日本","3":"5072"},{"1":"Bulgaria","2":"ブルガリア","3":"4785"},{"1":"Poland","2":"ポーランド","3":"3088"},{"1":"Sweden","2":"スウェーデン","3":"3055"},{"1":"Croatia","2":"クロアチア","3":"2965"},{"1":"Taiwan","2":"台湾","3":"2745"},{"1":"Kosovo","2":"コソボ","3":"2707"},{"1":"United States","2":"アメリカ合衆国","3":"2314"},{"1":"Czech Republic","2":"チェコ","3":"1995"},{"1":"Italy","2":"イタリア","3":"1749"},{"1":"Indonesia","2":"インドネシア","3":"1569"},{"1":"United Kingdom","2":"イギリス","3":"1500"},{"1":"Germany","2":"ドイツ","3":"1443"},{"1":"Hungary","2":"ハンガリー","3":"1438"},{"1":"Netherlands","2":"オランダ","3":"1433"},{"1":"Bosnia and Herzegovina","2":"ボスニア・ヘルツェゴビナ","3":"1288"},{"1":"Turkey","2":"トルコ","3":"1199"},{"1":"Switzerland","2":"スイス","3":"1188"},{"1":"Portugal","2":"ポルトガル","3":"1067"},{"1":"Slovakia","2":"スロバキア","3":"942"},{"1":"Panama","2":"パナマ","3":"759"},{"1":"Brazil","2":"ブラジル","3":"731"},{"1":"Greece","2":"ギリシャ","3":"642"},{"1":"Belgium","2":"ベルギー","3":"622"},{"1":"Spain","2":"スペイン","3":"615"},{"1":"Philippines","2":"フィリピン","3":"570"},{"1":"Malaysia","2":"マレーシア","3":"567"},{"1":"Korea, South","2":"韓国","3":"487"},{"1":"Canada","2":"カナダ","3":"470"},{"1":"Bangladesh","2":"バングラデシュ","3":"421"},{"1":"Pakistan","2":"パキスタン","3":"360"},{"1":"Australia","2":"オーストラリア","3":"327"},{"1":"Austria","2":"オーストリア","3":"319"},{"1":"Romania","2":"ルーマニア","3":"282"},{"1":"Serbia","2":"セルビア","3":"266"},{"1":"Ireland","2":"アイルランド","3":"216"},{"1":"Colombia","2":"コロンビア","3":"195"},{"1":"Vietnam","2":"ベトナム","3":"173"},{"1":"Norway","2":"ノルウェー","3":"172"},{"1":"South Africa","2":"南アフリカ","3":"135"},{"1":"Russia","2":"ロシア","3":"132"},{"1":"New Zealand","2":"ニュージーランド","3":"119"},{"1":"Afghanistan","2":"アフガニスタン","3":"114"},{"1":"Albania","2":"アルバニア","3":"79"},{"1":"China","2":"中国","3":"74"},{"1":"Egypt","2":"エジプト","3":"74"},{"1":"Chile","2":"チリ","3":"72"},{"1":"India","2":"インド","3":"72"},{"1":"North Macedonia","2":"北マケドニア","3":"63"},{"1":"Luxembourg","2":"ルクセンブルク","3":"62"},{"1":"United Arab Emirates","2":"アラブ首長国連邦","3":"56"},{"1":"Cyprus","2":"キプロス","3":"52"},{"1":"Morocco","2":"モロッコ","3":"44"},{"1":"Peru","2":"ペルー","3":"40"},{"1":"Estonia","2":"エストニア","3":"39"},{"1":"Algeria","2":"アルジェリア","3":"38"},{"1":"Guatemala","2":"グアテマラ","3":"35"},{"1":"Kyrgyzstan","2":"キルギス","3":"35"},{"1":"Ukraine","2":"ウクライナ","3":"35"},{"1":"Ecuador","2":"エクアドル","3":"34"},{"1":"Singapore","2":"シンガポール","3":"34"},{"1":"Costa Rica","2":"コスタリカ","3":"26"},{"1":"Grenada","2":"グレナダ","3":"25"},{"1":"Iceland","2":"アイスランド","3":"25"},{"1":"Israel","2":"イスラエル","3":"24"},{"1":"Slovenia","2":"スロベニア","3":"23"},{"1":"Latvia","2":"ラトビア","3":"22"},{"1":"Malta","2":"マルタ","3":"22"},{"1":"El Salvador","2":"エルサルバドル","3":"20"},{"1":"Qatar","2":"カタール","3":"20"},{"1":"Georgia","2":"ジョージア","3":"19"},{"1":"Nigeria","2":"ナイジェリア","3":"19"},{"1":"Thailand","2":"タイ","3":"19"},{"1":"Jordan","2":"ヨルダン","3":"18"},{"1":"Uganda","2":"ウガンダ","3":"17"},{"1":"Montenegro","2":"モンテネグロ","3":"16"},{"1":"Andorra","2":"アンドラ","3":"15"},{"1":"Azerbaijan","2":"アゼルバイジャン","3":"15"},{"1":"Kenya","2":"ケニア","3":"15"},{"1":"San Marino","2":"サンマリノ","3":"14"},{"1":"Belarus","2":"ベラルーシ","3":"13"},{"1":"Saudi Arabia","2":"サウジアラビア","3":"13"},{"1":"Monaco","2":"モナコ","3":"12"},{"1":"Angola","2":"アンゴラ","3":"11"},{"1":"Honduras","2":"ホンジュラス","3":"11"},{"1":"Venezuela","2":"ベネズエラ","3":"11"},{"1":"Armenia","2":"アルメニア","3":"10"},{"1":"Lebanon","2":"レバノン","3":"10"},{"1":"Nicaragua","2":"ニカラグア","3":"10"},{"1":"Ghana","2":"ガーナ","3":"9"},{"1":"Lesotho","2":"レソト","3":"9"},{"1":"Brunei","2":"ブルネイ","3":"8"},{"1":"Iran","2":"イラン","3":"8"},{"1":"Tunisia","2":"チュニジア","3":"8"},{"1":"Bahrain","2":"バーレーン","3":"7"},{"1":"Belize","2":"ベリーズ","3":"7"},{"1":"Bolivia","2":"ボリビア","3":"7"},{"1":"Nepal","2":"ネパール","3":"7"},{"1":"Côte d’Ivoire","2":"コートジボワール","3":"6"},{"1":"Trinidad and Tobago","2":"トリニダード・トバゴ","3":"6"},{"1":"Antigua and Barbuda","2":"アンティグア・バーブーダ","3":"5"},{"1":"Fiji","2":"フィジー","3":"5"},{"1":"Gabon","2":"ガボン","3":"5"},{"1":"Laos","2":"ラオス","3":"5"},{"1":"Liechtenstein","2":"リヒテンシュタイン","3":"5"},{"1":"Uruguay","2":"ウルグアイ","3":"5"},{"1":"Burkina Faso","2":"ブルキナファソ","3":"4"},{"1":"Djibouti","2":"ジブチ","3":"4"},{"1":"Dominican Republic","2":"ドミニカ共和国","3":"4"},{"1":"Haiti","2":"ハイチ","3":"4"},{"1":"Kazakhstan","2":"カザフスタン","3":"4"},{"1":"Kuwait","2":"クウェート","3":"4"},{"1":"Madagascar","2":"マダガスカル","3":"4"},{"1":"Maldives","2":"モルディブ","3":"4"},{"1":"Oman","2":"オマーン","3":"4"},{"1":"Paraguay","2":"パラグアイ","3":"4"},{"1":"Zambia","2":"ザンビア","3":"4"},{"1":"Zimbabwe","2":"ジンバブエ","3":"4"},{"1":"Barbados","2":"バルバドス","3":"3"},{"1":"Cambodia","2":"カンボジア","3":"3"},{"1":"Cameroon","2":"カメルーン","3":"3"},{"1":"Cuba","2":"キューバ","3":"3"},{"1":"Mauritius","2":"モーリシャス","3":"3"},{"1":"Micronesia, Federated States of","2":"ミクロネシア連邦","3":"3"},{"1":"Moldova","2":"モルドバ","3":"3"},{"1":"Senegal","2":"セネガル","3":"3"},{"1":"Sri Lanka","2":"スリランカ","3":"3"},{"1":"Suriname","2":"スリナム","3":"3"},{"1":"Benin","2":"ベナン","3":"2"},{"1":"Burundi","2":"ブルンジ","3":"2"},{"1":"Comoros","2":"コモロ","3":"2"},{"1":"Congo, Republic of the","2":"コンゴ共和国(ブラザビル)","3":"2"},{"1":"Ethiopia","2":"エチオピア","3":"2"},{"1":"Jamaica","2":"ジャマイカ","3":"2"},{"1":"Korea, North","2":"北朝鮮","3":"2"},{"1":"Rwanda","2":"ルワンダ","3":"2"},{"1":"Tanzania","2":"タンザニア","3":"2"},{"1":"The Bahamas","2":"バハマ","3":"2"},{"1":"Uzbekistan","2":"ウズベキスタン","3":"2"},{"1":"Bhutan","2":"ブータン","3":"1"},{"1":"Cabo Verde","2":"カーボベルデ","3":"1"},{"1":"Congo, Democratic Republic of the","2":"コンゴ民主共和国(キンシャサ)","3":"1"},{"1":"Dominica","2":"ドミニカ国","3":"1"},{"1":"East Timor (Timor-Leste)","2":"東ティモール","3":"1"},{"1":"Eritrea","2":"エリトリア","3":"1"},{"1":"Guinea","2":"ギニア","3":"1"},{"1":"Guinea-Bissau","2":"ギニアビサウ","3":"1"},{"1":"Guyana","2":"ガイアナ","3":"1"},{"1":"Iraq","2":"イラク","3":"1"},{"1":"Kiribati","2":"キリバス","3":"1"},{"1":"Libya","2":"リビア","3":"1"},{"1":"Malawi","2":"マラウイ","3":"1"},{"1":"Mali","2":"マリ","3":"1"},{"1":"Mauritania","2":"モーリタニア","3":"1"},{"1":"Mozambique","2":"モザンビーク","3":"1"},{"1":"Myanmar (Burma)","2":"ミャンマー (ビルマ)","3":"1"},{"1":"Namibia","2":"ナミビア","3":"1"},{"1":"Nauru","2":"ナウル","3":"1"},{"1":"Niger","2":"ニジェール","3":"1"},{"1":"Saint Lucia","2":"セントルシア","3":"1"},{"1":"Saint Vincent and the Grenadines","2":"セントビンセント及びグレナディーン諸島","3":"1"},{"1":"Sao Tome and Principe","2":"サントメ・プリンシペ","3":"1"},{"1":"Seychelles","2":"セーシェル","3":"1"},{"1":"Solomon Islands","2":"ソロモン諸島","3":"1"},{"1":"Somalia","2":"ソマリア","3":"1"},{"1":"Sudan","2":"スーダン","3":"1"},{"1":"Sudan, South","2":"南スーダン","3":"1"},{"1":"Tajikistan","2":"タジキスタン","3":"1"},{"1":"The Gambia","2":"ガンビア","3":"1"},{"1":"Turkmenistan","2":"トルクメニスタン","3":"1"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<p>というわけで国名を日本語化することができました。</p>
+<section id="supplement" class="level3">
+<h3 class="anchored" data-anchor-id="supplement">Supplement</h3>
+<p><code>countrycode::codelist</code>には国名以外にも地域区分などが収められているので、国名以外の情報も表示できます。例として、国連による地域区分も表示してみます。なお、地域区分は英語なので地域の日本語化は人力です。</p>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a>df_country_name <span class="sc">|&gt;</span></span>
+<span id="cb28-2"><a href="#cb28-2"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb28-3"><a href="#cb28-3"></a>    <span class="co"># Japanese localize </span></span>
+<span id="cb28-4"><a href="#cb28-4"></a>    <span class="at">temp_name_ja_1 =</span> countrycode<span class="sc">::</span><span class="fu">countrycode</span>(</span>
+<span id="cb28-5"><a href="#cb28-5"></a>      Country,</span>
+<span id="cb28-6"><a href="#cb28-6"></a>      <span class="at">origin =</span> <span class="st">"country.name"</span>,</span>
+<span id="cb28-7"><a href="#cb28-7"></a>      <span class="at">destination =</span> <span class="st">"cldr.name.ja"</span></span>
+<span id="cb28-8"><a href="#cb28-8"></a>    ),</span>
+<span id="cb28-9"><a href="#cb28-9"></a>    <span class="at">temp_name_ja_2 =</span> countries<span class="sc">::</span><span class="fu">country_name</span>(</span>
+<span id="cb28-10"><a href="#cb28-10"></a>      Country,</span>
+<span id="cb28-11"><a href="#cb28-11"></a>      <span class="at">to =</span> <span class="st">"name_ja"</span></span>
+<span id="cb28-12"><a href="#cb28-12"></a>    ),</span>
+<span id="cb28-13"><a href="#cb28-13"></a>    <span class="at">res_name_ja =</span> <span class="fu">if_else</span>(</span>
+<span id="cb28-14"><a href="#cb28-14"></a>      <span class="fu">is.na</span>(temp_name_ja_1),</span>
+<span id="cb28-15"><a href="#cb28-15"></a>      temp_name_ja_2,</span>
+<span id="cb28-16"><a href="#cb28-16"></a>      temp_name_ja_1</span>
+<span id="cb28-17"><a href="#cb28-17"></a>    ),</span>
+<span id="cb28-18"><a href="#cb28-18"></a>    <span class="co"># for region matching</span></span>
+<span id="cb28-19"><a href="#cb28-19"></a>    <span class="at">temp_name_en_pre =</span> countrycode<span class="sc">::</span><span class="fu">countrycode</span>(</span>
+<span id="cb28-20"><a href="#cb28-20"></a>      Country,</span>
+<span id="cb28-21"><a href="#cb28-21"></a>      <span class="at">origin =</span> <span class="st">"country.name"</span>,</span>
+<span id="cb28-22"><a href="#cb28-22"></a>      <span class="at">destination =</span> <span class="st">"country.name.en"</span></span>
+<span id="cb28-23"><a href="#cb28-23"></a>    ),</span>
+<span id="cb28-24"><a href="#cb28-24"></a>    <span class="at">temp_name_en =</span> <span class="fu">if_else</span>(</span>
+<span id="cb28-25"><a href="#cb28-25"></a>      <span class="fu">is.na</span>(temp_name_en_pre),</span>
+<span id="cb28-26"><a href="#cb28-26"></a>      countries<span class="sc">::</span><span class="fu">country_name</span>(Country, <span class="at">to =</span> <span class="st">"name_en"</span>),</span>
+<span id="cb28-27"><a href="#cb28-27"></a>      temp_name_en_pre</span>
+<span id="cb28-28"><a href="#cb28-28"></a>    ),</span>
+<span id="cb28-29"><a href="#cb28-29"></a>    <span class="co"># matching UN region</span></span>
+<span id="cb28-30"><a href="#cb28-30"></a>    <span class="at">region_un =</span> countrycode<span class="sc">::</span><span class="fu">countrycode</span>(</span>
+<span id="cb28-31"><a href="#cb28-31"></a>      temp_name_en,</span>
+<span id="cb28-32"><a href="#cb28-32"></a>      <span class="at">origin =</span> <span class="st">"country.name"</span>,</span>
+<span id="cb28-33"><a href="#cb28-33"></a>      <span class="at">destination =</span> <span class="st">"un.region.name"</span></span>
+<span id="cb28-34"><a href="#cb28-34"></a>    ),</span>
+<span id="cb28-35"><a href="#cb28-35"></a>    <span class="at">region_un_sub =</span> countrycode<span class="sc">::</span><span class="fu">countrycode</span>(</span>
+<span id="cb28-36"><a href="#cb28-36"></a>      temp_name_en,</span>
+<span id="cb28-37"><a href="#cb28-37"></a>      <span class="at">origin =</span> <span class="st">"country.name"</span>,</span>
+<span id="cb28-38"><a href="#cb28-38"></a>      <span class="at">destination =</span> <span class="st">"un.regionsub.name"</span></span>
+<span id="cb28-39"><a href="#cb28-39"></a>    ),</span>
+<span id="cb28-40"><a href="#cb28-40"></a>    <span class="at">region_un_intrmd =</span> countrycode<span class="sc">::</span><span class="fu">countrycode</span>(</span>
+<span id="cb28-41"><a href="#cb28-41"></a>      temp_name_en,</span>
+<span id="cb28-42"><a href="#cb28-42"></a>      <span class="at">origin =</span> <span class="st">"country.name"</span>,</span>
+<span id="cb28-43"><a href="#cb28-43"></a>      <span class="at">destination =</span> <span class="st">"un.regionintermediate.name"</span></span>
+<span id="cb28-44"><a href="#cb28-44"></a>    )</span>
+<span id="cb28-45"><a href="#cb28-45"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb28-46"><a href="#cb28-46"></a>  <span class="co"># JP localize region. Not necessary.</span></span>
+<span id="cb28-47"><a href="#cb28-47"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb28-48"><a href="#cb28-48"></a>    <span class="at">region_un =</span> <span class="fu">str_replace_all</span>(</span>
+<span id="cb28-49"><a href="#cb28-49"></a>      region_un,</span>
+<span id="cb28-50"><a href="#cb28-50"></a>      <span class="at">pattern =</span> <span class="fu">c</span>(</span>
+<span id="cb28-51"><a href="#cb28-51"></a>        <span class="st">"Africa"</span> <span class="ot">=</span> <span class="st">"アフリカ州"</span>,</span>
+<span id="cb28-52"><a href="#cb28-52"></a>        <span class="st">"Americas"</span> <span class="ot">=</span> <span class="st">"アメリカ州"</span>,</span>
+<span id="cb28-53"><a href="#cb28-53"></a>        <span class="st">"Asia"</span> <span class="ot">=</span> <span class="st">"アジア州"</span>,</span>
+<span id="cb28-54"><a href="#cb28-54"></a>        <span class="st">"Europe"</span> <span class="ot">=</span> <span class="st">"ヨーロッパ州"</span>,</span>
+<span id="cb28-55"><a href="#cb28-55"></a>        <span class="st">"Oceania"</span> <span class="ot">=</span> <span class="st">"オセアニア州"</span></span>
+<span id="cb28-56"><a href="#cb28-56"></a>      )</span>
+<span id="cb28-57"><a href="#cb28-57"></a>    ) <span class="sc">|&gt;</span></span>
+<span id="cb28-58"><a href="#cb28-58"></a>      <span class="fu">replace_na</span>(<span class="st">"国連未加盟"</span>),</span>
+<span id="cb28-59"><a href="#cb28-59"></a>    <span class="fu">across</span>(</span>
+<span id="cb28-60"><a href="#cb28-60"></a>      <span class="at">.cols =</span> <span class="fu">starts_with</span>(<span class="st">"region_un_"</span>),</span>
+<span id="cb28-61"><a href="#cb28-61"></a>      <span class="at">.fns =</span> \(x) {</span>
+<span id="cb28-62"><a href="#cb28-62"></a>        <span class="fu">str_replace_all</span>(</span>
+<span id="cb28-63"><a href="#cb28-63"></a>          x,</span>
+<span id="cb28-64"><a href="#cb28-64"></a>          <span class="at">pattern =</span> <span class="fu">c</span>(</span>
+<span id="cb28-65"><a href="#cb28-65"></a>            <span class="st">"Africa"</span> <span class="ot">=</span> <span class="st">"アフリカ"</span>,</span>
+<span id="cb28-66"><a href="#cb28-66"></a>            <span class="st">"America</span><span class="sc">\\</span><span class="st">s*"</span> <span class="ot">=</span> <span class="st">"アメリカ"</span>,</span>
+<span id="cb28-67"><a href="#cb28-67"></a>            <span class="st">"Asia"</span> <span class="ot">=</span> <span class="st">"アジア"</span>,</span>
+<span id="cb28-68"><a href="#cb28-68"></a>            <span class="st">"Europe"</span> <span class="ot">=</span> <span class="st">"ヨーロッパ"</span>,</span>
+<span id="cb28-69"><a href="#cb28-69"></a>            <span class="st">"Northern</span><span class="sc">\\</span><span class="st">s"</span> <span class="ot">=</span> <span class="st">"北"</span>,</span>
+<span id="cb28-70"><a href="#cb28-70"></a>            <span class="st">"Eastern</span><span class="sc">\\</span><span class="st">s"</span> <span class="ot">=</span> <span class="st">"東"</span>,</span>
+<span id="cb28-71"><a href="#cb28-71"></a>            <span class="st">"(Southern|South)</span><span class="sc">\\</span><span class="st">s"</span> <span class="ot">=</span> <span class="st">"南"</span>,</span>
+<span id="cb28-72"><a href="#cb28-72"></a>            <span class="st">"South-eastern</span><span class="sc">\\</span><span class="st">s"</span> <span class="ot">=</span> <span class="st">"東南"</span>,</span>
+<span id="cb28-73"><a href="#cb28-73"></a>            <span class="st">"Western</span><span class="sc">\\</span><span class="st">s"</span> <span class="ot">=</span> <span class="st">"西"</span>,</span>
+<span id="cb28-74"><a href="#cb28-74"></a>            <span class="st">"Central</span><span class="sc">\\</span><span class="st">s"</span> <span class="ot">=</span> <span class="st">"中央"</span>,</span>
+<span id="cb28-75"><a href="#cb28-75"></a>            <span class="st">"Middle</span><span class="sc">\\</span><span class="st">s"</span> <span class="ot">=</span> <span class="st">"中部"</span>,</span>
+<span id="cb28-76"><a href="#cb28-76"></a>            <span class="st">"Latin</span><span class="sc">\\</span><span class="st">s"</span> <span class="ot">=</span> <span class="st">"ラテン"</span>,</span>
+<span id="cb28-77"><a href="#cb28-77"></a>            <span class="st">"Sub-Saharan</span><span class="sc">\\</span><span class="st">s"</span> <span class="ot">=</span> <span class="st">"サハラ以南"</span>,</span>
+<span id="cb28-78"><a href="#cb28-78"></a>            <span class="st">"and</span><span class="sc">\\</span><span class="st">sthe</span><span class="sc">\\</span><span class="st">s"</span> <span class="ot">=</span> <span class="st">"・"</span>,</span>
+<span id="cb28-79"><a href="#cb28-79"></a>            <span class="st">"Caribbean"</span> <span class="ot">=</span> <span class="st">"カリブ海地域"</span>,</span>
+<span id="cb28-80"><a href="#cb28-80"></a>            <span class="st">"Australia</span><span class="sc">\\</span><span class="st">sand</span><span class="sc">\\</span><span class="st">sNew</span><span class="sc">\\</span><span class="st">sZealand"</span> <span class="ot">=</span> <span class="st">"オーストラリア・ニュージーランド"</span>,</span>
+<span id="cb28-81"><a href="#cb28-81"></a>            <span class="st">"Melanesia"</span> <span class="ot">=</span> <span class="st">"メラネシア"</span>,</span>
+<span id="cb28-82"><a href="#cb28-82"></a>            <span class="st">"Micronesia"</span> <span class="ot">=</span> <span class="st">"ミクロネシア"</span>,</span>
+<span id="cb28-83"><a href="#cb28-83"></a>            <span class="st">"Polinesia"</span> <span class="ot">=</span> <span class="st">"ポリネシア"</span></span>
+<span id="cb28-84"><a href="#cb28-84"></a>          )</span>
+<span id="cb28-85"><a href="#cb28-85"></a>        )</span>
+<span id="cb28-86"><a href="#cb28-86"></a>      }</span>
+<span id="cb28-87"><a href="#cb28-87"></a>    )</span>
+<span id="cb28-88"><a href="#cb28-88"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb28-89"><a href="#cb28-89"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">starts_with</span>(<span class="st">"temp"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb28-90"><a href="#cb28-90"></a>  <span class="fu">relocate</span>(</span>
+<span id="cb28-91"><a href="#cb28-91"></a>    n,</span>
+<span id="cb28-92"><a href="#cb28-92"></a>    <span class="at">.after =</span> <span class="fu">last_col</span>()</span>
+<span id="cb28-93"><a href="#cb28-93"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb28-94"><a href="#cb28-94"></a>  rmarkdown<span class="sc">::</span><span class="fu">paged_table</span>(<span class="at">options =</span> <span class="fu">list</span>(<span class="at">rows.print =</span> <span class="dv">20</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":["Country"],"name":[1],"type":["chr"],"align":["left"]},{"label":["res_name_ja"],"name":[2],"type":["chr"],"align":["left"]},{"label":["region_un"],"name":[3],"type":["chr"],"align":["left"]},{"label":["region_un_sub"],"name":[4],"type":["chr"],"align":["left"]},{"label":["region_un_intrmd"],"name":[5],"type":["chr"],"align":["left"]},{"label":["n"],"name":[6],"type":["int"],"align":["right"]}],"data":[{"1":"Finland","2":"フィンランド","3":"ヨーロッパ州","4":"北ヨーロッパ","5":"NA","6":"22933"},{"1":"France","2":"フランス","3":"ヨーロッパ州","4":"西ヨーロッパ","5":"NA","6":"13475"},{"1":"Denmark","2":"デンマーク","3":"ヨーロッパ州","4":"北ヨーロッパ","5":"NA","6":"10891"},{"1":"Mexico","2":"メキシコ","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"中央アメリカ","6":"9169"},{"1":"Lithuania","2":"リトアニア","3":"ヨーロッパ州","4":"北ヨーロッパ","5":"NA","6":"8255"},{"1":"Argentina","2":"アルゼンチン","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"南アメリカ","6":"5923"},{"1":"Japan","2":"日本","3":"アジア州","4":"東アジア","5":"NA","6":"5072"},{"1":"Bulgaria","2":"ブルガリア","3":"ヨーロッパ州","4":"東ヨーロッパ","5":"NA","6":"4785"},{"1":"Poland","2":"ポーランド","3":"ヨーロッパ州","4":"東ヨーロッパ","5":"NA","6":"3088"},{"1":"Sweden","2":"スウェーデン","3":"ヨーロッパ州","4":"北ヨーロッパ","5":"NA","6":"3055"},{"1":"Croatia","2":"クロアチア","3":"ヨーロッパ州","4":"南ヨーロッパ","5":"NA","6":"2965"},{"1":"Taiwan","2":"台湾","3":"国連未加盟","4":"NA","5":"NA","6":"2745"},{"1":"Kosovo","2":"コソボ","3":"国連未加盟","4":"NA","5":"NA","6":"2707"},{"1":"United States","2":"アメリカ合衆国","3":"アメリカ州","4":"北アメリカ","5":"NA","6":"2314"},{"1":"Czech Republic","2":"チェコ","3":"ヨーロッパ州","4":"東ヨーロッパ","5":"NA","6":"1995"},{"1":"Italy","2":"イタリア","3":"ヨーロッパ州","4":"南ヨーロッパ","5":"NA","6":"1749"},{"1":"Indonesia","2":"インドネシア","3":"アジア州","4":"東南アジア","5":"NA","6":"1569"},{"1":"United Kingdom","2":"イギリス","3":"ヨーロッパ州","4":"北ヨーロッパ","5":"NA","6":"1500"},{"1":"Germany","2":"ドイツ","3":"ヨーロッパ州","4":"西ヨーロッパ","5":"NA","6":"1443"},{"1":"Hungary","2":"ハンガリー","3":"ヨーロッパ州","4":"東ヨーロッパ","5":"NA","6":"1438"},{"1":"Netherlands","2":"オランダ","3":"ヨーロッパ州","4":"西ヨーロッパ","5":"NA","6":"1433"},{"1":"Bosnia and Herzegovina","2":"ボスニア・ヘルツェゴビナ","3":"ヨーロッパ州","4":"南ヨーロッパ","5":"NA","6":"1288"},{"1":"Turkey","2":"トルコ","3":"アジア州","4":"西アジア","5":"NA","6":"1199"},{"1":"Switzerland","2":"スイス","3":"ヨーロッパ州","4":"西ヨーロッパ","5":"NA","6":"1188"},{"1":"Portugal","2":"ポルトガル","3":"ヨーロッパ州","4":"南ヨーロッパ","5":"NA","6":"1067"},{"1":"Slovakia","2":"スロバキア","3":"ヨーロッパ州","4":"東ヨーロッパ","5":"NA","6":"942"},{"1":"Panama","2":"パナマ","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"中央アメリカ","6":"759"},{"1":"Brazil","2":"ブラジル","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"南アメリカ","6":"731"},{"1":"Greece","2":"ギリシャ","3":"ヨーロッパ州","4":"南ヨーロッパ","5":"NA","6":"642"},{"1":"Belgium","2":"ベルギー","3":"ヨーロッパ州","4":"西ヨーロッパ","5":"NA","6":"622"},{"1":"Spain","2":"スペイン","3":"ヨーロッパ州","4":"南ヨーロッパ","5":"NA","6":"615"},{"1":"Philippines","2":"フィリピン","3":"アジア州","4":"東南アジア","5":"NA","6":"570"},{"1":"Malaysia","2":"マレーシア","3":"アジア州","4":"東南アジア","5":"NA","6":"567"},{"1":"Korea, South","2":"韓国","3":"アジア州","4":"東アジア","5":"NA","6":"487"},{"1":"Canada","2":"カナダ","3":"アメリカ州","4":"北アメリカ","5":"NA","6":"470"},{"1":"Bangladesh","2":"バングラデシュ","3":"アジア州","4":"南アジア","5":"NA","6":"421"},{"1":"Pakistan","2":"パキスタン","3":"アジア州","4":"南アジア","5":"NA","6":"360"},{"1":"Australia","2":"オーストラリア","3":"オセアニア州","4":"オーストラリア・ニュージーランド","5":"NA","6":"327"},{"1":"Austria","2":"オーストリア","3":"ヨーロッパ州","4":"西ヨーロッパ","5":"NA","6":"319"},{"1":"Romania","2":"ルーマニア","3":"ヨーロッパ州","4":"東ヨーロッパ","5":"NA","6":"282"},{"1":"Serbia","2":"セルビア","3":"ヨーロッパ州","4":"南ヨーロッパ","5":"NA","6":"266"},{"1":"Ireland","2":"アイルランド","3":"ヨーロッパ州","4":"北ヨーロッパ","5":"NA","6":"216"},{"1":"Colombia","2":"コロンビア","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"南アメリカ","6":"195"},{"1":"Vietnam","2":"ベトナム","3":"アジア州","4":"東南アジア","5":"NA","6":"173"},{"1":"Norway","2":"ノルウェー","3":"ヨーロッパ州","4":"北ヨーロッパ","5":"NA","6":"172"},{"1":"South Africa","2":"南アフリカ","3":"アフリカ州","4":"サハラ以南アフリカ","5":"南アフリカ","6":"135"},{"1":"Russia","2":"ロシア","3":"ヨーロッパ州","4":"東ヨーロッパ","5":"NA","6":"132"},{"1":"New Zealand","2":"ニュージーランド","3":"オセアニア州","4":"オーストラリア・ニュージーランド","5":"NA","6":"119"},{"1":"Afghanistan","2":"アフガニスタン","3":"アジア州","4":"南アジア","5":"NA","6":"114"},{"1":"Albania","2":"アルバニア","3":"ヨーロッパ州","4":"南ヨーロッパ","5":"NA","6":"79"},{"1":"China","2":"中国","3":"アジア州","4":"東アジア","5":"NA","6":"74"},{"1":"Egypt","2":"エジプト","3":"アフリカ州","4":"北アフリカ","5":"NA","6":"74"},{"1":"Chile","2":"チリ","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"南アメリカ","6":"72"},{"1":"India","2":"インド","3":"アジア州","4":"南アジア","5":"NA","6":"72"},{"1":"North Macedonia","2":"北マケドニア","3":"ヨーロッパ州","4":"南ヨーロッパ","5":"NA","6":"63"},{"1":"Luxembourg","2":"ルクセンブルク","3":"ヨーロッパ州","4":"西ヨーロッパ","5":"NA","6":"62"},{"1":"United Arab Emirates","2":"アラブ首長国連邦","3":"アジア州","4":"西アジア","5":"NA","6":"56"},{"1":"Cyprus","2":"キプロス","3":"アジア州","4":"西アジア","5":"NA","6":"52"},{"1":"Morocco","2":"モロッコ","3":"アフリカ州","4":"北アフリカ","5":"NA","6":"44"},{"1":"Peru","2":"ペルー","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"南アメリカ","6":"40"},{"1":"Estonia","2":"エストニア","3":"ヨーロッパ州","4":"北ヨーロッパ","5":"NA","6":"39"},{"1":"Algeria","2":"アルジェリア","3":"アフリカ州","4":"北アフリカ","5":"NA","6":"38"},{"1":"Guatemala","2":"グアテマラ","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"中央アメリカ","6":"35"},{"1":"Kyrgyzstan","2":"キルギス","3":"アジア州","4":"中央アジア","5":"NA","6":"35"},{"1":"Ukraine","2":"ウクライナ","3":"ヨーロッパ州","4":"東ヨーロッパ","5":"NA","6":"35"},{"1":"Ecuador","2":"エクアドル","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"南アメリカ","6":"34"},{"1":"Singapore","2":"シンガポール","3":"アジア州","4":"東南アジア","5":"NA","6":"34"},{"1":"Costa Rica","2":"コスタリカ","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"中央アメリカ","6":"26"},{"1":"Grenada","2":"グレナダ","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"カリブ海地域","6":"25"},{"1":"Iceland","2":"アイスランド","3":"ヨーロッパ州","4":"北ヨーロッパ","5":"NA","6":"25"},{"1":"Israel","2":"イスラエル","3":"アジア州","4":"西アジア","5":"NA","6":"24"},{"1":"Slovenia","2":"スロベニア","3":"ヨーロッパ州","4":"南ヨーロッパ","5":"NA","6":"23"},{"1":"Latvia","2":"ラトビア","3":"ヨーロッパ州","4":"北ヨーロッパ","5":"NA","6":"22"},{"1":"Malta","2":"マルタ","3":"ヨーロッパ州","4":"南ヨーロッパ","5":"NA","6":"22"},{"1":"El Salvador","2":"エルサルバドル","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"中央アメリカ","6":"20"},{"1":"Qatar","2":"カタール","3":"アジア州","4":"西アジア","5":"NA","6":"20"},{"1":"Georgia","2":"ジョージア","3":"アジア州","4":"西アジア","5":"NA","6":"19"},{"1":"Nigeria","2":"ナイジェリア","3":"アフリカ州","4":"サハラ以南アフリカ","5":"西アフリカ","6":"19"},{"1":"Thailand","2":"タイ","3":"アジア州","4":"東南アジア","5":"NA","6":"19"},{"1":"Jordan","2":"ヨルダン","3":"アジア州","4":"西アジア","5":"NA","6":"18"},{"1":"Uganda","2":"ウガンダ","3":"アフリカ州","4":"サハラ以南アフリカ","5":"東アフリカ","6":"17"},{"1":"Montenegro","2":"モンテネグロ","3":"ヨーロッパ州","4":"南ヨーロッパ","5":"NA","6":"16"},{"1":"Andorra","2":"アンドラ","3":"ヨーロッパ州","4":"南ヨーロッパ","5":"NA","6":"15"},{"1":"Azerbaijan","2":"アゼルバイジャン","3":"アジア州","4":"西アジア","5":"NA","6":"15"},{"1":"Kenya","2":"ケニア","3":"アフリカ州","4":"サハラ以南アフリカ","5":"東アフリカ","6":"15"},{"1":"San Marino","2":"サンマリノ","3":"ヨーロッパ州","4":"南ヨーロッパ","5":"NA","6":"14"},{"1":"Belarus","2":"ベラルーシ","3":"ヨーロッパ州","4":"東ヨーロッパ","5":"NA","6":"13"},{"1":"Saudi Arabia","2":"サウジアラビア","3":"アジア州","4":"西アジア","5":"NA","6":"13"},{"1":"Monaco","2":"モナコ","3":"ヨーロッパ州","4":"西ヨーロッパ","5":"NA","6":"12"},{"1":"Angola","2":"アンゴラ","3":"アフリカ州","4":"サハラ以南アフリカ","5":"中部アフリカ","6":"11"},{"1":"Honduras","2":"ホンジュラス","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"中央アメリカ","6":"11"},{"1":"Venezuela","2":"ベネズエラ","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"南アメリカ","6":"11"},{"1":"Armenia","2":"アルメニア","3":"アジア州","4":"西アジア","5":"NA","6":"10"},{"1":"Lebanon","2":"レバノン","3":"アジア州","4":"西アジア","5":"NA","6":"10"},{"1":"Nicaragua","2":"ニカラグア","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"中央アメリカ","6":"10"},{"1":"Ghana","2":"ガーナ","3":"アフリカ州","4":"サハラ以南アフリカ","5":"西アフリカ","6":"9"},{"1":"Lesotho","2":"レソト","3":"アフリカ州","4":"サハラ以南アフリカ","5":"南アフリカ","6":"9"},{"1":"Brunei","2":"ブルネイ","3":"アジア州","4":"東南アジア","5":"NA","6":"8"},{"1":"Iran","2":"イラン","3":"アジア州","4":"南アジア","5":"NA","6":"8"},{"1":"Tunisia","2":"チュニジア","3":"アフリカ州","4":"北アフリカ","5":"NA","6":"8"},{"1":"Bahrain","2":"バーレーン","3":"アジア州","4":"西アジア","5":"NA","6":"7"},{"1":"Belize","2":"ベリーズ","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"中央アメリカ","6":"7"},{"1":"Bolivia","2":"ボリビア","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"南アメリカ","6":"7"},{"1":"Nepal","2":"ネパール","3":"アジア州","4":"南アジア","5":"NA","6":"7"},{"1":"Côte d’Ivoire","2":"コートジボワール","3":"アフリカ州","4":"サハラ以南アフリカ","5":"西アフリカ","6":"6"},{"1":"Trinidad and Tobago","2":"トリニダード・トバゴ","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"カリブ海地域","6":"6"},{"1":"Antigua and Barbuda","2":"アンティグア・バーブーダ","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"カリブ海地域","6":"5"},{"1":"Fiji","2":"フィジー","3":"オセアニア州","4":"メラネシア","5":"NA","6":"5"},{"1":"Gabon","2":"ガボン","3":"アフリカ州","4":"サハラ以南アフリカ","5":"中部アフリカ","6":"5"},{"1":"Laos","2":"ラオス","3":"アジア州","4":"東南アジア","5":"NA","6":"5"},{"1":"Liechtenstein","2":"リヒテンシュタイン","3":"ヨーロッパ州","4":"西ヨーロッパ","5":"NA","6":"5"},{"1":"Uruguay","2":"ウルグアイ","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"南アメリカ","6":"5"},{"1":"Burkina Faso","2":"ブルキナファソ","3":"アフリカ州","4":"サハラ以南アフリカ","5":"西アフリカ","6":"4"},{"1":"Djibouti","2":"ジブチ","3":"アフリカ州","4":"サハラ以南アフリカ","5":"東アフリカ","6":"4"},{"1":"Dominican Republic","2":"ドミニカ共和国","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"カリブ海地域","6":"4"},{"1":"Haiti","2":"ハイチ","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"カリブ海地域","6":"4"},{"1":"Kazakhstan","2":"カザフスタン","3":"アジア州","4":"中央アジア","5":"NA","6":"4"},{"1":"Kuwait","2":"クウェート","3":"アジア州","4":"西アジア","5":"NA","6":"4"},{"1":"Madagascar","2":"マダガスカル","3":"アフリカ州","4":"サハラ以南アフリカ","5":"東アフリカ","6":"4"},{"1":"Maldives","2":"モルディブ","3":"アジア州","4":"南アジア","5":"NA","6":"4"},{"1":"Oman","2":"オマーン","3":"アジア州","4":"西アジア","5":"NA","6":"4"},{"1":"Paraguay","2":"パラグアイ","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"南アメリカ","6":"4"},{"1":"Zambia","2":"ザンビア","3":"アフリカ州","4":"サハラ以南アフリカ","5":"東アフリカ","6":"4"},{"1":"Zimbabwe","2":"ジンバブエ","3":"アフリカ州","4":"サハラ以南アフリカ","5":"東アフリカ","6":"4"},{"1":"Barbados","2":"バルバドス","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"カリブ海地域","6":"3"},{"1":"Cambodia","2":"カンボジア","3":"アジア州","4":"東南アジア","5":"NA","6":"3"},{"1":"Cameroon","2":"カメルーン","3":"アフリカ州","4":"サハラ以南アフリカ","5":"中部アフリカ","6":"3"},{"1":"Cuba","2":"キューバ","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"カリブ海地域","6":"3"},{"1":"Mauritius","2":"モーリシャス","3":"アフリカ州","4":"サハラ以南アフリカ","5":"東アフリカ","6":"3"},{"1":"Micronesia, Federated States of","2":"ミクロネシア連邦","3":"オセアニア州","4":"ミクロネシア","5":"NA","6":"3"},{"1":"Moldova","2":"モルドバ","3":"ヨーロッパ州","4":"東ヨーロッパ","5":"NA","6":"3"},{"1":"Senegal","2":"セネガル","3":"アフリカ州","4":"サハラ以南アフリカ","5":"西アフリカ","6":"3"},{"1":"Sri Lanka","2":"スリランカ","3":"アジア州","4":"南アジア","5":"NA","6":"3"},{"1":"Suriname","2":"スリナム","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"南アメリカ","6":"3"},{"1":"Benin","2":"ベナン","3":"アフリカ州","4":"サハラ以南アフリカ","5":"西アフリカ","6":"2"},{"1":"Burundi","2":"ブルンジ","3":"アフリカ州","4":"サハラ以南アフリカ","5":"東アフリカ","6":"2"},{"1":"Comoros","2":"コモロ","3":"アフリカ州","4":"サハラ以南アフリカ","5":"東アフリカ","6":"2"},{"1":"Congo, Republic of the","2":"コンゴ共和国(ブラザビル)","3":"アフリカ州","4":"サハラ以南アフリカ","5":"中部アフリカ","6":"2"},{"1":"Ethiopia","2":"エチオピア","3":"アフリカ州","4":"サハラ以南アフリカ","5":"東アフリカ","6":"2"},{"1":"Jamaica","2":"ジャマイカ","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"カリブ海地域","6":"2"},{"1":"Korea, North","2":"北朝鮮","3":"アジア州","4":"東アジア","5":"NA","6":"2"},{"1":"Rwanda","2":"ルワンダ","3":"アフリカ州","4":"サハラ以南アフリカ","5":"東アフリカ","6":"2"},{"1":"Tanzania","2":"タンザニア","3":"アフリカ州","4":"サハラ以南アフリカ","5":"東アフリカ","6":"2"},{"1":"The Bahamas","2":"バハマ","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"カリブ海地域","6":"2"},{"1":"Uzbekistan","2":"ウズベキスタン","3":"アジア州","4":"中央アジア","5":"NA","6":"2"},{"1":"Bhutan","2":"ブータン","3":"アジア州","4":"南アジア","5":"NA","6":"1"},{"1":"Cabo Verde","2":"カーボベルデ","3":"アフリカ州","4":"サハラ以南アフリカ","5":"西アフリカ","6":"1"},{"1":"Congo, Democratic Republic of the","2":"コンゴ民主共和国(キンシャサ)","3":"アフリカ州","4":"サハラ以南アフリカ","5":"中部アフリカ","6":"1"},{"1":"Dominica","2":"ドミニカ国","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"カリブ海地域","6":"1"},{"1":"East Timor (Timor-Leste)","2":"東ティモール","3":"アジア州","4":"東南アジア","5":"NA","6":"1"},{"1":"Eritrea","2":"エリトリア","3":"アフリカ州","4":"サハラ以南アフリカ","5":"東アフリカ","6":"1"},{"1":"Guinea","2":"ギニア","3":"アフリカ州","4":"サハラ以南アフリカ","5":"西アフリカ","6":"1"},{"1":"Guinea-Bissau","2":"ギニアビサウ","3":"アフリカ州","4":"サハラ以南アフリカ","5":"西アフリカ","6":"1"},{"1":"Guyana","2":"ガイアナ","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"南アメリカ","6":"1"},{"1":"Iraq","2":"イラク","3":"アジア州","4":"西アジア","5":"NA","6":"1"},{"1":"Kiribati","2":"キリバス","3":"オセアニア州","4":"ミクロネシア","5":"NA","6":"1"},{"1":"Libya","2":"リビア","3":"アフリカ州","4":"北アフリカ","5":"NA","6":"1"},{"1":"Malawi","2":"マラウイ","3":"アフリカ州","4":"サハラ以南アフリカ","5":"東アフリカ","6":"1"},{"1":"Mali","2":"マリ","3":"アフリカ州","4":"サハラ以南アフリカ","5":"西アフリカ","6":"1"},{"1":"Mauritania","2":"モーリタニア","3":"アフリカ州","4":"サハラ以南アフリカ","5":"西アフリカ","6":"1"},{"1":"Mozambique","2":"モザンビーク","3":"アフリカ州","4":"サハラ以南アフリカ","5":"東アフリカ","6":"1"},{"1":"Myanmar (Burma)","2":"ミャンマー (ビルマ)","3":"アジア州","4":"東南アジア","5":"NA","6":"1"},{"1":"Namibia","2":"ナミビア","3":"アフリカ州","4":"サハラ以南アフリカ","5":"南アフリカ","6":"1"},{"1":"Nauru","2":"ナウル","3":"オセアニア州","4":"ミクロネシア","5":"NA","6":"1"},{"1":"Niger","2":"ニジェール","3":"アフリカ州","4":"サハラ以南アフリカ","5":"西アフリカ","6":"1"},{"1":"Saint Lucia","2":"セントルシア","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"カリブ海地域","6":"1"},{"1":"Saint Vincent and the Grenadines","2":"セントビンセント及びグレナディーン諸島","3":"アメリカ州","4":"ラテンアメリカ・カリブ海地域","5":"カリブ海地域","6":"1"},{"1":"Sao Tome and Principe","2":"サントメ・プリンシペ","3":"アフリカ州","4":"サハラ以南アフリカ","5":"中部アフリカ","6":"1"},{"1":"Seychelles","2":"セーシェル","3":"アフリカ州","4":"サハラ以南アフリカ","5":"東アフリカ","6":"1"},{"1":"Solomon Islands","2":"ソロモン諸島","3":"オセアニア州","4":"メラネシア","5":"NA","6":"1"},{"1":"Somalia","2":"ソマリア","3":"アフリカ州","4":"サハラ以南アフリカ","5":"東アフリカ","6":"1"},{"1":"Sudan","2":"スーダン","3":"アフリカ州","4":"北アフリカ","5":"NA","6":"1"},{"1":"Sudan, South","2":"南スーダン","3":"アフリカ州","4":"サハラ以南アフリカ","5":"東アフリカ","6":"1"},{"1":"Tajikistan","2":"タジキスタン","3":"アジア州","4":"中央アジア","5":"NA","6":"1"},{"1":"The Gambia","2":"ガンビア","3":"アフリカ州","4":"サハラ以南アフリカ","5":"西アフリカ","6":"1"},{"1":"Turkmenistan","2":"トルクメニスタン","3":"アジア州","4":"中央アジア","5":"NA","6":"1"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[20],"max":[20]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<p>実際には<code>count()</code>のところで性別の回答も入れたものを補助資料として作成しました。</p>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p><code>countrycode</code>パッケージや<code>countries</code>パッケージを使って、データに含まれている国名を日本語名にしました。翻訳データがないワールドワイドなオープンデータで、国名を一括で変換したいときには便利だと思います。少なくとも人力で全部頑張るよりかはましです。</p>
+</section>
+<section id="session-infomation" class="level2">
+<h2 class="anchored" data-anchor-id="session-infomation">Session Infomation</h2>
+<div class="callout callout-style-default callout-note callout-titled" title="sessioninfo">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+sessioninfo
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="cell-output cell-output-stdout">
+<pre><code>R version 4.4.2 (2024-10-31 ucrt)
+Platform: x86_64-w64-mingw32/x64
+Running under: Windows 11 x64 (build 26100)
+
+Matrix products: default
+
+
+locale:
+[1] LC_COLLATE=Japanese_Japan.utf8  LC_CTYPE=Japanese_Japan.utf8    LC_MONETARY=Japanese_Japan.utf8
+[4] LC_NUMERIC=C                    LC_TIME=Japanese_Japan.utf8    
+
+time zone: Asia/Tokyo
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] countries_1.2.2   countrycode_1.6.1 lubridate_1.9.4   forcats_1.0.0     stringr_1.5.1    
+ [6] dplyr_1.1.4       purrr_1.1.0       readr_2.1.5       tidyr_1.3.1       tibble_3.3.0     
+[11] ggplot2_3.5.2     tidyverse_2.0.0  
+
+loaded via a namespace (and not attached):
+ [1] bit_4.6.0          gtable_0.3.6       jsonlite_2.0.0     crayon_1.5.3       compiler_4.4.2    
+ [6] tidyselect_1.2.1   parallel_4.4.2     scales_1.4.0       yaml_2.3.10        fastmap_1.2.0     
+[11] R6_2.6.1           generics_0.1.4     knitr_1.50         htmlwidgets_1.6.4  pillar_1.11.0     
+[16] RColorBrewer_1.1-3 tzdb_0.5.0         rlang_1.1.6        utf8_1.2.6         fastmatch_1.1-6   
+[21] stringi_1.8.7      xfun_0.52          bit64_4.6.0-1      timechange_0.3.0   cli_3.6.5         
+[26] withr_3.0.2        magrittr_2.0.3     stringdist_0.9.15  digest_0.6.37      grid_4.4.2        
+[31] vroom_1.6.5        rstudioapi_0.17.1  hms_1.1.3          lifecycle_1.0.4    vctrs_0.6.5       
+[36] evaluate_1.0.5     glue_1.8.0         farver_2.1.2       pacman_0.5.1       rmarkdown_2.29    
+[41] tools_4.4.2        pkgconfig_2.0.3    htmltools_0.5.8.1 </code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>Yamada, Y., et al.&nbsp;(2021). COVIDiSTRESS Global Survey dataset on psychological and behavioural consequences of the COVID-19 outbreak. Scientific Data, <em>8</em>, 3. <a href="https://doi.org/10.1038/s41597-020-00784-9" class="uri">https://doi.org/10.1038/s41597-020-00784-9</a><a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p><a href="https://vincentarelbundock.github.io/countrycode/#/" class="uri">https://vincentarelbundock.github.io/countrycode/#/</a><a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p><a href="https://fbellelli.github.io/countries/" class="uri">https://fbellelli.github.io/countries/</a><a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p><a href="https://fbellelli.github.io/countries/articles/dealing_with_names.html" class="uri">https://fbellelli.github.io/countries/articles/dealing_with_names.html</a><a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/tsakai-website\.pages\.dev");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+            // default icon
+            link.classList.add("external");
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Copyright 2025 Takuto Sakai<br> Content on this website is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.en">CC BY-SA 4.0</a>.<br> Code is released under the <a href="../../LICENSE.html">MIT License</a>.</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>Please contact me via <a href="https://x.com/tsakai_psych">X (Twitter)</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

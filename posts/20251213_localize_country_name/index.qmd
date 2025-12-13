@@ -1,0 +1,358 @@
+---
+title: "Rでデータの国名を日本語名にする"
+date: 2025-12-13
+abstract: |
+  `countrycode`パッケージや`countries`パッケージを使って、データに含まれている国名を日本語名にしてみた。
+categories: [R memo, preprocess]
+image: 20251213_thumbnail.jpeg
+format:
+  html:
+    fig-dpi: 200
+knitr:
+  opts_chunk: 
+    fig.align: center
+    R.options:
+      width: 100
+editor_options: 
+  chunk_output_type: console
+---
+
+![](20251213_thumbnail.jpeg){width=50% fig-align="center"}
+
+サムネイルはcopilotに作ってもらいました。
+
+## Packages
+```{r}
+pacman::p_load(
+  tidyverse,
+  countrycode,
+  countries
+)
+```
+
+## Contents
+### Background
+補助に入っている授業で、学生たちはオープンデータを使ってRの練習をしています。使用しているデータはYamada et al. (2021)[^yamada_etal_2021]によるCOVIDiSTRESS Global Surveyデータセットです。データセットは[OSF](https://doi.org/10.17605/OSF.IO/Z39US)で公開されています。そのうち最終データ（COVIDiSTRESS_May_30_cleaned.csv）を利用しています。
+
+[^yamada_etal_2021]: Yamada, Y., et al. (2021). COVIDiSTRESS Global Survey dataset on psychological and behavioural consequences of the COVID-19 outbreak. Scientific Data, *8*, 3. <https://doi.org/10.1038/s41597-020-00784-9>
+
+```{r}
+#| warning: false
+df_covid <- read_csv(
+  list.files("~/datasets/Yamada_etal_2020", full.names = TRUE)
+)
+
+df_covid
+```
+
+学生たちは課題として推しグラフを1枚作るのですが、そのときにどこの国とどこの国を比較すると面白いかということで、国を選ぶ作業があります。データには参加者の居住国（`Country`）が英語で収められているのですが、学生たちが国を選ぶときに日本語化されていると見やすいかなと思ったのが今回の背景です。
+
+実は、この事象は去年の段階で遭遇していて、テキトーにメモを取っておいてそのままにしておいたのですが、今年もまた需要が出てきたので、改めて備忘録として残しておこうということになりました。
+
+<blockquote class="twitter-tweet" data-theme="dark"><p lang="ja" dir="ltr">Rの備忘録<br>授業のお手伝いしてるときに、国名一覧をオブジェクトに入れてくれてるパッケージないかな～とか思ってたんですが、やっぱりありました ⇒ {countrycode}<br>日本語含むいろんな言語が収録されてて便利<a href="https://t.co/CQC7C0MqPp">https://t.co/CQC7C0MqPp</a><a href="https://t.co/kDYHaZsOL5">https://t.co/kDYHaZsOL5</a> <a href="https://t.co/rpcXU8ru51">pic.twitter.com/rpcXU8ru51</a></p>&mdash; Takuto SAKAI (@tsakai_psych) <a href="https://twitter.com/tsakai_psych/status/1802237658636431708?ref_src=twsrc%5Etfw">June 16, 2024</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+まず`dplyr::count()`で`Country`列を集計してみます。
+```{r}
+df_covid |>
+  count(Country, sort = TRUE) |>
+  filter(!Country %in% c("other", NA)) |>
+  rmarkdown::paged_table() # for better view on website
+```
+
+どうやらフィンランドからの回答が一番多いようです。ちなみに、私の環境では`readr::read_csv()`で`locale`を特に設定せずデータを読み込むと、コートジボワール（n = 6）だけ文字化けします。
+```{r}
+unique(df_covid$Country) |>
+  sort() |>
+  _[1] |>
+  assign("cotedivoire", value = _) |> 
+  print()
+```
+
+`stringi::stri_enc_detect()`を使って文字コードを推測します。
+```{r}
+stringi::stri_enc_detect(cotedivoire) |> # <1>
+  _[[1]] |> # <1>
+  mutate(
+    result = str_conv(cotedivoire, encoding = Encoding),
+    .by = Encoding
+  )
+```
+1. `stri_enc_detect()`は引数`str`に入れた要素の数に合わせたdf入りlistを返すみたいです。今回は1個だけなので`[[`で抽出してdfにしておきます。
+
+この結果を見る限り、`windows-1252`でエンコードすればよさそうですね。というわけで、国名と人数だけのdfを作ります。
+```{r}
+df_country_name <-
+  df_covid |>
+  count(Country, sort = TRUE) |>
+  filter(!Country %in% c("other", NA)) |>
+  mutate(
+    Country = if_else(
+      str_detect(Country, "voire$"),
+      str_conv(Country, encoding = "windows-1252"),
+      Country
+    )
+  )
+
+df_country_name
+```
+
+### `countrycode::countrycode`
+`countrycode::countrycode()`[^package_countrycode]を使って国名を日本語にします。`countrycode::countryname()`という関数もあるんですが、こちらの方がsaferみたいなことがHelpに記載されていたのでこちらを使うことにします。
+
+- `sourcevar`：国のコードもしくは国名が含まれているベクトル。
+- `origin`：`sourcevar`のコーディングスキーム。
+- `destination`: 変換したいコーディングスキーム。
+  - ベクトルで入れた場合は第1要素から順にマッチングしていく。
+- `warn`: デフォルトで`TRUE`。マッチしなかったものについて教えてくれる。
+  
+日本語の国名は、`cldr.name.ja`、`cldr.short.ja`、`cldr.variant.ja`の三種類あります。とりあえず`cldr.name.ja`にしておきます。
+```{r}
+df_country_name |>
+  mutate(
+    res = countrycode::countrycode(
+      Country,
+      origin = "country.name",
+      destination = "cldr.name.ja"
+    )
+  ) |>
+  rmarkdown::paged_table() # for better view on website
+```
+ミクロネシア連邦と南スーダン以外は日本語化できました。なお、南スーダンは元のデータでは`"Sudan, South"`で入っていますが、`"South Sudan"`でマッチさせると日本語化できます。
+```{r}
+countrycode::countrycode(
+  "South Sudan",
+  origin = "country.name",
+  destination = "cldr.name.ja"
+)
+```
+`coutrycode::codelist`で変換テーブルを見てみると、ミクロネシア連邦については日本語名が用意されていませんでした。
+```{r}
+countrycode::codelist |>
+  filter(str_detect(country.name.en, "Micronesia")) |>
+  select(country.name.en, ends_with("ja"))
+```
+
+`coutrycode::countrycode()`には引数`custom_match`が用意されていて、ここに名前付きベクトルで`origin`と`destination`のマッチング指定すれば、元の結果を上書きできます。
+```{r}
+df_country_name |>
+  filter(Country %in% c("Sudan, South", "Micronesia, Federated States of")) |>
+  mutate(
+    res = countrycode::countrycode(
+      Country,
+      origin = "country.name",
+      destination = "cldr.name.ja",
+      custom_match = c(
+        "Sudan, South" = "南スーダン",
+        "Micronesia, Federated States of" = "ミクロネシア連邦"
+      )
+    )
+  )
+```
+一応この関数だけで事足りるのですが、もう一つパッケージを見つけたのでそちらも使ってみます。
+
+[^package_countrycode]: <https://vincentarelbundock.github.io/countrycode/#/>
+
+### `countries::country_name`
+`countries::country_name()`[^package_countries]も似たような感じで使えます。こちらは変換先だけ指定すればいいです。
+
+[^package_countries]: <https://fbellelli.github.io/countries/>
+
+- `x`: 国名のベクトル。
+- `to`: 変換先。
+  - 日本語の場合は`"name_ja"`を指定します。
+- `verbose`: `TRUE`にしておくと、正確・ファジーにマッチした要素の数やマッチしなかったものについて教えてくれます。
+
+```{r}
+df_country_name |>
+  mutate(
+    res = countries::country_name(
+      Country,
+      to = "name_ja",
+      verbose = TRUE
+    )
+  ) |>
+  rmarkdown::paged_table()
+```
+こちらはコソボがヒットしませんでした。`countries::country_reference_list(_long)`で変換テーブルを見てみると、他のほとんどの言語でもコソボは用意されていないようです。
+```{r}
+countries::country_reference_list |>
+  rowid_to_column() |> # <1>
+  filter(if_any(.cols = everything(), .fns = ~str_detect(.x, "Kosovo"))) |>
+  pull(rowid) |>
+  (\(x) {
+    countries::country_reference_list_long |>
+      filter(ID == x)
+  }) ()
+```
+1. `country_reference_list`の行番号が`country_reference_list_long`の`ID`に対応しているので、行番号をつけておきます。
+
+こちらの関数もマッチングテーブルを修正して、マッチしない国名を修正することができます[^article_countries]。ただ、ちょっとめんどくさいかも。
+```{r}
+# create matching table
+temp_df_match <- countries::match_table(
+  df_country_name$Country,
+  to = "name_ja"
+)
+
+# search Kosovo
+temp_df_match |>
+  rowid_to_column() |>
+  filter(list_countries == "Kosovo")
+
+# correct
+temp_df_match$name_ja[86] <- "コソボ"
+
+df_country_name |>
+  filter(Country == "Kosovo") |>
+  mutate(
+    res = countries::country_name(
+      Country,
+      to = "name_ja",
+      custom_table = temp_df_match
+    )
+  )
+```
+
+[^article_countries]: <https://fbellelli.github.io/countries/articles/dealing_with_names.html>
+
+## Solution
+2つの関数で`NA`になった国が被っていないので、今回はこの2つを使えばやりたいことが達成できます。
+```{r}
+#| message: false
+#| warning: false
+df_country_name |>
+  mutate(
+    temp_name_ja_1 = countrycode::countrycode(
+      Country,
+      origin = "country.name",
+      destination = "cldr.name.ja"
+    ),
+    temp_name_ja_2 = countries::country_name(
+      Country,
+      to = "name_ja"
+    ),
+    res_name_ja = if_else(
+      is.na(temp_name_ja_1),
+      temp_name_ja_2,
+      temp_name_ja_1
+    ),
+    .after = Country
+  ) |>
+  select(-starts_with("temp")) |>
+  rmarkdown::paged_table() # for better view on website
+```
+というわけで国名を日本語化することができました。
+
+### Supplement
+`countrycode::codelist`には国名以外にも地域区分などが収められているので、国名以外の情報も表示できます。例として、国連による地域区分も表示してみます。なお、地域区分は英語なので地域の日本語化は人力です。
+```{r}
+#| warning: false
+#| message: false
+#| code-fold: true
+df_country_name |>
+  mutate(
+    # Japanese localize 
+    temp_name_ja_1 = countrycode::countrycode(
+      Country,
+      origin = "country.name",
+      destination = "cldr.name.ja"
+    ),
+    temp_name_ja_2 = countries::country_name(
+      Country,
+      to = "name_ja"
+    ),
+    res_name_ja = if_else(
+      is.na(temp_name_ja_1),
+      temp_name_ja_2,
+      temp_name_ja_1
+    ),
+    # for region matching
+    temp_name_en_pre = countrycode::countrycode(
+      Country,
+      origin = "country.name",
+      destination = "country.name.en"
+    ),
+    temp_name_en = if_else(
+      is.na(temp_name_en_pre),
+      countries::country_name(Country, to = "name_en"),
+      temp_name_en_pre
+    ),
+    # matching UN region
+    region_un = countrycode::countrycode(
+      temp_name_en,
+      origin = "country.name",
+      destination = "un.region.name"
+    ),
+    region_un_sub = countrycode::countrycode(
+      temp_name_en,
+      origin = "country.name",
+      destination = "un.regionsub.name"
+    ),
+    region_un_intrmd = countrycode::countrycode(
+      temp_name_en,
+      origin = "country.name",
+      destination = "un.regionintermediate.name"
+    )
+  ) |>
+  # JP localize region. Not necessary.
+  mutate(
+    region_un = str_replace_all(
+      region_un,
+      pattern = c(
+        "Africa" = "アフリカ州",
+        "Americas" = "アメリカ州",
+        "Asia" = "アジア州",
+        "Europe" = "ヨーロッパ州",
+        "Oceania" = "オセアニア州"
+      )
+    ) |>
+      replace_na("国連未加盟"),
+    across(
+      .cols = starts_with("region_un_"),
+      .fns = \(x) {
+        str_replace_all(
+          x,
+          pattern = c(
+            "Africa" = "アフリカ",
+            "America\\s*" = "アメリカ",
+            "Asia" = "アジア",
+            "Europe" = "ヨーロッパ",
+            "Northern\\s" = "北",
+            "Eastern\\s" = "東",
+            "(Southern|South)\\s" = "南",
+            "South-eastern\\s" = "東南",
+            "Western\\s" = "西",
+            "Central\\s" = "中央",
+            "Middle\\s" = "中部",
+            "Latin\\s" = "ラテン",
+            "Sub-Saharan\\s" = "サハラ以南",
+            "and\\sthe\\s" = "・",
+            "Caribbean" = "カリブ海地域",
+            "Australia\\sand\\sNew\\sZealand" = "オーストラリア・ニュージーランド",
+            "Melanesia" = "メラネシア",
+            "Micronesia" = "ミクロネシア",
+            "Polinesia" = "ポリネシア"
+          )
+        )
+      }
+    )
+  ) |>
+  select(-starts_with("temp")) |>
+  relocate(
+    n,
+    .after = last_col()
+  ) |>
+  rmarkdown::paged_table(options = list(rows.print = 20))
+```
+実際には`count()`のところで性別の回答も入れたものを補助資料として作成しました。
+
+## Conclusion
+`countrycode`パッケージや`countries`パッケージを使って、データに含まれている国名を日本語名にしました。翻訳データがないワールドワイドなオープンデータで、国名を一括で変換したいときには便利だと思います。少なくとも人力で全部頑張るよりかはましです。
+
+## Session Infomation
+:::{.callout-note collapse=true title="sessioninfo"}
+```{r}
+#| echo: false
+sessionInfo()
+```
+:::
