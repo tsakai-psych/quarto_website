@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.8.26">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -68,14 +68,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="../../">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-1c1298d4aec20b932e1c4c12e9ecd263.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-5d4073339ea55b1ad5ce071f10a273ff.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-0bd6bd4cbde67017807ea45c3bc8f802.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-7d4a9039721bd1bbfdfbf016cb337f37.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -241,11 +242,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="packages" class="level2">
 <h2 class="anchored" data-anchor-id="packages">Packages</h2>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(</span>
 <span id="cb1-2"><a href="#cb1-2"></a>  tidyverse,</span>
 <span id="cb1-3"><a href="#cb1-3"></a>  countrycode,</span>
 <span id="cb1-4"><a href="#cb1-4"></a>  countries</span>
-<span id="cb1-5"><a href="#cb1-5"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-5"><a href="#cb1-5"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="contents" class="level2">
@@ -254,11 +255,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="background">Background</h3>
 <p>補助に入っている授業で、学生たちはオープンデータを使ってRの練習をしています。使用しているデータはYamada et al.&nbsp;(2021)<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>によるCOVIDiSTRESS Global Surveyデータセットです。データセットは<a href="https://doi.org/10.17605/OSF.IO/Z39US">OSF</a>で公開されています。そのうち最終データ（COVIDiSTRESS_May_30_cleaned.csv）を利用しています。</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>df_covid <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>df_covid <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(</span>
 <span id="cb2-2"><a href="#cb2-2"></a>  <span class="fu">list.files</span>(<span class="st">"~/datasets/Yamada_etal_2020"</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb2-3"><a href="#cb2-3"></a>)</span>
 <span id="cb2-4"><a href="#cb2-4"></a></span>
-<span id="cb2-5"><a href="#cb2-5"></a>df_covid</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-5"><a href="#cb2-5"></a>df_covid</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 125,306 × 154
       ID answered_all Duration..in.seconds. RecordedDate        UserLanguage Dem_age Dem_gender     
@@ -293,10 +294,10 @@ Rの備忘録<br>授業のお手伝いしてるときに、国名一覧をオブ
 <script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 <p>まず<code>dplyr::count()</code>で<code>Country</code>列を集計してみます。</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>df_covid <span class="sc">|&gt;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>df_covid <span class="sc">|&gt;</span></span>
 <span id="cb4-2"><a href="#cb4-2"></a>  <span class="fu">count</span>(Country, <span class="at">sort =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
 <span id="cb4-3"><a href="#cb4-3"></a>  <span class="fu">filter</span>(<span class="sc">!</span>Country <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"other"</span>, <span class="cn">NA</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb4-4"><a href="#cb4-4"></a>  rmarkdown<span class="sc">::</span><span class="fu">paged_table</span>() <span class="co"># for better view on website</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-4"><a href="#cb4-4"></a>  rmarkdown<span class="sc">::</span><span class="fu">paged_table</span>() <span class="co"># for better view on website</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
@@ -307,23 +308,23 @@ Rの備忘録<br>授業のお手伝いしてるときに、国名一覧をオブ
 </div>
 <p>どうやらフィンランドからの回答が一番多いようです。ちなみに、私の環境では<code>readr::read_csv()</code>で<code>locale</code>を特に設定せずデータを読み込むと、コートジボワール（n = 6）だけ文字化けします。</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="fu">unique</span>(df_covid<span class="sc">$</span>Country) <span class="sc">|&gt;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="fu">unique</span>(df_covid<span class="sc">$</span>Country) <span class="sc">|&gt;</span></span>
 <span id="cb5-2"><a href="#cb5-2"></a>  <span class="fu">sort</span>() <span class="sc">|&gt;</span></span>
 <span id="cb5-3"><a href="#cb5-3"></a>  _[<span class="dv">1</span>] <span class="sc">|&gt;</span></span>
 <span id="cb5-4"><a href="#cb5-4"></a>  <span class="fu">assign</span>(<span class="st">"cotedivoire"</span>, <span class="at">value =</span> _) <span class="sc">|&gt;</span> </span>
-<span id="cb5-5"><a href="#cb5-5"></a>  <span class="fu">print</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-5"><a href="#cb5-5"></a>  <span class="fu">print</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "C\xf4te d\x92Ivoire"</code></pre>
 </div>
 </div>
 <p><code>stringi::stri_enc_detect()</code>を使って文字コードを推測します。</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="annotated-cell-5"><pre class="sourceCode numberSource r code-annotation-code number-lines code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-5-1" class="code-annotation-target"><a href="#annotated-cell-5-1"></a>stringi<span class="sc">::</span><span class="fu">stri_enc_detect</span>(cotedivoire) <span class="sc">|&gt;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-5"><pre class="sourceCode numberSource r code-annotation-code number-lines code-with-copy code-annotated"><code class="sourceCode r"><a class="code-annotation-anchor" data-target-cell="annotated-cell-5" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-5-1" class="code-annotation-target"><a href="#annotated-cell-5-1"></a>stringi<span class="sc">::</span><span class="fu">stri_enc_detect</span>(cotedivoire) <span class="sc">|&gt;</span></span>
 <span id="annotated-cell-5-2"><a href="#annotated-cell-5-2"></a>  _[[<span class="dv">1</span>]] <span class="sc">|&gt;</span></span>
 <span id="annotated-cell-5-3"><a href="#annotated-cell-5-3"></a>  <span class="fu">mutate</span>(</span>
 <span id="annotated-cell-5-4"><a href="#annotated-cell-5-4"></a>    <span class="at">result =</span> <span class="fu">str_conv</span>(cotedivoire, <span class="at">encoding =</span> Encoding),</span>
 <span id="annotated-cell-5-5"><a href="#annotated-cell-5-5"></a>    <span class="at">.by =</span> Encoding</span>
-<span id="annotated-cell-5-6"><a href="#annotated-cell-5-6"></a>  )</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="annotated-cell-5-6"><a href="#annotated-cell-5-6"></a>  )</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
 <dt data-target-cell="annotated-cell-5" data-target-annotation="1">1</dt>
@@ -345,7 +346,7 @@ Rの備忘録<br>授業のお手伝いしてるときに、国名一覧をオブ
 </div>
 <p>この結果を見る限り、<code>windows-1252</code>でエンコードすればよさそうですね。というわけで、国名と人数だけのdfを作ります。</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>df_country_name <span class="ot">&lt;-</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>df_country_name <span class="ot">&lt;-</span></span>
 <span id="cb8-2"><a href="#cb8-2"></a>  df_covid <span class="sc">|&gt;</span></span>
 <span id="cb8-3"><a href="#cb8-3"></a>  <span class="fu">count</span>(Country, <span class="at">sort =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
 <span id="cb8-4"><a href="#cb8-4"></a>  <span class="fu">filter</span>(<span class="sc">!</span>Country <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"other"</span>, <span class="cn">NA</span>)) <span class="sc">|&gt;</span></span>
@@ -357,7 +358,7 @@ Rの備忘録<br>授業のお手伝いしてるときに、国名一覧をオブ
 <span id="cb8-10"><a href="#cb8-10"></a>    )</span>
 <span id="cb8-11"><a href="#cb8-11"></a>  )</span>
 <span id="cb8-12"><a href="#cb8-12"></a></span>
-<span id="cb8-13"><a href="#cb8-13"></a>df_country_name</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-13"><a href="#cb8-13"></a>df_country_name</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 176 × 2
    Country       n
@@ -390,7 +391,7 @@ Rの備忘録<br>授業のお手伝いしてるときに、国名一覧をオブ
 </ul>
 <p>日本語の国名は、<code>cldr.name.ja</code>、<code>cldr.short.ja</code>、<code>cldr.variant.ja</code>の三種類あります。とりあえず<code>cldr.name.ja</code>にしておきます。</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>df_country_name <span class="sc">|&gt;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>df_country_name <span class="sc">|&gt;</span></span>
 <span id="cb10-2"><a href="#cb10-2"></a>  <span class="fu">mutate</span>(</span>
 <span id="cb10-3"><a href="#cb10-3"></a>    <span class="at">res =</span> countrycode<span class="sc">::</span><span class="fu">countrycode</span>(</span>
 <span id="cb10-4"><a href="#cb10-4"></a>      Country,</span>
@@ -398,7 +399,7 @@ Rの備忘録<br>授業のお手伝いしてるときに、国名一覧をオブ
 <span id="cb10-6"><a href="#cb10-6"></a>      <span class="at">destination =</span> <span class="st">"cldr.name.ja"</span></span>
 <span id="cb10-7"><a href="#cb10-7"></a>    )</span>
 <span id="cb10-8"><a href="#cb10-8"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb10-9"><a href="#cb10-9"></a>  rmarkdown<span class="sc">::</span><span class="fu">paged_table</span>() <span class="co"># for better view on website</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-9"><a href="#cb10-9"></a>  rmarkdown<span class="sc">::</span><span class="fu">paged_table</span>() <span class="co"># for better view on website</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: There was 1 warning in `mutate()`.
 ℹ In argument: `res = countrycode::countrycode(Country, origin = "country.name", destination =
@@ -416,20 +417,20 @@ Caused by warning:
 </div>
 <p>ミクロネシア連邦と南スーダン以外は日本語化できました。なお、南スーダンは元のデータでは<code>"Sudan, South"</code>で入っていますが、<code>"South Sudan"</code>でマッチさせると日本語化できます。</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>countrycode<span class="sc">::</span><span class="fu">countrycode</span>(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>countrycode<span class="sc">::</span><span class="fu">countrycode</span>(</span>
 <span id="cb12-2"><a href="#cb12-2"></a>  <span class="st">"South Sudan"</span>,</span>
 <span id="cb12-3"><a href="#cb12-3"></a>  <span class="at">origin =</span> <span class="st">"country.name"</span>,</span>
 <span id="cb12-4"><a href="#cb12-4"></a>  <span class="at">destination =</span> <span class="st">"cldr.name.ja"</span></span>
-<span id="cb12-5"><a href="#cb12-5"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-5"><a href="#cb12-5"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "南スーダン"</code></pre>
 </div>
 </div>
 <p><code>coutrycode::codelist</code>で変換テーブルを見てみると、ミクロネシア連邦については日本語名が用意されていませんでした。</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>countrycode<span class="sc">::</span>codelist <span class="sc">|&gt;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>countrycode<span class="sc">::</span>codelist <span class="sc">|&gt;</span></span>
 <span id="cb14-2"><a href="#cb14-2"></a>  <span class="fu">filter</span>(<span class="fu">str_detect</span>(country.name.en, <span class="st">"Micronesia"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb14-3"><a href="#cb14-3"></a>  <span class="fu">select</span>(country.name.en, <span class="fu">ends_with</span>(<span class="st">"ja"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-3"><a href="#cb14-3"></a>  <span class="fu">select</span>(country.name.en, <span class="fu">ends_with</span>(<span class="st">"ja"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 4
   country.name.en                  cldr.name.ja cldr.short.ja cldr.variant.ja
@@ -439,7 +440,7 @@ Caused by warning:
 </div>
 <p><code>coutrycode::countrycode()</code>には引数<code>custom_match</code>が用意されていて、ここに名前付きベクトルで<code>origin</code>と<code>destination</code>のマッチング指定すれば、元の結果を上書きできます。</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>df_country_name <span class="sc">|&gt;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>df_country_name <span class="sc">|&gt;</span></span>
 <span id="cb16-2"><a href="#cb16-2"></a>  <span class="fu">filter</span>(Country <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Sudan, South"</span>, <span class="st">"Micronesia, Federated States of"</span>)) <span class="sc">|&gt;</span></span>
 <span id="cb16-3"><a href="#cb16-3"></a>  <span class="fu">mutate</span>(</span>
 <span id="cb16-4"><a href="#cb16-4"></a>    <span class="at">res =</span> countrycode<span class="sc">::</span><span class="fu">countrycode</span>(</span>
@@ -451,7 +452,7 @@ Caused by warning:
 <span id="cb16-10"><a href="#cb16-10"></a>        <span class="st">"Micronesia, Federated States of"</span> <span class="ot">=</span> <span class="st">"ミクロネシア連邦"</span></span>
 <span id="cb16-11"><a href="#cb16-11"></a>      )</span>
 <span id="cb16-12"><a href="#cb16-12"></a>    )</span>
-<span id="cb16-13"><a href="#cb16-13"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb16-13"><a href="#cb16-13"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2 × 3
   Country                             n res             
@@ -474,7 +475,7 @@ Caused by warning:
 <li><code>verbose</code>: <code>TRUE</code>にしておくと、正確・ファジーにマッチした要素の数やマッチしなかったものについて教えてくれます。</li>
 </ul>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>df_country_name <span class="sc">|&gt;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>df_country_name <span class="sc">|&gt;</span></span>
 <span id="cb18-2"><a href="#cb18-2"></a>  <span class="fu">mutate</span>(</span>
 <span id="cb18-3"><a href="#cb18-3"></a>    <span class="at">res =</span> countries<span class="sc">::</span><span class="fu">country_name</span>(</span>
 <span id="cb18-4"><a href="#cb18-4"></a>      Country,</span>
@@ -482,7 +483,7 @@ Caused by warning:
 <span id="cb18-6"><a href="#cb18-6"></a>      <span class="at">verbose =</span> <span class="cn">TRUE</span></span>
 <span id="cb18-7"><a href="#cb18-7"></a>    )</span>
 <span id="cb18-8"><a href="#cb18-8"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb18-9"><a href="#cb18-9"></a>  rmarkdown<span class="sc">::</span><span class="fu">paged_table</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb18-9"><a href="#cb18-9"></a>  rmarkdown<span class="sc">::</span><span class="fu">paged_table</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 In total 176 unique country names were provided
@@ -504,14 +505,14 @@ The following country IDs do not have a match in one or more of the requested na
 </div>
 <p>こちらはコソボがヒットしませんでした。<code>countries::country_reference_list(_long)</code>で変換テーブルを見てみると、他のほとんどの言語でもコソボは用意されていないようです。</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="annotated-cell-12"><pre class="sourceCode numberSource r code-annotation-code number-lines code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-12-1"><a href="#annotated-cell-12-1"></a>countries<span class="sc">::</span>country_reference_list <span class="sc">|&gt;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-12"><pre class="sourceCode numberSource r code-annotation-code number-lines code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-12-1"><a href="#annotated-cell-12-1"></a>countries<span class="sc">::</span>country_reference_list <span class="sc">|&gt;</span></span>
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-12" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-12-2" class="code-annotation-target"><a href="#annotated-cell-12-2"></a>  <span class="fu">rowid_to_column</span>() <span class="sc">|&gt;</span></span>
 <span id="annotated-cell-12-3"><a href="#annotated-cell-12-3"></a>  <span class="fu">filter</span>(<span class="fu">if_any</span>(<span class="at">.cols =</span> <span class="fu">everything</span>(), <span class="at">.fns =</span> <span class="sc">~</span><span class="fu">str_detect</span>(.x, <span class="st">"Kosovo"</span>))) <span class="sc">|&gt;</span></span>
 <span id="annotated-cell-12-4"><a href="#annotated-cell-12-4"></a>  <span class="fu">pull</span>(rowid) <span class="sc">|&gt;</span></span>
 <span id="annotated-cell-12-5"><a href="#annotated-cell-12-5"></a>  (\(x) {</span>
 <span id="annotated-cell-12-6"><a href="#annotated-cell-12-6"></a>    countries<span class="sc">::</span>country_reference_list_long <span class="sc">|&gt;</span></span>
 <span id="annotated-cell-12-7"><a href="#annotated-cell-12-7"></a>      <span class="fu">filter</span>(ID <span class="sc">==</span> x)</span>
-<span id="annotated-cell-12-8"><a href="#annotated-cell-12-8"></a>  }) ()</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="annotated-cell-12-8"><a href="#annotated-cell-12-8"></a>  }) ()</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
 <dt data-target-cell="annotated-cell-12" data-target-annotation="1">1</dt>
@@ -538,23 +539,23 @@ The following country IDs do not have a match in one or more of the requested na
 </div>
 <p>こちらの関数もマッチングテーブルを修正して、マッチしない国名を修正することができます<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>。ただ、ちょっとめんどくさいかも。</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="co"># create matching table</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="co"># create matching table</span></span>
 <span id="cb21-2"><a href="#cb21-2"></a>temp_df_match <span class="ot">&lt;-</span> countries<span class="sc">::</span><span class="fu">match_table</span>(</span>
 <span id="cb21-3"><a href="#cb21-3"></a>  df_country_name<span class="sc">$</span>Country,</span>
 <span id="cb21-4"><a href="#cb21-4"></a>  <span class="at">to =</span> <span class="st">"name_ja"</span></span>
-<span id="cb21-5"><a href="#cb21-5"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb21-5"><a href="#cb21-5"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Some country IDs have no match in one or more of the requested country naming conventions, NA returned.</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a><span class="co"># search Kosovo</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a><span class="co"># search Kosovo</span></span>
 <span id="cb23-2"><a href="#cb23-2"></a>temp_df_match <span class="sc">|&gt;</span></span>
 <span id="cb23-3"><a href="#cb23-3"></a>  <span class="fu">rowid_to_column</span>() <span class="sc">|&gt;</span></span>
-<span id="cb23-4"><a href="#cb23-4"></a>  <span class="fu">filter</span>(list_countries <span class="sc">==</span> <span class="st">"Kosovo"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb23-4"><a href="#cb23-4"></a>  <span class="fu">filter</span>(list_countries <span class="sc">==</span> <span class="st">"Kosovo"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  rowid list_countries name_ja
 1    86         Kosovo    &lt;NA&gt;</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a><span class="co"># correct</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a><span class="co"># correct</span></span>
 <span id="cb25-2"><a href="#cb25-2"></a>temp_df_match<span class="sc">$</span>name_ja[<span class="dv">86</span>] <span class="ot">&lt;-</span> <span class="st">"コソボ"</span></span>
 <span id="cb25-3"><a href="#cb25-3"></a></span>
 <span id="cb25-4"><a href="#cb25-4"></a>df_country_name <span class="sc">|&gt;</span></span>
@@ -565,7 +566,7 @@ The following country IDs do not have a match in one or more of the requested na
 <span id="cb25-9"><a href="#cb25-9"></a>      <span class="at">to =</span> <span class="st">"name_ja"</span>,</span>
 <span id="cb25-10"><a href="#cb25-10"></a>      <span class="at">custom_table =</span> temp_df_match</span>
 <span id="cb25-11"><a href="#cb25-11"></a>    )</span>
-<span id="cb25-12"><a href="#cb25-12"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb25-12"><a href="#cb25-12"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 3
   Country     n res   
@@ -579,7 +580,7 @@ The following country IDs do not have a match in one or more of the requested na
 <h2 class="anchored" data-anchor-id="solution">Solution</h2>
 <p>2つの関数で<code>NA</code>になった国が被っていないので、今回はこの2つを使えばやりたいことが達成できます。</p>
 <div class="cell" data-layout-align="center">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a>df_country_name <span class="sc">|&gt;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a>df_country_name <span class="sc">|&gt;</span></span>
 <span id="cb27-2"><a href="#cb27-2"></a>  <span class="fu">mutate</span>(</span>
 <span id="cb27-3"><a href="#cb27-3"></a>    <span class="at">temp_name_ja_1 =</span> countrycode<span class="sc">::</span><span class="fu">countrycode</span>(</span>
 <span id="cb27-4"><a href="#cb27-4"></a>      Country,</span>
@@ -598,7 +599,7 @@ The following country IDs do not have a match in one or more of the requested na
 <span id="cb27-17"><a href="#cb27-17"></a>    <span class="at">.after =</span> Country</span>
 <span id="cb27-18"><a href="#cb27-18"></a>  ) <span class="sc">|&gt;</span></span>
 <span id="cb27-19"><a href="#cb27-19"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">starts_with</span>(<span class="st">"temp"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb27-20"><a href="#cb27-20"></a>  rmarkdown<span class="sc">::</span><span class="fu">paged_table</span>() <span class="co"># for better view on website</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb27-20"><a href="#cb27-20"></a>  rmarkdown<span class="sc">::</span><span class="fu">paged_table</span>() <span class="co"># for better view on website</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div data-pagedtable="false">
   <script data-pagedtable-source="" type="application/json">
@@ -614,7 +615,7 @@ The following country IDs do not have a match in one or more of the requested na
 <div class="cell" data-layout-align="center">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a>df_country_name <span class="sc">|&gt;</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a>df_country_name <span class="sc">|&gt;</span></span>
 <span id="cb28-2"><a href="#cb28-2"></a>  <span class="fu">mutate</span>(</span>
 <span id="cb28-3"><a href="#cb28-3"></a>    <span class="co"># Japanese localize </span></span>
 <span id="cb28-4"><a href="#cb28-4"></a>    <span class="at">temp_name_ja_1 =</span> countrycode<span class="sc">::</span><span class="fu">countrycode</span>(</span>
@@ -707,7 +708,7 @@ The following country IDs do not have a match in one or more of the requested na
 <span id="cb28-91"><a href="#cb28-91"></a>    n,</span>
 <span id="cb28-92"><a href="#cb28-92"></a>    <span class="at">.after =</span> <span class="fu">last_col</span>()</span>
 <span id="cb28-93"><a href="#cb28-93"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb28-94"><a href="#cb28-94"></a>  rmarkdown<span class="sc">::</span><span class="fu">paged_table</span>(<span class="at">options =</span> <span class="fu">list</span>(<span class="at">rows.print =</span> <span class="dv">20</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb28-94"><a href="#cb28-94"></a>  rmarkdown<span class="sc">::</span><span class="fu">paged_table</span>(<span class="at">options =</span> <span class="fu">list</span>(<span class="at">rows.print =</span> <span class="dv">20</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div data-pagedtable="false">
@@ -727,12 +728,12 @@ The following country IDs do not have a match in one or more of the requested na
 <section id="session-infomation" class="level2">
 <h2 class="anchored" data-anchor-id="session-infomation">Session Infomation</h2>
 <div class="callout callout-style-default callout-note callout-titled" title="sessioninfo">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-sessioninfo
+<span class="screen-reader-only">Note</span>sessioninfo
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
@@ -842,13 +843,14 @@ loaded via a namespace (and not attached):
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

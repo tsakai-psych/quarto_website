@@ -1,0 +1,371 @@
+---
+title: "R 標準で用意されている色の名前"
+date: 2026-01-02
+abstract: |
+  `colors()`で出せる、Rが組み込みで用意している色の名前についてのメモ。
+categories: [R memo, visualization]
+image: 20260102_builtin_colorname_gt.png
+format:
+  html:
+    highlight-style: breezedark
+    include-in-header: 
+      text: |
+        <style>
+        .cell-output-stdout {
+          overflow-y: auto;
+          max-height: 500px;
+        }
+        </style>
+knitr:
+  opts_chunk: 
+    fig.align: center
+    R.options:
+      width: 100
+editor_options: 
+  chunk_output_type: console
+---
+
+## Packages
+```{r}
+pacman::p_load(
+  tidyverse,
+  gt,
+  gdata
+)
+```
+
+## Contents
+Rが組み込みで用意している色の名前についてのメモです。
+
+### `colors()`
+組み込みパッケージである`grDevices`にある`colors()`は、Rで用意されている色の名前を出してくれる関数です。実行すると`{r} length(colors())`色の色の名前を出してくれます。ここで出てくる色の名前をグラフ作成のときに指定すると、その色が使えます。
+```{r}
+colors()
+```
+
+引数`distinct`を`TRUE`にすると、RGB値で同じ色を1つにまとめて返してきます。この場合は`{r} length(colors(distinct = TRUE))`色の色名が返ってきます。
+```{r}
+colors(distinct = TRUE)
+```
+
+重複している色は以下の通りです。
+```{r}
+#| label: long-output
+tibble(
+  color_name = colors()
+) |>
+  mutate(
+    col2rgb(col = color_name) |> # <1>
+      t() |> # <1>
+      data.frame(), # <1>
+    hex = rgb(
+      red = red,
+      green = green,
+      blue = blue,
+      maxColorValue = 255 # <2>
+    )
+  ) |>
+  filter(n() > 1, .by = hex) |> # <3>
+  arrange(hex) |>
+  # for better view on website
+  rmarkdown::paged_table(options = list(rows.print = 20))
+```
+1. `col2rgb()`は引数`col`に色の名前を入れるとrgb値を3*1のmatrixで返してきます。なので、`t()`で転置してwideにしてdata.frameとして返します。列名をつけないことでpackされずにそのまま列として返ってきます。
+2. デフォルトでは1なので255にします。
+3. 「同一要素が存在する要素のみ抽出」を`tidyverse`関数群だけで多分一番短く書ける式だけど、なんでちゃんと動くかあんまりわかってない。hex列の要素でグルーピングして`n()`でサイズを数えてそれが１より大きいかどうかというpredicateな式になっているからだとは思います。組み込み関数でやるなら`filter(duplicated(hex) | duplicated(hex, fromLast = TRUE))`。
+
+::: {.callout-note collapse="true"}
+#### built-in functions
+```{r}
+data.frame(
+  color_name = colors()
+) |>
+  transform(
+    hex = col2rgb(color_name) |> # <1>
+      apply(
+        MARGIN = 2,
+        FUN = \(x) {
+          rgb(
+            red = x[1],
+            green = x[2],
+            blue = x[3],
+            maxColorValue = 255
+          )
+        }
+      )
+  ) |>
+  subset(duplicated(hex) | duplicated(hex, fromLast = TRUE)) |>
+  sort_by(~hex) |>
+  head(10)
+```
+1. `transform()`は`tag = value`の形式が必須らしいので、`apply(MARGIN = 2, ...)`を使っていきなりhex列を作りました。別に`temp = col2rgb() |> ...`にしてもいいんですが、`dplyr::mutate()`と違って、作られる列にtemp.のsuffixがつくのと、`transform()`内で作成した新規の列は同じ`transform()`内で新たに使えないっぽいのでもう一度パイプを挟んで`transform()`を使う必要があるみたいです。
+
+:::
+
+数が多いですが、半分くらいがgray（アメリカ英語）とgrey（イギリス英語）の被りです。gray/greyはほとんど置換可能なんですが、(dark)slategray1-4はgrayしかありません。
+```{r}
+list(
+  gray_only = c("gray", "grey"),
+  grey_only = c("grey", "gray")
+) |>
+  map(
+    .f = \(color_name) {
+      str_subset(
+        colors(),
+        pattern = color_name[1]
+      ) |>
+        discard( # <1>
+          .p = \(x) { # <1>
+            str_replace( # <1>
+              x, # <1>
+              pattern = color_name[1], # <1>
+              replacement = color_name[2] # <1>
+            ) |> # <1>
+              `%in%`(colors()) # <1>
+          } # <1>
+        ) # <1>
+    }
+  )
+```
+1. `purrr::discard()`は第一引数`.x`の要素を引数`.p`で書かれたpredicate関数で評価させて、`FALSE`になる要素だけ返してきます。`TRUE`を返すものだけ残したい場合は`purrr::keep()`を使います。やってることは、[`str_replace()`]grayとgreyを入れ替え→[`%in%()`]入れ替えたものが`colors()`に存在するか評価→[`.p = \(x) {} `]TRUE/FALSEが返ってくるのでそれが.xのインデックスになる→[`discard()`]インデックスがFALSEである.xの要素のみ返ってくる。
+
+::: {.callout-note collapse="true"}
+#### built-in functions
+```{r}
+list(
+  gray_only = c("gray", "grey"),
+  grey_only = c("grey", "gray")
+) |>
+  lapply(
+    FUN = \(color_name) {
+      grep(
+        pattern = color_name[1],
+        x = colors(),
+        value = TRUE
+      ) |>
+        (\(x) {
+          gsub( # <1>
+            pattern = color_name[1], # <1>
+            replacement = color_name[2], # <1>
+            x = x # <1>
+          ) |> # <1>
+            `%in%`(colors()) |> # <1>
+            xor(y = TRUE) |> # <1>
+            `[`(x, i = _) # <1>
+        }) ()
+    }
+  )
+```
+1. `x[!gsub(pattern = color_name[1], replacement = color_name[2], x = x) %in% colors()]`をlintrに怒られない文字数で書くためにパイプラインで書くとこうなります。可読性が低すぎてヤバい。やってることは上と同じです。TRUE/FALSEの逆転は、`xor(x = ..., y = TRUE)`を使って(x = TRUE, y = TRUE)をFALSEに、(x = FALSE, y = TRUE) をTRUEにすることで処理。`(\(x) {!x}) ()`でも可。
+
+:::
+
+### appearance
+実際の色はこちら。greyだけ省いています。`gt::opt_interactive()`をいじってインタラクティブな表にしてみました。
+```{r}
+#| code-fold: true
+#| html-table-processing: none
+colors() |>
+  str_subset(
+    pattern = "grey",
+    negate = TRUE
+  ) |>
+  tibble(
+    col_name = _,
+    col_fill = "",
+    col_text_w = "The quick brown fox jumps over the lazy dog.",
+    col_text_b = col_text_w
+  ) |>
+  mutate(
+    col2rgb(col = col_name) |>
+      t() |>
+      data.frame(),
+    col_hex = rgb(
+      red = red,
+      green = green,
+      blue = blue,
+      maxColorValue = 255
+    )
+  ) |>
+  relocate(col_hex, .after = 1) |>
+  select(starts_with("col_")) |>
+  gt() |>
+  tab_style(
+    style = cell_fill(color = from_column(column = "col_name")),
+    locations = cells_body(columns = col_fill)
+  ) |>
+  tab_style(
+    style = cell_borders(color = "black"),
+    locations = cells_body(columns = col_fill)
+  ) |>
+  tab_style(
+    style = cell_text(color = from_column(column = "col_name")),
+    locations = cells_body(columns = starts_with("col_text"))
+  ) |>
+  tab_style(
+    style = cell_fill(color = "black"),
+    locations = cells_body(columns = col_text_b)
+  ) |>
+  tab_header(title = "Built-in Color Names in R.") |>
+  tab_footnote(
+    footnote = '"gray" can be replaced with "grey" except for (dark)slategray1-4.'
+  ) |>
+  opt_footnote_marks(marks = "standard") |>
+  tab_source_note(
+    source_note = md("From `grDevices::colors()`.")
+  ) |>
+  cols_width(
+    col_name ~ px(180),
+    col_hex ~ px(100),
+    col_fill ~ px(100)
+  ) |>
+  cols_label(
+    col_name = "Color name",
+    col_hex = "Hex",
+    col_fill = "",
+    col_text_w = "BG: white",
+    col_text_b = "BG: black"
+  ) |>
+  # for better view on website
+  opt_interactive(
+    use_filters = TRUE, # <1>
+    use_page_size_select = TRUE, # <2>
+    page_size_values = c(seq(10, 100, 10), seq(200, 600, 100)) # <3>
+  )
+```
+1. フィルタリング機能が使えます。列名の下のテキストボックスに文字を入れるとフィルターされます。
+2. 1ページ当たりの表示行数を変更可能にできます。
+3. 1ページ当たりの表示行数の選択肢を設定できます。
+
+
+画像の一覧表も作ってみました。こちらもgreyは省いています。重いです（.pngで430KB程度）。QuartoのLightbox機能をonにしたので、クリックすると大きくなります。
+```{r}
+#| code-fold: true
+#| output: false
+colors() |>
+  str_subset(
+    pattern = "grey",
+    negate = TRUE
+  ) |>
+  str_replace(
+    pattern = "(\\d+)",
+    replacement = \(x) {
+      str_pad(
+        x,
+        width = 3,
+        side = "left",
+        pad = 0
+      )
+    }
+  ) |>
+  sort() |>
+  str_remove(
+    pattern = "(?<=\\D)0{1,2}"
+  ) |>
+  tibble(
+    name = _,
+    fill = "",
+    col_num = rep(1:12, times = c(rep(46, 9), rep(45, 3)))
+  ) |>
+  group_by(col_num) |>
+  group_map(
+    .f = \(x, idx) {
+      rename_with(
+        x,
+        .fn = ~str_c(.x, idx, sep = "_")
+      )
+    }
+  ) |>
+  do.call(
+    what = gdata::cbindX,
+    args = _
+  ) |>
+  gt() |>
+  (\(x) {
+    paste0(
+      ' |> tab_style(style = cell_fill(color = from_column(column = "name_',
+      1:12,
+      '", na_value = "white")), locations = cells_body(column = fill_',
+      1:12,
+      "))"
+    ) |>
+      paste(collapse = "") |>
+      paste("x", y = _, sep = "") |>
+      parse(text = _) |>
+      eval()
+  }) () |>
+  tab_style(
+    style = cell_borders(color = "black"),
+    locations = cells_body(columns = starts_with("fill"))
+  ) |>
+  tab_style(
+    style = cell_borders(
+      sides = "right",
+      color = "black"
+    ),
+    locations = cells_column_labels(columns = starts_with("fill"))
+  ) |>
+  tab_style(
+    style = cell_text(
+      font = "HackGen",
+      indent = px(10)
+    ),
+    locations = cells_body(columns = starts_with("name"))
+  ) |>
+  sub_missing(
+    missing_text = ""
+  ) |>
+  cols_width(
+    starts_with("name") ~ px(190),
+    starts_with("fill") ~ px(50)
+  ) |>
+  tab_header(title = md("Built-in Color Names in R. (From `grDevices::colors()`)")) |>
+  tab_footnote(
+    footnote = '"gray" can be replaced with "grey".',
+    locations = paste0(
+      "cells_body(columns = name_",
+      1:12,
+      ", rows = str_detect(name_",
+      1:12,
+      ', pattern = "gray") & !str_detect(name_',
+      1:12,
+      ', pattern = "slate.*[1-4]"))'
+    ) |>
+      paste(collapse = ", ") |>
+      paste0(
+        "list(",
+        x = _,
+        ")"
+      ) |>
+      parse(text = _) |>
+      eval()
+  ) |>
+  opt_footnote_marks(marks = "standard") |>
+  cols_label(
+    starts_with("name") ~ "Name",
+    starts_with("fill") ~ ""
+  ) |>
+  tab_options(
+    table.margin.right = px(10),
+    table.margin.left = px(10),
+    data_row.padding = px(7)
+  ) |>
+  gtsave(
+    "20260102_builtin_colorname_gt.png",
+    vwidth = 3500,
+    zoom = 1.2
+  )
+```
+
+![Built-in Color Name in R. (From `grDevecies::colors()`.)](20260102_builtin_colorname_gt.png){.lightbox}
+
+## Conclusion
+`colors()`で出せる、Rに標準で用意されている色の名前を見ていきました。grayとgreyが完全置換可能じゃないのは驚きました。
+
+## Session Infomation
+:::{.callout-note collapse=true title="sessioninfo"}
+```{r}
+#| echo: false
+sessionInfo()
+```
+:::
