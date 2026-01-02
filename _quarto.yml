@@ -35,7 +35,9 @@ website:
 
 format:
   html:
-    theme: darkly
+    theme:
+      - darkly
+      - dark-theme.scss
     highlight-style: breezedark
     page-layout: full
     css: styles.css
