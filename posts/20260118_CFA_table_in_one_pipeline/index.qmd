@@ -1,0 +1,540 @@
+---
+title: "R 確認的因子分析の表を作ってみた、1パイプラインで"
+date: 2026-01-18
+abstract: |
+  1パイプラインで完結することの実用性？多分ないです。
+categories: [R memo, preprocess, analysis]
+format: html
+knitr:
+  opts_chunk: 
+    fig.align: center
+    dev: ragg_png
+    R.options:
+      width: 100
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| label: thumbnail
+#| echo: false
+#| fig.asp: 0.5
+data.frame(
+  x = 1,
+  y = 1,
+  title = "確認的因子分析の表を作ってみた\n…1パイプラインで"
+) |>
+  ggplot2::ggplot(
+    ggplot2::aes(x = x, y = y, label = title)
+  ) +
+  ggplot2::theme_void() +
+  ggplot2::geom_text(
+    size = 10,
+    family = "Gen Jyuu Gothic",
+    fontface = "bold"
+  )
+```
+
+## packages
+```{r}
+pacman::p_load(
+  tidyverse,
+  lavaan,
+  psych,
+  gt
+)
+```
+
+## Contents
+これのことです。
+
+<blockquote class="twitter-tweet" data-theme="dark"><p lang="ja" dir="ltr">Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1パイプラインで<br>なお、1パイプラインで完結させること実用性はほとんどない模様<br>技術的には可能ってやつ？ <a href="https://t.co/pg5Flkj25t">pic.twitter.com/pg5Flkj25t</a></p>&mdash; Takuto SAKAI (@tsakai_psych) <a href="https://twitter.com/tsakai_psych/status/2012569276574765559?ref_src=twsrc%5Etfw">January 17, 2026</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+タイトルの通りです。1パイプラインで完結するために、かなり無理した書き方をしているところがあります。わざわざ1パイプラインで完結する必要はありません。
+
+非常に長いので折りたたみました。見たい人は開いてみてください。
+```{r}
+#| code-fold: true
+#| html-table-processing: none
+bfi |>
+  relocate(
+    age, gender, education
+  ) |>
+  mutate(
+    across(
+      .cols = bfi.dictionary |>
+        subset(
+          Keying == -1
+        ) |>
+        rownames(),
+      .fns = \(x) {
+        7 - x
+      }
+    )
+  ) |> 
+  rownames_to_column(var = "id") |>
+  group_walk(
+    .f = \(x, idx) {
+      x |>
+        pivot_longer(
+          cols = matches("\\w\\d"),
+          names_to = "items"
+        ) |>
+        mutate(
+          nest_item = str_extract(
+            items,
+            pattern = "^\\w"
+          )
+        ) |>
+        nest(.by = nest_item) |>
+        mutate(
+          res = map(
+            .x = data,
+            .f = \(x) {
+              x |>
+                pivot_wider(
+                  names_from = items,
+                  values_from = value
+                ) |>
+                select(matches("\\w\\d")) |>
+                psych::alpha() |>
+                _$total |>
+                _$raw_alpha |>
+                round(digits = 3) |>
+                sprintf("%.3f", x = _) |>
+                str_remove(pattern = "^0")
+            }
+          ) |>
+            set_names(nest_item),
+          .by = nest_item
+        ) |>
+        pull(res) |>
+        assign(
+          "res_alpha",
+          value = _,
+          envir = .GlobalEnv
+        )
+    }
+  ) |>
+  cfa(
+    model = '
+      Agreeableness =~ A1 + A2 + A3 + A4 + A5
+      Conscientiousness =~ C1 + C2 + C3 + C4 + C5
+      Extraversion =~ E1 + E2 + E3 + E4 + E5
+      Neuroticism =~ N1 + N2 + N3 + N4 + N5
+      Opennness =~ O1 + O2 + O3 + O4 + O5
+    ',
+    data = _,
+    std.lv = TRUE
+  ) |>
+  assign(
+    "fit_bfi",
+    value = _
+  ) |>
+  inspect(
+    what = "std.all"
+  ) |>
+  _$lambda |>
+  unclass() |>
+  as_tibble(
+    rownames = "items"
+  ) |>
+  arrange(
+    across(
+      .cols = c(Agreeableness, Conscientiousness, Extraversion, Neuroticism, Opennness),
+      .fns = ~desc(.x)
+    )
+  ) |>
+  left_join(
+    y = bfi.dictionary |>
+      as_tibble(rownames = "items") |>
+      select(items, Item, Keying),
+    by = join_by("items")
+  ) |>
+  relocate(
+    item_label = Item,
+    is_rev = Keying,
+    .after = items
+  ) |>
+  mutate(
+    is_rev = if_else(
+      is_rev > 0,
+      "",
+      "rev"
+    )
+  ) |>
+  bind_rows(
+    y = fit_bfi |>
+      inspect(what = "std.all") |>
+      _$psi |>
+      unclass() |>
+      (\(x) {
+        `[<-`(x, lower.tri(x, diag = TRUE), NA)
+      }) () |>
+      as_tibble(
+        rownames = "item_label"
+      ) |>
+      mutate(
+        items = c("I", "II", "III", "IV", "V")
+      ),
+    .id = "data_from"
+  ) |>
+  group_by(data_from) |>
+  gt() |>
+  fmt_number(
+    decimals = 3
+  ) |>
+  tab_style(
+    style = cell_text(
+      weight = "bold",
+      font = "Times New Roman"
+    ),
+    locations = list(
+      cells_body(
+        columns = Agreeableness,
+        rows = 1:5
+      ),
+      cells_body(
+        columns = Conscientiousness,
+        rows = 6:10
+      ),
+      cells_body(
+        columns = Extraversion,
+        rows = 11:15
+      ),
+      cells_body(
+        columns = Neuroticism,
+        rows = 16:20
+      ),
+      cells_body(
+        columns = Opennness,
+        rows = 21:25
+      )
+    )
+  ) |>
+  tab_stubhead(
+    label = "番号"
+  ) |>
+  tab_header(
+    title = "表X. 確認的因子分析の表をRだけで作りたい",
+    subtitle = md("なんか前処理から表まで１パイプラインで完結できたかもしれない……（これ実用性あるの？）")
+  ) |>
+  tab_source_note(
+    source_note = md(
+      "data from: `psych::bfi`; CFA with `lavaan::cfa()`; table by `gt()`; font: Times New Roman/ Noto Serif JP"
+    )
+  ) |>
+  tab_footnote(
+    footnote = md("因子間相関は`dplyr::bind_rows()`で無理やりくっつけた"),
+    locations = cells_row_groups(
+      groups = 2
+    )
+  ) |>
+  tab_footnote(
+    footnote = md("&alpha;係数の算出は、非grouped dfを`dplyr::group_walk()`に入れることで無理やり解決"),
+    locations = cells_body(
+      columns = item_label,
+      rows = 26:30
+    )
+  ) |> 
+  tab_style(
+    style = cell_text(
+      align = "left"
+    ),
+    locations = cells_body(
+      columns = c(items, item_label)
+    )
+  ) |>
+  tab_style(
+    style = cell_borders(
+      sides = "bottom",
+      style = "hidden"
+    ),
+    locations = cells_row_groups()
+  ) |>
+  tab_style(
+    style = cell_text(
+      font = "Times New Roman"
+    ),
+    locations = list(
+      cells_body(
+        columns = c(items, item_label),
+        rows = 1:25
+      ),
+      cells_body(
+        columns = Agreeableness:Opennness,
+        rows = 26:30
+      ),
+      cells_source_notes()
+    )
+  ) |>
+  tab_style(
+    style = cell_text(
+      align = "center"
+    ),
+    locations = list(
+      cells_column_labels(columns = Agreeableness:Opennness),
+      cells_body(columns = Agreeableness:Opennness)
+    )
+  ) |>
+  tab_style(
+    style = cell_text(
+      size = "small"
+    ),
+    locations = list(
+      cells_footnotes(),
+      cells_source_notes()
+    )
+  ) |>
+  sub_zero(
+    zero_text = ""
+  ) |>
+  sub_missing(
+    missing_text = ""
+  ) |>
+  text_transform(
+    fn = \(x) {
+      str_remove(
+        x,
+        pattern = "0(?=\\.)"
+      )
+    }
+  ) |>
+  text_replace(
+    pattern = "rev",
+    replacement = "(逆)",
+    locations = cells_body(
+      columns = is_rev
+    )
+  ) |>
+  text_case_match(
+    "1" ~ "",
+    "2" ~ "因子間相関",
+    .locations = cells_row_groups()
+  ) |>
+  text_case_match(
+    "Agreeableness" ~ "I",
+    "Conscientiousness" ~ "II",
+    "Extraversion" ~ "III",
+    "Neuroticism" ~ "IV",
+    "Opennness" ~ "V",
+    .locations = cells_column_labels()
+  ) |>
+  text_case_match(
+    "Agreeableness" ~ paste0(
+      "協調性（&alpha; = ", res_alpha$A, ")"
+    ) |>
+      md(),
+    "Conscientiousness" ~ paste0(
+      "勤勉性（&alpha; = ", res_alpha$C, ")"
+    ) |>
+      md(),
+    "Extraversion" ~ paste0(
+      "外向性（&alpha; = ", res_alpha$E, "）"
+    ) |>
+      md(),
+    "Neuroticism" ~ paste0(
+      "情緒安定性（&alpha; = ", res_alpha$N, "）"
+    ) |>
+      md(),
+    "Opennness" ~ paste0(
+      "開放性（&alpha; = ", res_alpha$O, ")"
+    ) |>
+      md(),
+    .locations = cells_body(columns = item_label)
+  ) |>
+  cols_label(
+    items = "番号",
+    item_label = "項目",
+    is_rev = ""
+  ) |>
+  cols_width(
+    item_label ~ px(270)
+  ) |> 
+  tab_options(
+    table.font.names = "Noto Serif JP",
+    heading.border.bottom.color = "black",
+    heading.border.bottom.width = px(2),
+    table.border.top.style = "hidden",
+    table.border.bottom.width = px(2),
+    table.border.bottom.color = "black",
+    table_body.hlines.style = "hidden",
+    table_body.border.top.color = "black",
+    table_body.border.top.width = px(1),
+    table_body.border.bottom.color = "black",
+    table_body.border.bottom.width = px(1),
+    column_labels.border.bottom.color = "black",
+    column_labels.border.bottom.width = px(1),
+    row_group.border.top.color = "black",
+    row_group.border.top.width = px(1),
+    data_row.padding = px(3),
+    heading.align = "left",
+    table.margin.left = px(5),
+    table.margin.right = px(5)
+  )
+```
+
+::: {.callout-note collapse=true}
+
+#### 処理の過程を見たい人向け（長いよ）
+やってること
+
+1. 元データの前処理（逆転処理）
+2. `dplyr::group_walk()`に非grouped dfを突っ込んで、中で&alpha;係数の計算をこなして.GrobalEnvに結果を保存しつつ、元のdfをそのまま返してもらう
+3. `lavaan::cfa()`で確認的因子分析をして、因子負荷量を抽出する
+    a. 後で使うので、CFAの結果を`assign()`で.GrobalEnvに保存しつつ、そのまま処理を続ける
+4. `dplyr::left_join()`で、`psych::bfi.dictionary`から質問項目と逆転項目かどうかの列をくっつける
+5. `dplyr::bind_rows()`で、因子間相関のdfを無理やりくっつける
+    a. CFAの結果はすでに保存してあるので、そこから抽出
+6. `gt::gt()`で表づくり
+    a. 保存した&alpha;係数をくっつける
+
+`gt::gt()`と`ViewPipeSteps::prit_pipe_step()`の相性が悪いので、`gt()`の前まで。
+```{r}
+#| code-fold: true
+options(pillar.print_max = 30) # for better tibble displaying
+
+bfi %>%
+  relocate(
+    age, gender, education
+  ) %>%
+  mutate(
+    across(
+      .cols = bfi.dictionary %>%
+        subset(
+          Keying == -1
+        ) %>%
+        rownames(),
+      .fns = \(x) {
+        7 - x
+      }
+    )
+  ) %>% 
+  rownames_to_column(var = "id") %>%
+  group_walk(
+    .f = \(x, idx) {
+      x %>%
+        pivot_longer(
+          cols = matches("\\w\\d"),
+          names_to = "items"
+        ) %>%
+        mutate(
+          nest_item = str_extract(
+            items,
+            pattern = "^\\w"
+          )
+        ) %>%
+        nest(.by = nest_item) %>%
+        mutate(
+          res = map(
+            .x = data,
+            .f = \(x) {
+              x %>%
+                pivot_wider(
+                  names_from = items,
+                  values_from = value
+                ) %>%
+                select(matches("\\w\\d")) %>%
+                psych::alpha() %>%
+                .$total %>%
+                .$raw_alpha %>%
+                round(digits = 3) %>%
+                sprintf("%.3f", x = .) %>%
+                str_remove(pattern = "^0")
+            }
+          ) %>%
+            set_names(nest_item),
+          .by = nest_item
+        ) %>%
+        pull(res) %>%
+        assign(
+          "res_alpha",
+          value = .,
+          envir = .GlobalEnv
+        )
+    }
+  ) %>%
+  lavaan::cfa(
+    model = '
+      Agreeableness =~ A1 + A2 + A3 + A4 + A5
+      Conscientiousness =~ C1 + C2 + C3 + C4 + C5
+      Extraversion =~ E1 + E2 + E3 + E4 + E5
+      Neuroticism =~ N1 + N2 + N3 + N4 + N5
+      Opennness =~ O1 + O2 + O3 + O4 + O5
+    ',
+    data = .,
+    std.lv = TRUE
+  ) %>%
+  assign(
+    "fit_bfi",
+    value = .,
+    envir = .GlobalEnv
+  ) %>%
+  inspect(
+    what = "std.all"
+  ) %>%
+  .$lambda %>%
+  unclass() %>%
+  as_tibble(
+    rownames = "items"
+  ) %>%
+  arrange(
+    across(
+      .cols = c(Agreeableness, Conscientiousness, Extraversion, Neuroticism, Opennness),
+      .fns = ~desc(.x)
+    )
+  ) %>%
+  left_join(
+    y = bfi.dictionary %>%
+      as_tibble(rownames = "items") %>%
+      select(items, Item, Keying),
+    by = join_by("items")
+  ) %>%
+  relocate(
+    item_label = Item,
+    is_rev = Keying,
+    .after = items
+  ) %>%
+  mutate(
+    is_rev = if_else(
+      is_rev > 0,
+      "",
+      "rev"
+    )
+  ) %>%
+  bind_rows(
+    y = fit_bfi %>%
+      inspect(what = "std.all") %>%
+      .$psi %>%
+      unclass() %>%
+      (\(x) {
+        `[<-`(x, lower.tri(x, diag = TRUE), NA)
+      }) () %>%
+      as_tibble(
+        rownames = "item_label"
+      ) %>%
+      mutate(
+        items = c("I", "II", "III", "IV", "V")
+      ),
+    .id = "data_from"
+  ) %>%
+  group_by(data_from) %>% 
+  ViewPipeSteps::print_pipe_steps()
+```
+
+:::
+
+## Conclusion
+データとコードブックがあれば技術的には可能です。
+そのうちちゃんとした因子分析のやり方のメモを残そうと思います。
+
+## Session Infomation
+
+:::{.callout-note collapse=true title="sessioninfo"}
+
+```{r}
+#| echo: false
+sessionInfo()
+```
+
+:::
