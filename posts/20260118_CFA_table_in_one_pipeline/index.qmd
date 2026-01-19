@@ -1,10 +1,13 @@
 ---
 title: "R 確認的因子分析の表を作ってみた、1パイプラインで"
 date: 2026-01-18
+date-modified: 2026-01-20
 abstract: |
   1パイプラインで完結することの実用性？多分ないです。
 categories: [R memo, preprocess, analysis]
-format: html
+format:
+  html:
+    fig-align: center
 knitr:
   opts_chunk: 
     fig.align: center
@@ -374,6 +377,11 @@ bfi |>
   )
 ```
 
+【追記】2026-01-20
+`gt::gt()`はそのままだとHTML出力になるんですが、環境によってはフォントとかが再現されないので、画像を追加しました。
+
+![](20260119_CFA_table_in_one_pipeline.png){.lightbox width=50% fig-align="center"}
+
 ::: {.callout-note collapse=true}
 
 #### 処理の過程を見たい人向け（長いよ）
@@ -389,7 +397,7 @@ bfi |>
 6. `gt::gt()`で表づくり
     a. 保存した&alpha;係数をくっつける
 
-`gt::gt()`と`ViewPipeSteps::prit_pipe_step()`の相性が悪いので、`gt()`の前まで。
+`gt::gt()`と`ViewPipeSteps::print_pipe_step()`の相性が悪いので、`gt()`の前まで。
 ```{r}
 #| code-fold: true
 options(pillar.print_max = 30) # for better tibble displaying
@@ -538,3 +546,7 @@ sessionInfo()
 ```
 
 :::
+
+## Log
+- 2026-01-20
+  - HTML出力だと環境によってはフォントが再現されないので、画像を追加。

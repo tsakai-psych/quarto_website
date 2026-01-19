@@ -77,6 +77,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../../site_libs/bootstrap/bootstrap-04790538fe244593e78e58a7cb4983f3.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="dark">
+<script src="../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -193,6 +196,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       </div>
     </div>
     
+      <div>
+      <div class="quarto-title-meta-heading">Modified</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date-modified">2026-01-20</p>
+      </div>
+    </div>
       
     </div>
     
@@ -215,6 +224,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#contents" id="toc-contents" class="nav-link" data-scroll-target="#contents">Contents</a></li>
   <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
   <li><a href="#session-infomation" id="toc-session-infomation" class="nav-link" data-scroll-target="#session-infomation">Session Infomation</a></li>
+  <li><a href="#log" id="toc-log" class="nav-link" data-scroll-target="#log">Log</a></li>
   </ul>
 </nav>
     </div>
@@ -578,23 +588,23 @@ Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1�
 <span id="cb2-316"><a href="#cb2-316"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
-<div id="fskzgqfapg" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#fskzgqfapg table {
+<div id="yaywdsqkrd" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#yaywdsqkrd table {
   font-family: 'Noto Serif JP';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#fskzgqfapg thead, #fskzgqfapg tbody, #fskzgqfapg tfoot, #fskzgqfapg tr, #fskzgqfapg td, #fskzgqfapg th {
+#yaywdsqkrd thead, #yaywdsqkrd tbody, #yaywdsqkrd tfoot, #yaywdsqkrd tr, #yaywdsqkrd td, #yaywdsqkrd th {
   border-style: none;
 }
 
-#fskzgqfapg p {
+#yaywdsqkrd p {
   margin: 0;
   padding: 0;
 }
 
-#fskzgqfapg .gt_table {
+#yaywdsqkrd .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -620,12 +630,12 @@ Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1�
   border-left-color: #D3D3D3;
 }
 
-#fskzgqfapg .gt_caption {
+#yaywdsqkrd .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#fskzgqfapg .gt_title {
+#yaywdsqkrd .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -637,7 +647,7 @@ Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1�
   border-bottom-width: 0;
 }
 
-#fskzgqfapg .gt_subtitle {
+#yaywdsqkrd .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -649,7 +659,7 @@ Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1�
   border-top-width: 0;
 }
 
-#fskzgqfapg .gt_heading {
+#yaywdsqkrd .gt_heading {
   background-color: #FFFFFF;
   text-align: left;
   border-bottom-color: #FFFFFF;
@@ -661,13 +671,13 @@ Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1�
   border-right-color: #D3D3D3;
 }
 
-#fskzgqfapg .gt_bottom_border {
+#yaywdsqkrd .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #000000;
 }
 
-#fskzgqfapg .gt_col_headings {
+#yaywdsqkrd .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -682,7 +692,7 @@ Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1�
   border-right-color: #D3D3D3;
 }
 
-#fskzgqfapg .gt_col_heading {
+#yaywdsqkrd .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -702,7 +712,7 @@ Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1�
   overflow-x: hidden;
 }
 
-#fskzgqfapg .gt_column_spanner_outer {
+#yaywdsqkrd .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -714,15 +724,15 @@ Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1�
   padding-right: 4px;
 }
 
-#fskzgqfapg .gt_column_spanner_outer:first-child {
+#yaywdsqkrd .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#fskzgqfapg .gt_column_spanner_outer:last-child {
+#yaywdsqkrd .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#fskzgqfapg .gt_column_spanner {
+#yaywdsqkrd .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 1px;
   border-bottom-color: #000000;
@@ -734,11 +744,11 @@ Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1�
   width: 100%;
 }
 
-#fskzgqfapg .gt_spanner_row {
+#yaywdsqkrd .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#fskzgqfapg .gt_group_heading {
+#yaywdsqkrd .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -764,7 +774,7 @@ Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1�
   text-align: left;
 }
 
-#fskzgqfapg .gt_empty_group_heading {
+#yaywdsqkrd .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -779,15 +789,15 @@ Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1�
   vertical-align: middle;
 }
 
-#fskzgqfapg .gt_from_md > :first-child {
+#yaywdsqkrd .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#fskzgqfapg .gt_from_md > :last-child {
+#yaywdsqkrd .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#fskzgqfapg .gt_row {
+#yaywdsqkrd .gt_row {
   padding-top: 3px;
   padding-bottom: 3px;
   padding-left: 5px;
@@ -806,7 +816,7 @@ Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1�
   overflow-x: hidden;
 }
 
-#fskzgqfapg .gt_stub {
+#yaywdsqkrd .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -819,7 +829,7 @@ Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1�
   padding-right: 5px;
 }
 
-#fskzgqfapg .gt_stub_row_group {
+#yaywdsqkrd .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -833,15 +843,15 @@ Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1�
   vertical-align: top;
 }
 
-#fskzgqfapg .gt_row_group_first td {
+#yaywdsqkrd .gt_row_group_first td {
   border-top-width: 1px;
 }
 
-#fskzgqfapg .gt_row_group_first th {
+#yaywdsqkrd .gt_row_group_first th {
   border-top-width: 1px;
 }
 
-#fskzgqfapg .gt_summary_row {
+#yaywdsqkrd .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -851,16 +861,16 @@ Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1�
   padding-right: 5px;
 }
 
-#fskzgqfapg .gt_first_summary_row {
+#yaywdsqkrd .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#fskzgqfapg .gt_first_summary_row.thick {
+#yaywdsqkrd .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#fskzgqfapg .gt_last_summary_row {
+#yaywdsqkrd .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -870,7 +880,7 @@ Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1�
   border-bottom-color: #D3D3D3;
 }
 
-#fskzgqfapg .gt_grand_summary_row {
+#yaywdsqkrd .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -880,7 +890,7 @@ Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1�
   padding-right: 5px;
 }
 
-#fskzgqfapg .gt_first_grand_summary_row {
+#yaywdsqkrd .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -890,7 +900,7 @@ Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1�
   border-top-color: #D3D3D3;
 }
 
-#fskzgqfapg .gt_last_grand_summary_row_top {
+#yaywdsqkrd .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -900,11 +910,11 @@ Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1�
   border-bottom-color: #D3D3D3;
 }
 
-#fskzgqfapg .gt_striped {
+#yaywdsqkrd .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#fskzgqfapg .gt_table_body {
+#yaywdsqkrd .gt_table_body {
   border-top-style: solid;
   border-top-width: 1px;
   border-top-color: #000000;
@@ -913,7 +923,7 @@ Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1�
   border-bottom-color: #000000;
 }
 
-#fskzgqfapg .gt_footnotes {
+#yaywdsqkrd .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -927,7 +937,7 @@ Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1�
   border-right-color: #D3D3D3;
 }
 
-#fskzgqfapg .gt_footnote {
+#yaywdsqkrd .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -936,7 +946,7 @@ Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1�
   padding-right: 5px;
 }
 
-#fskzgqfapg .gt_sourcenotes {
+#yaywdsqkrd .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -950,7 +960,7 @@ Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1�
   border-right-color: #D3D3D3;
 }
 
-#fskzgqfapg .gt_sourcenote {
+#yaywdsqkrd .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -958,72 +968,72 @@ Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1�
   padding-right: 5px;
 }
 
-#fskzgqfapg .gt_left {
+#yaywdsqkrd .gt_left {
   text-align: left;
 }
 
-#fskzgqfapg .gt_center {
+#yaywdsqkrd .gt_center {
   text-align: center;
 }
 
-#fskzgqfapg .gt_right {
+#yaywdsqkrd .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#fskzgqfapg .gt_font_normal {
+#yaywdsqkrd .gt_font_normal {
   font-weight: normal;
 }
 
-#fskzgqfapg .gt_font_bold {
+#yaywdsqkrd .gt_font_bold {
   font-weight: bold;
 }
 
-#fskzgqfapg .gt_font_italic {
+#yaywdsqkrd .gt_font_italic {
   font-style: italic;
 }
 
-#fskzgqfapg .gt_super {
+#yaywdsqkrd .gt_super {
   font-size: 65%;
 }
 
-#fskzgqfapg .gt_footnote_marks {
+#yaywdsqkrd .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#fskzgqfapg .gt_asterisk {
+#yaywdsqkrd .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#fskzgqfapg .gt_indent_1 {
+#yaywdsqkrd .gt_indent_1 {
   text-indent: 5px;
 }
 
-#fskzgqfapg .gt_indent_2 {
+#yaywdsqkrd .gt_indent_2 {
   text-indent: 10px;
 }
 
-#fskzgqfapg .gt_indent_3 {
+#yaywdsqkrd .gt_indent_3 {
   text-indent: 15px;
 }
 
-#fskzgqfapg .gt_indent_4 {
+#yaywdsqkrd .gt_indent_4 {
   text-indent: 20px;
 }
 
-#fskzgqfapg .gt_indent_5 {
+#yaywdsqkrd .gt_indent_5 {
   text-indent: 25px;
 }
 
-#fskzgqfapg .katex-display {
+#yaywdsqkrd .katex-display {
   display: inline-flex !important;
   margin-bottom: 0.75em !important;
 }
 
-#fskzgqfapg div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+#yaywdsqkrd div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
   height: 0px !important;
 }
 </style>
@@ -1319,6 +1329,12 @@ Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1�
 </div>
 </div>
 </div>
+<p>【追記】2026-01-20 <code>gt::gt()</code>はそのままだとHTML出力になるんですが、環境によってはフォントとかが再現されないので、画像を追加しました。</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="20260119_CFA_table_in_one_pipeline.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="20260119_CFA_table_in_one_pipeline.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></a></p>
+</figure>
+</div>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -1349,7 +1365,7 @@ Rの備忘録<br>Rだけで確認的因子分析の表をつくってみた、1�
 <li>保存したα係数をくっつける</li>
 </ol></li>
 </ol>
-<p><code>gt::gt()</code>と<code>ViewPipeSteps::prit_pipe_step()</code>の相性が悪いので、<code>gt()</code>の前まで。</p>
+<p><code>gt::gt()</code>と<code>ViewPipeSteps::print_pipe_step()</code>の相性が悪いので、<code>gt()</code>の前まで。</p>
 <div class="cell" data-layout-align="center">
 <details class="code-fold">
 <summary>Code</summary>
@@ -2053,6 +2069,15 @@ loaded via a namespace (and not attached):
 </div>
 </div>
 </div>
+</section>
+<section id="log" class="level2">
+<h2 class="anchored" data-anchor-id="log">Log</h2>
+<ul>
+<li>2026-01-20
+<ul>
+<li>HTML出力だと環境によってはフォントが再現されないので、画像を追加。</li>
+</ul></li>
+</ul>
 
 
 </section>
@@ -2479,6 +2504,38 @@ loaded via a namespace (and not attached):
 </div>
   </div>
 </footer>
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
 
 
 
