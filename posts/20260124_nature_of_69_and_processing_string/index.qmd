@@ -1,0 +1,368 @@
+---
+title: "R 69という数字の面白い性質＆文字列の処理と正規表現のメモ"
+date: 2026-01-24
+abstract: |
+    69という数字には面白い性質があるらしいので、Rを使って試してみた。あと、数字の文字列の処理と正規表現のメモ。
+categories: [R memo, enjoy R, preprocess, regex]
+format: html
+knitr:
+  opts_chunk: 
+    fig.align: center
+    dev: ragg_png
+    R.options:
+      width: 100
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| label: thmubnail
+#| echo: false
+#| out-width: 75%
+#| fig.asp: 0.5
+data.frame(
+  x = 1,
+  y = 1,
+  title = "69という数字の面白い性質＆\n文字列の処理と正規表現のメモ"
+) |>
+  ggplot2::ggplot(
+    ggplot2::aes(x = x, y = y, label = title)
+  ) +
+  ggplot2::theme_void() +
+  ggplot2::geom_text(
+    size = 10,
+    family = "Gen Jyuu GothicX",
+    fontface = "bold"
+  )
+```
+
+## packages
+```{r}
+#| output: false
+library(tidyverse)
+```
+
+## Contents
+### background
+Youtubeを見てたらたまたまこんな動画に遭遇しました。
+
+<!-- youtube short to normal: /shorts/ > /watch?v= -->
+{{< video https://youtube.com/watch?v=vQSe3bSnwqo?si=wyvUpdlqWHSEQ3uN >}}
+
+69という数字は、2乗した値と3乗した値に0から9までの数字が重複なく現れるそうです。Rを使って確認してみました。
+
+### using tidyverse
+一番最初に思い付いた方法がこれ。
+```{r}
+tibble(
+  number = 1:100,
+  squared = number^2,
+  cubed = number^3
+) |>
+  filter(
+    str_length(squared) + str_length(cubed) == 10 # <1>
+  ) |>
+  mutate(
+    is_dup = str_c(squared, cubed) |>
+      str_extract_all(pattern = ".") |>
+      map_lgl( # <2>
+        .f = \(x) { # <2>
+          duplicated(x) |> # <2>
+            any() # <2>
+        } # <2>
+      )
+  ) |>
+  filter(!is_dup)
+```
+1. 数字の桁数を取るのにこの書き方だと実は危ないと思います。理由は後述。
+2. 直前の`stringr::str_replace_all(pattern = ".")`が、各文字を一文字ごとに分解した文字列ベクトルをlist形式にして返してくるので、`purrr::map_*()`を使って処理します。なお、map処理の中身は文字列ベクトルの中に重複が一つでもあるか否か（`duplicated(x) |> any()`）で戻り値はTRUE/FALSEになるので、logicalベクトルを返す`purrr::map_lgl()`を使います。
+
+確かに69だけが残りました。
+
+::: {.callout-note collapse=true}
+
+#### 処理の過程が見たい人向け
+`ViewPipeSteps::print_pipe_steps()`がQuartoのコードアノテーションと相性が悪いので、別にしました。
+```{r}
+#| code-fold: true
+#| attr-output: 'style="max-height: 350px;"'
+tibble(
+  number = 1:100,
+  squared = number^2,
+  cubed = number^3
+) %>%
+  filter(
+    str_length(squared) + str_length(cubed) == 10
+  ) %>%
+  mutate(
+    is_dup = str_c(squared, cubed) %>%
+      str_extract_all(pattern = ".") %>%
+      map_lgl(
+        .f = \(x) {
+          duplicated(x) %>%
+            any()
+        }
+      )
+  ) %>%
+  filter(!is_dup) %>%
+  ViewPipeSteps::print_pipe_steps() -> results # for displaying pipeline processing
+```
+
+`mutate()`の中身の部分。もとの`map_lgl()`の部分はわかりやすく２つに分けてます。
+```{r}
+#| code-fold: true
+#| attr-output: 'style="max-height: 350px;"'
+str_c((1:100)^2, (1:100)^3) %>%
+  str_extract_all(pattern = ".") %>%
+  map(
+    .f = \(x) {
+      duplicated(x)
+    }
+  ) %>%
+  map_lgl(
+    .f = \(x) {
+      any(x)
+    }
+  ) %>%
+  ViewPipeSteps::print_pipe_steps() -> results # for displaying pipeline processing
+```
+
+:::
+
+よくよく考えてみたら、わざわざtibbleにしなくてもできることに気づいたので、ベクトルとして処理してみます。とりあえず、まず最初に1から100までの2乗と3乗をくっつけたベクトルを作っておきます。
+```{r}
+vec_num_sqcu <-
+  paste0(
+    (1:100)^2, (1:100)^3
+  ) |>
+  setNames(1:100)
+
+vec_num_sqcu
+```
+
+`stringr`パッケージの関数で処理します。アップデートしてなくてバージョンが`{r} packageVersion("stringr")`のままなのでnamed  vectorが返ってこないです。100個のベクトルのまま処理して最後に`str_which()`でインデックスを返すことにします。（stringr 1.6.0からはnamed vectorが返ってきます[^stringr]。updateすればいいじゃんという指摘は今回聞かなかったこととします。）
+```{r}
+vec_num_sqcu |>
+  str_split(pattern = "") |> # <1>
+  map_chr(
+    .f = \(x) {
+      str_sort(x, numeric = TRUE) |> # <2>
+        str_flatten() # <3>
+    }
+  ) |>
+  str_which(pattern = "0123456789") # <4>
+```
+1. `stringr::str_split()`の引数`pattern`に`""`を入れると、一文字ずつ文字を分けてくれます。
+2. `numeric = TRUE`にすると、数字は数値としてソートしてくれます。今回は別になくてもいいです。
+3. `stringr::str_flatten()`は文字列ベクトルを単一の文字列にしてくれます。デフォルトで`collapse = ""`なので、コード補完を効かせていれば`str_c(collapse = "")`よりも入力が少ないです。
+4. `stringr::str_which()`は引数`pattern`に当てはまる要素のインデックスを返してくれます。
+
+[^stringr]: <https://tidyverse.org/blog/2025/11/stringr-1-6-0/>
+
+::: {.callout-note collapse=true}
+
+#### 処理の過程が見たい人向け
+```{r}
+#| code-fold: true
+#| attr-output: 'style="max-height: 350px;"'
+vec_num_sqcu %>%
+  str_split(pattern = "") %>%
+  map_chr(
+    .f = \(x) {
+      str_sort(x, numeric = TRUE) %>%
+        str_flatten()
+    }
+  ) %>%
+  str_which(pattern = "0123456789") %>%
+  ViewPipeSteps::print_pipe_steps() -> results # for displaying pipeline processing
+```
+
+:::
+
+### using built-in functions
+組み込み関数だけでやろうとするとこんな感じ？
+```{r}
+vec_num_sqcu |>
+  grep(
+    "^\\d{10}$", # <1>
+    x = _,
+    value = TRUE
+  ) |>
+  strsplit(split = "") |>
+  sapply(
+    FUN = \(x) {
+      sort(x) |>
+        paste(collapse = "")
+    }
+  ) |>
+  grep(
+    "0123456789",
+    x = _,
+    value = TRUE
+  )
+```
+1. 正規表現で文頭と数字10文字と文末にしておくことで、科学的表記になる要素と数字10桁にならない要素を除外できますが……よくよく考えたら最後に`grep()`で探すので、ここの`grep()`は別になくてもいいかも。
+
+::: {.callout-note collapse=true}
+
+#### 処理の過程が見たい人向け
+```{r}
+#| code-fold: true
+#| attr-output: 'style="max-height: 350px;"'
+vec_num_sqcu %>%
+  grep(
+    "^\\d{10}$",
+    x = .,
+    value = TRUE
+  ) %>%
+  strsplit(split = "") %>%
+  sapply(
+    FUN = \(x) {
+      sort(x) |>
+        paste(collapse = "")
+    }
+  ) %>%
+  grep(
+    "0123456789",
+    x = .,
+    value = TRUE
+  ) %>%
+  ViewPipeSteps::print_pipe_steps() -> results # for displaying pipeline processing
+```
+
+:::
+
+`grep()`は第二引数`x`にマッチさせたい文字列が来るので、パイプフローの中だと必ずプレスホルダーが必要になる点と、`value = TRUE`にしてくれないとインデックスしか返してくれない点がやはり面倒です。
+
+## Supplement
+### scientific notation
+ちなみに、`100^3`みたいな大きな数は指数表記（科学的表記）になります。
+```{r}
+str_c(c(100^2, 100^3, 100^4, 100^5))
+```
+
+このまま桁数を取ろうとして`str_length()`を使うとこうなります。
+```{r}
+str_length(c(100^2, 100^3, 100^4, 100^5))
+```
+
+なんと全部5になってしまいました。なので、最初のtibbleから始めた方法では実はこうなっていました。
+```{r}
+tibble(
+  number = 100,
+  squared = number^2,
+  cubed = number^3
+) |>
+  filter(
+    str_length(squared) + str_length(cubed) == 10
+  )
+```
+本当だと11桁になるはずなので`dplyr::filter()`には引っかからないはずですが、なぜか残っています。tibbleはデフォルトだと13桁まで表示してくれるようなので[^tibble_width13]、コンソールの見た目上ではうまくいきそうですが、処理のうえではそうはならないようです。
+
+[^tibble_width13]: tibbleの表示に関する設定を行う`pillar`パッケージの`pillar.max_dec_width`に書いてある。 <https://pillar.r-lib.org/reference/pillar_options.html>
+
+対処法ですが、いくつか方法があります。例えば、あらかじめ`options(scipen = 大きな数)`をやっておくと、そのセッション内ではある程度は指数表記にならないようです。
+```{r}
+options(scipen = 100)
+str_c(c(100^2, 100^3, 100^4, 100^5))
+str_length(c(100^2, 100^3, 100^4, 100^5))
+```
+
+もしくは`format(..., scientific = FALSE)`を使うのもありかもしれません。特別なパッケージを使わずとも、ある程度の大きさの数まではちゃんと表示してくれます。なお、戻り値は文字列です。
+```{r}
+options(scipen = 0) # restore defalut setting
+
+format(
+  c(100^2, 100^3, 100^4, 100^5),
+  trim = TRUE, # <1>
+  scientific = FALSE
+)
+```
+1. デフォルトの`trim = FALSE`のままだと、一番文字数が大きいものに合わせて、足りない部分がスペースで詰められちゃうので、桁数を数えるときは`TRUE`の方がいいです。
+
+### regular expression
+文字列をスプリットせずに正規表現を多用してどうにかならないかも試してみました。69以外の数字は0から9までの数字で重複があるということなので、はじめは後方参照をそのまま使えばいいのかなと思ってました。
+```{r}
+vec_num_sqcu |>
+  grep(
+    pattern = "^\\d{10}$",
+    x = _,
+    value = TRUE
+  ) |>
+  grep(
+    pattern = "(\\d).*?\\1", # <1>
+    x = _,
+    value = TRUE,
+    invert = TRUE # <2>
+  )
+```
+1. 意図としては、`(\\d)`で数字を１文字拾って、`.*?`で違う数字があってもなくても良くて、`\\1`の後方参照で最初に拾った数値の重複が表れる、という感じでした。
+2. 引数`invert`が`TRUE`で、マッチしなかった要素を返すようにする。
+
+69以外は数字に重複がでるのでこれでできるかと思ったら、思いのほか絞れませんでした。残った数を見てみると、どうやら最初の一桁（左端の数字）が重複していないものが残っているっぽいです。`grep()`のHelpから飛んで`help("regular expression")`に飛んで、さらにPOSIX 1003.2 standard[^posix_1003.2]に飛んで読んでみた結果、最初`(\\d)`が左端の数字にマッチするけど、マッチした文字が後方で見つからないので全体としてマッチせず、ということなんじゃないかと思います。
+
+[^posix_1003.2]: <https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap09.html>
+
+なお、引数`perl`を`TRUE`にして、Perl言語の正規表現の扱いにすると成功しました。
+```{r}
+vec_num_sqcu |>
+  grep(
+    pattern = "^\\d{10}$",
+    x = _,
+    value = TRUE
+  ) |>
+  grep(
+    pattern = "(\\d).*?\\1",
+    x = _,
+    perl = TRUE, # Here！
+    value = TRUE,
+    invert = TRUE
+  )
+```
+
+他にも、重複がある数字にマッチしてほしいということで、最初に任意の文字（`.*?`）を追加したら、デフォルトの`grep()`のままでもうまく行きました。
+```{r}
+vec_num_sqcu |>
+  grep(
+    pattern = "^\\d{10}$",
+    x = _,
+    value = TRUE
+  ) |>
+  grep(
+    pattern = ".*?(\\d).*?\\1",
+    x = _,
+    value = TRUE,
+    invert = TRUE
+  )
+```
+
+ちなみに`stringr`だと`grep(..., perl = TRUE)`のときと同じ結果になります。
+```{r}
+#| attr-output: 'style="max-height: 350px;"'
+vec_num_sqcu |>
+  str_view( # <1>
+    pattern = "(\\d).*?\\1",
+    match = NA, # <2>
+    html = FALSE # <3>
+  ) |>
+  print(n = 100)
+```
+1. `stringr::str_view()`はマッチしたところを表示してくれます。コンソール上だとマッチした部分が<>で囲まれて青色で出力されます。
+2. マッチの有無にかかわらず、全部出力する。
+3. `TRUE`だとHTML出力になるけど、レンダリングした時にスクロールに対応してくれなかったので、デフォルトの`FALSE`に。
+
+10桁の中では69だけマッチしていないです。つまり、69が0から9の数字までで重複がないということですね。
+
+## Conclusion
+69という数字が、2乗した値と3乗した値に0から9までの数字が重複なく現れる唯一の数であるというのを、Rを使って確かめてみました。思ったより手間がかからずにできました。正規表現についてはまだまだ勉強しないとです。
+
+## Session Infomation
+
+:::{.callout-note collapse=true title="sessioninfo"}
+
+```{r}
+#| echo: false
+sessionInfo()
+```
+
+:::
