@@ -1,19 +1,40 @@
 ---
 title: "purrr::mapを使ってpsych::alphaを一気に処理する"
 date: 2025-10-25
+date-modified: 2026-01-24
 abstract: |
   `purrr::map()`の中で`psych::alpha()`を使って、元のdfから一気にα係数の処理をしてみた。
 categories: [R memo, preprocess, analysis]
 format: html
 knitr:
-  opts_knit: 
+  opts_chunk: 
+    fig.align: center
+    dev: ragg_png
     R.options:
-      width: 120
+      width: 100
 editor_options: 
   chunk_output_type: console
 ---
 
-# Packages
+```{r}
+#| label: thumbnail
+#| echo: false
+#| fig.asp: 0.5
+ggplot2::ggplot() +
+  ggplot2::theme_void() +
+  ggplot2::geom_text(
+    ggplot2::aes(
+      x = 1,
+      y = 1,
+      label = "purrr::mapを使って\npsych::alphaを一気に処理する"
+    ),
+    size = 10,
+    family = "Gen Jyuu Gothic",
+    fontface = "bold"
+  )
+```
+
+## Packages
 ```{r}
 pacman::p_load(
   tidyverse,
@@ -21,7 +42,7 @@ pacman::p_load(
 )
 ```
 
-# Content
+## Content
 デモデータとして`psych::bfi`を使います。
 ```{r}
 data(bfi, package = "psych")
@@ -58,7 +79,7 @@ res_alpha_c
 
 ただ、せっかくなのでほとんどをRに任せて１回の処理でできたら、それもそれでいい気がします。ということで試してみました。
 
-## やりやすいデータの場合
+### やりやすいデータの場合
 まず、処理しやすいようにデータをlong型にします。ついでに`tibble::rownames_to_column()`でrownameをid列に変えておきます。id列がないと`tidyr::pivot_wider()`出来なくなるので、少なくともその処理の前にはやっておきます。
 ```{r}
 bfi |>
@@ -134,6 +155,7 @@ bfi |>
 
 最後に結果が詰まったres_alpha列だけ取り出します。データフレームからある1列の要素を取り出すときは`dplyr::pull()`が使えます。res_alpha列は`map()`を使って作ったので、各下位尺度のα係数が入ったlistが返ってきます。
 ```{r}
+#| attr-output: 'style="max-height: 500px;"'
 bfi |>
   rownames_to_column(var = "id") |>
   pivot_longer(
@@ -175,11 +197,12 @@ bfi |>
 
 ということで、元のdfからmapを使って一気にα係数を求めることができました。一つのnamed listに下位尺度5つ分の出力が詰まっているので、オブジェクトに入れた際にGrobal Env.がオブジェクトだらけにならないというのはいい点かもしれないです。
 
-## やりやすくなさそうなデータの場合
+### やりやすくなさそうなデータの場合
 `bfi`データは列名に下位尺度の分類が含まれていたのでやりやすかったのですが、実際に扱うデータだとそうはいかない場合もあると思います。というわけで、`bfi`を少しいじってこんなデータを用意してみました。
 
 ::: {.callout-note collapse="true"}
-### 改造の処理はこちら
+
+#### 改造の処理はこちら
 `bfi`の列をデモグラフィック列（26-28）以外ランダムに並べ替えるために、列番号をシャッフルします。
 ```{r}
 set.seed(20251025)
@@ -304,6 +327,7 @@ df_test |>
 ```
 後の処理は先ほどと変わりません。nestしたうえでmap処理をしていけばいいです。
 ```{r}
+#| attr-output: 'style="max-height: 500px;"'
 df_test |>
   pivot_longer(
     cols = starts_with("q1"),
@@ -354,5 +378,25 @@ df_test |>
 
 こちらのデータでもうまくできました。
 
-# Conclusion
+## Conclusion
 というわけで、`purrr::map()`の中で`psych::alpha()`を使って、元のdfから一気にα係数の処理をしてみました。コードの可読性という観点からみると下位尺度ごとに処理をしてオブジェクトに入れていく方法の方が見てわかりやすいし、コードの量もそれほど多くならないので、map処理で一気にやる方法が実用的かはわかりません。ただ、パイプフローの中でシーケンシャルに進められる点やミスの原因となる要素の手入力を減らせる点が個人的にはいいと思います。
+
+## Session Infomation
+
+:::{.callout-note collapse=true title="sessioninfo"}
+
+```{r}
+#| echo: false
+sessionInfo()
+```
+
+:::
+
+## Log
+- 2026-01-24
+  - 追加
+    - サムネイル
+    - Session Information
+  - 修正
+    - Headingの変更
+    - 出力が長いセルをスクロールに

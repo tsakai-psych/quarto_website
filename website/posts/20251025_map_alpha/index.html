@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.32">
+<meta name="generator" content="quarto-1.8.26">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -68,14 +68,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="../../">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-1c1298d4aec20b932e1c4c12e9ecd263.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-5d4073339ea55b1ad5ce071f10a273ff.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-0bd6bd4cbde67017807ea45c3bc8f802.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-04790538fe244593e78e58a7cb4983f3.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -108,10 +109,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link rel="stylesheet" href="../../styles.css">
 <meta property="og:title" content="purrr::mapを使ってpsych::alphaを一気に処理する – さかいの備忘録">
 <meta property="og:description" content="purrr::map()の中でpsych::alpha()を使って、元のdfから一気にα係数の処理をしてみた。">
+<meta property="og:image" content="https://tsakai-website.pages.dev/posts/20251025_map_alpha/index_files/figure-html/thumbnail-1.png">
 <meta property="og:site_name" content="さかいの備忘録">
+<meta property="og:image:height" content="672">
+<meta property="og:image:width" content="1344">
 <meta name="twitter:title" content="purrr::mapを使ってpsych::alphaを一気に処理する – さかいの備忘録">
 <meta name="twitter:description" content="purrr::map()の中でpsych::alpha()を使って、元のdfから一気にα係数の処理をしてみた。">
-<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tsakai-website.pages.dev/posts/20251025_map_alpha/index_files/figure-html/thumbnail-1.png">
+<meta name="twitter:image-height" content="672">
+<meta name="twitter:image-width" content="1344">
+<meta name="twitter:card" content="summary_large_image">
 </head>
 
 <body class="nav-fixed quarto-light">
@@ -186,6 +193,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       </div>
     </div>
     
+      <div>
+      <div class="quarto-title-meta-heading">Modified</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date-modified">2026-01-24</p>
+      </div>
+    </div>
       
     </div>
     
@@ -211,6 +224,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#やりやすくなさそうなデータの場合" id="toc-やりやすくなさそうなデータの場合" class="nav-link" data-scroll-target="#やりやすくなさそうなデータの場合">やりやすくなさそうなデータの場合</a></li>
   </ul></li>
   <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  <li><a href="#session-infomation" id="toc-session-infomation" class="nav-link" data-scroll-target="#session-infomation">Session Infomation</a></li>
+  <li><a href="#log" id="toc-log" class="nav-link" data-scroll-target="#log">Log</a></li>
   </ul>
 </nav>
     </div>
@@ -221,24 +236,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<section id="packages" class="level1">
-<h1>Packages</h1>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(</span>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/thumbnail-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<section id="packages" class="level2">
+<h2 class="anchored" data-anchor-id="packages">Packages</h2>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(</span>
 <span id="cb1-2"><a href="#cb1-2"></a>  tidyverse,</span>
 <span id="cb1-3"><a href="#cb1-3"></a>  psych</span>
-<span id="cb1-4"><a href="#cb1-4"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-4"><a href="#cb1-4"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
-<section id="content" class="level1">
-<h1>Content</h1>
+<section id="content" class="level2">
+<h2 class="anchored" data-anchor-id="content">Content</h2>
 <p>デモデータとして<code>psych::bfi</code>を使います。</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="fu">data</span>(bfi, <span class="at">package =</span> <span class="st">"psych"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="fu">data</span>(bfi, <span class="at">package =</span> <span class="st">"psych"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>ロードされるデータのうち、<code>bfi</code>は2800行28列のデータで、列の最初の25項目は5因子に分かれるパーソナリティに関する項目が各5つずつ、残りの3列は性別、学歴、年齢が含まれています。</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="fu">str</span>(bfi)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="fu">str</span>(bfi)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>'data.frame':   2800 obs. of  28 variables:
  $ A1       : int  2 2 5 4 2 6 2 4 4 2 ...
@@ -272,8 +296,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p><code>bfi.keys</code>の方は、25項目のパーソナリティに関する項目がそれぞれのど下位尺度を構成するのかという情報がlist形式で収められています。頭に-がついているのは、逆転項目のしるしです。</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>bfi.keys</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>bfi.keys</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$agree
 [1] "-A1" "A2"  "A3"  "A4"  "A5" 
@@ -292,8 +316,8 @@ $openness
 </div>
 </div>
 <p>このデータのそれぞれの下位尺度ごとにα係数を求めたいとなった場合、ふつうはこんな感じになると思います。</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>res_alpha_a <span class="ot">&lt;-</span> bfi <span class="sc">|&gt;</span></span>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>res_alpha_a <span class="ot">&lt;-</span> bfi <span class="sc">|&gt;</span></span>
 <span id="cb7-2"><a href="#cb7-2"></a>  <span class="fu">select</span>(A1<span class="sc">:</span>A5) <span class="sc">|&gt;</span></span>
 <span id="cb7-3"><a href="#cb7-3"></a>  psych<span class="sc">::</span><span class="fu">alpha</span>(</span>
 <span id="cb7-4"><a href="#cb7-4"></a>    <span class="at">keys =</span> <span class="st">"A1"</span></span>
@@ -307,20 +331,20 @@ $openness
 <span id="cb7-12"><a href="#cb7-12"></a>    <span class="at">keys =</span> <span class="fu">c</span>(<span class="st">"C4"</span>, <span class="st">"C5"</span>)</span>
 <span id="cb7-13"><a href="#cb7-13"></a>  )</span>
 <span id="cb7-14"><a href="#cb7-14"></a></span>
-<span id="cb7-15"><a href="#cb7-15"></a>res_alpha_c</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-15"><a href="#cb7-15"></a>res_alpha_c</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>列名選択と逆転項目の指定を自分で頑張る方法です。これを5因子分繰り返します。可読性は悪くないので、これでも十分な気がします。</p>
 <p>ただ、せっかくなのでほとんどをRに任せて１回の処理でできたら、それもそれでいい気がします。ということで試してみました。</p>
-<section id="やりやすいデータの場合" class="level2">
-<h2 class="anchored" data-anchor-id="やりやすいデータの場合">やりやすいデータの場合</h2>
+<section id="やりやすいデータの場合" class="level3">
+<h3 class="anchored" data-anchor-id="やりやすいデータの場合">やりやすいデータの場合</h3>
 <p>まず、処理しやすいようにデータをlong型にします。ついでに<code>tibble::rownames_to_column()</code>でrownameをid列に変えておきます。id列がないと<code>tidyr::pivot_wider()</code>出来なくなるので、少なくともその処理の前にはやっておきます。</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-6"><pre class="sourceCode numberSource r code-annotation-code number-lines code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-6-1"><a href="#annotated-cell-6-1"></a>bfi <span class="sc">|&gt;</span></span>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-6"><pre class="sourceCode numberSource r code-annotation-code number-lines code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-6-1"><a href="#annotated-cell-6-1"></a>bfi <span class="sc">|&gt;</span></span>
 <span id="annotated-cell-6-2"><a href="#annotated-cell-6-2"></a>  <span class="fu">rownames_to_column</span>(<span class="at">var =</span> <span class="st">"id"</span>) <span class="sc">|&gt;</span></span>
 <span id="annotated-cell-6-3"><a href="#annotated-cell-6-3"></a>  <span class="fu">pivot_longer</span>(</span>
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-6" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-6-4" class="code-annotation-target"><a href="#annotated-cell-6-4"></a>    <span class="at">cols =</span> <span class="fu">matches</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">w</span><span class="sc">\\</span><span class="st">d"</span>),</span>
 <span id="annotated-cell-6-5"><a href="#annotated-cell-6-5"></a>    <span class="at">names_to =</span> <span class="st">"items"</span></span>
-<span id="annotated-cell-6-6"><a href="#annotated-cell-6-6"></a>  )</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="annotated-cell-6-6"><a href="#annotated-cell-6-6"></a>  )</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
 <dt data-target-cell="annotated-cell-6" data-target-annotation="1">1</dt>
@@ -347,8 +371,8 @@ $openness
 </div>
 </div>
 <p>次に、nest用の列を作ってnestします。今回は列名に下位尺度が入っているので、それを抽出すれば簡単にnest用の列が完成です。やりやすいデータとはこのことを言っています。</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-7"><pre class="sourceCode numberSource r code-annotation-code number-lines code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-7-1"><a href="#annotated-cell-7-1"></a>bfi <span class="sc">|&gt;</span></span>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-7"><pre class="sourceCode numberSource r code-annotation-code number-lines code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-7-1"><a href="#annotated-cell-7-1"></a>bfi <span class="sc">|&gt;</span></span>
 <span id="annotated-cell-7-2"><a href="#annotated-cell-7-2"></a>  <span class="fu">rownames_to_column</span>(<span class="at">var =</span> <span class="st">"id"</span>) <span class="sc">|&gt;</span></span>
 <span id="annotated-cell-7-3"><a href="#annotated-cell-7-3"></a>  <span class="fu">pivot_longer</span>(</span>
 <span id="annotated-cell-7-4"><a href="#annotated-cell-7-4"></a>    <span class="at">cols =</span> <span class="fu">matches</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">w</span><span class="sc">\\</span><span class="st">d"</span>),</span>
@@ -358,7 +382,7 @@ $openness
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-7-8" class="code-annotation-target"><a href="#annotated-cell-7-8"></a>    <span class="at">nest_key =</span> <span class="fu">str_extract</span>(items, <span class="st">"^."</span>) <span class="sc">|&gt;</span></span>
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="2" onclick="event.preventDefault();">2</a><span id="annotated-cell-7-9" class="code-annotation-target"><a href="#annotated-cell-7-9"></a>      <span class="fu">tolower</span>()</span>
 <span id="annotated-cell-7-10"><a href="#annotated-cell-7-10"></a>  ) <span class="sc">|&gt;</span></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-7-11" class="code-annotation-target"><a href="#annotated-cell-7-11"></a>  <span class="fu">nest</span>(<span class="at">.by =</span> nest_key)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-7" data-target-annotation="3" onclick="event.preventDefault();">3</a><span id="annotated-cell-7-11" class="code-annotation-target"><a href="#annotated-cell-7-11"></a>  <span class="fu">nest</span>(<span class="at">.by =</span> nest_key)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
 <dt data-target-cell="annotated-cell-7" data-target-annotation="1">1</dt>
@@ -387,8 +411,8 @@ $openness
 </div>
 </div>
 <p>nestされたデータを処理します。data列はlistなので、中の各要素を処理したいときは<code>purrr::map()</code>が使えます。data列の各要素はデータフレームで、しかもaの行はAで始まる項目だけ、cの行はCで始まる項目だけ、eの行は…のlongデータになっています。そのため、<code>map()</code>の中でwide型に直して必要列以外取り除き、<code>psych::alpha()</code>に入れてあげればいいわけです。</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-8"><pre class="sourceCode numberSource r code-annotation-code number-lines code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-8-1"><a href="#annotated-cell-8-1"></a>bfi <span class="sc">|&gt;</span></span>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-8"><pre class="sourceCode numberSource r code-annotation-code number-lines code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-8-1"><a href="#annotated-cell-8-1"></a>bfi <span class="sc">|&gt;</span></span>
 <span id="annotated-cell-8-2"><a href="#annotated-cell-8-2"></a>  <span class="fu">rownames_to_column</span>(<span class="at">var =</span> <span class="st">"id"</span>) <span class="sc">|&gt;</span></span>
 <span id="annotated-cell-8-3"><a href="#annotated-cell-8-3"></a>  <span class="fu">pivot_longer</span>(</span>
 <span id="annotated-cell-8-4"><a href="#annotated-cell-8-4"></a>    <span class="at">cols =</span> <span class="fu">matches</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">w</span><span class="sc">\\</span><span class="st">d"</span>),</span>
@@ -422,7 +446,7 @@ $openness
 <span id="annotated-cell-8-32"><a href="#annotated-cell-8-32"></a>    ) <span class="sc">|&gt;</span></span>
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-8" data-target-annotation="4" onclick="event.preventDefault();">4</a><span id="annotated-cell-8-33" class="code-annotation-target"><a href="#annotated-cell-8-33"></a>      <span class="fu">set_names</span>(bfi_key_name),</span>
 <a class="code-annotation-anchor" data-target-cell="annotated-cell-8" data-target-annotation="5" onclick="event.preventDefault();">5</a><span id="annotated-cell-8-34" class="code-annotation-target"><a href="#annotated-cell-8-34"></a>    <span class="at">.by =</span> nest_key</span>
-<span id="annotated-cell-8-35"><a href="#annotated-cell-8-35"></a>  )</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="annotated-cell-8-35"><a href="#annotated-cell-8-35"></a>  )</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
 <dt data-target-cell="annotated-cell-8" data-target-annotation="1">1</dt>
@@ -459,8 +483,8 @@ $openness
 </div>
 </div>
 <p>最後に結果が詰まったres_alpha列だけ取り出します。データフレームからある1列の要素を取り出すときは<code>dplyr::pull()</code>が使えます。res_alpha列は<code>map()</code>を使って作ったので、各下位尺度のα係数が入ったlistが返ってきます。</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-9"><pre class="sourceCode numberSource r code-annotation-code number-lines code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-9-1"><a href="#annotated-cell-9-1"></a>bfi <span class="sc">|&gt;</span></span>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-9"><pre class="sourceCode numberSource r code-annotation-code number-lines code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-9-1"><a href="#annotated-cell-9-1"></a>bfi <span class="sc">|&gt;</span></span>
 <span id="annotated-cell-9-2"><a href="#annotated-cell-9-2"></a>  <span class="fu">rownames_to_column</span>(<span class="at">var =</span> <span class="st">"id"</span>) <span class="sc">|&gt;</span></span>
 <span id="annotated-cell-9-3"><a href="#annotated-cell-9-3"></a>  <span class="fu">pivot_longer</span>(</span>
 <span id="annotated-cell-9-4"><a href="#annotated-cell-9-4"></a>    <span class="at">cols =</span> <span class="fu">matches</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">w</span><span class="sc">\\</span><span class="st">d"</span>),</span>
@@ -495,7 +519,7 @@ $openness
 <span id="annotated-cell-9-33"><a href="#annotated-cell-9-33"></a>      <span class="fu">set_names</span>(bfi_key_name),</span>
 <span id="annotated-cell-9-34"><a href="#annotated-cell-9-34"></a>    <span class="at">.by =</span> nest_key</span>
 <span id="annotated-cell-9-35"><a href="#annotated-cell-9-35"></a>  ) <span class="sc">|&gt;</span></span>
-<a class="code-annotation-anchor" data-target-cell="annotated-cell-9" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-9-36" class="code-annotation-target"><a href="#annotated-cell-9-36"></a>  <span class="fu">pull</span>(res_alpha)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<a class="code-annotation-anchor" data-target-cell="annotated-cell-9" data-target-annotation="1" onclick="event.preventDefault();">1</a><span id="annotated-cell-9-36" class="code-annotation-target"><a href="#annotated-cell-9-36"></a>  <span class="fu">pull</span>(res_alpha)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
 <dt data-target-cell="annotated-cell-9" data-target-annotation="1">1</dt>
@@ -505,7 +529,7 @@ $openness
 </dl>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>$agree
+<pre style="max-height: 500px;"><code>$agree
 
 Reliability analysis   
 Call: psych::alpha(x = select(pivot_wider(x, names_from = items, values_from = value), 
@@ -703,34 +727,33 @@ O5 0.27 0.32 0.19 0.13 0.07 0.03 0.01</code></pre>
 </div>
 <p>ということで、元のdfからmapを使って一気にα係数を求めることができました。一つのnamed listに下位尺度5つ分の出力が詰まっているので、オブジェクトに入れた際にGrobal Env.がオブジェクトだらけにならないというのはいい点かもしれないです。</p>
 </section>
-<section id="やりやすくなさそうなデータの場合" class="level2">
-<h2 class="anchored" data-anchor-id="やりやすくなさそうなデータの場合">やりやすくなさそうなデータの場合</h2>
+<section id="やりやすくなさそうなデータの場合" class="level3">
+<h3 class="anchored" data-anchor-id="やりやすくなさそうなデータの場合">やりやすくなさそうなデータの場合</h3>
 <p><code>bfi</code>データは列名に下位尺度の分類が含まれていたのでやりやすかったのですが、実際に扱うデータだとそうはいかない場合もあると思います。というわけで、<code>bfi</code>を少しいじってこんなデータを用意してみました。</p>
 <div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-改造の処理はこちら
+<span class="screen-reader-only">Note</span>改造の処理はこちら
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
 <div id="callout-1" class="callout-1-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p><code>bfi</code>の列をデモグラフィック列（26-28）以外ランダムに並べ替えるために、列番号をシャッフルします。</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="fu">set.seed</span>(<span class="dv">20251025</span>)</span>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="fu">set.seed</span>(<span class="dv">20251025</span>)</span>
 <span id="cb12-2"><a href="#cb12-2"></a></span>
-<span id="cb12-3"><a href="#cb12-3"></a>(vec_col_order <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">25</span>), <span class="dv">26</span><span class="sc">:</span><span class="dv">28</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-3"><a href="#cb12-3"></a>(vec_col_order <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">25</span>), <span class="dv">26</span><span class="sc">:</span><span class="dv">28</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1] 23  7 13 25  1  3  5 10 17  8 21 22 15 16  4 19  6 18  9 20 12 11  2 14 24
-[26] 26 27 28</code></pre>
+<pre><code> [1] 23  7 13 25  1  3  5 10 17  8 21 22 15 16  4 19  6 18  9 20 12 11  2 14 24 26 27 28</code></pre>
 </div>
 </div>
 <p>後でkeyを作る用のベクトルを作成。チェック用に元の<code>bfi</code>の列名を名前に付けておきます。</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>vec_names_df_test <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>vec_names_df_test <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
 <span id="cb14-2"><a href="#cb14-2"></a>  <span class="fu">paste0</span>(<span class="st">"q1_x"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">25</span>),</span>
 <span id="cb14-3"><a href="#cb14-3"></a>  <span class="fu">paste0</span>(<span class="st">"q2_x"</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>)</span>
 <span id="cb14-4"><a href="#cb14-4"></a>) <span class="sc">|&gt;</span></span>
@@ -738,35 +761,32 @@ O5 0.27 0.32 0.19 0.13 0.07 0.03 0.01</code></pre>
 <span id="cb14-6"><a href="#cb14-6"></a>    <span class="fu">colnames</span>(bfi[, vec_col_order])</span>
 <span id="cb14-7"><a href="#cb14-7"></a>  )</span>
 <span id="cb14-8"><a href="#cb14-8"></a></span>
-<span id="cb14-9"><a href="#cb14-9"></a>vec_names_df_test</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-9"><a href="#cb14-9"></a>vec_names_df_test</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>       O3        C2        E3        O5        A1        A3        A5        C5 
-  "q1_x1"   "q1_x2"   "q1_x3"   "q1_x4"   "q1_x5"   "q1_x6"   "q1_x7"   "q1_x8" 
-       N2        C3        O1        O2        E5        N1        A4        N4 
-  "q1_x9"  "q1_x10"  "q1_x11"  "q1_x12"  "q1_x13"  "q1_x14"  "q1_x15"  "q1_x16" 
-       C1        N3        C4        N5        E2        E1        A2        E4 
- "q1_x17"  "q1_x18"  "q1_x19"  "q1_x20"  "q1_x21"  "q1_x22"  "q1_x23"  "q1_x24" 
-       O4    gender education       age 
- "q1_x25"   "q2_x1"   "q2_x2"   "q2_x3" </code></pre>
+<pre><code>       O3        C2        E3        O5        A1        A3        A5        C5        N2        C3 
+  "q1_x1"   "q1_x2"   "q1_x3"   "q1_x4"   "q1_x5"   "q1_x6"   "q1_x7"   "q1_x8"   "q1_x9"  "q1_x10" 
+       O1        O2        E5        N1        A4        N4        C1        N3        C4        N5 
+ "q1_x11"  "q1_x12"  "q1_x13"  "q1_x14"  "q1_x15"  "q1_x16"  "q1_x17"  "q1_x18"  "q1_x19"  "q1_x20" 
+       E2        E1        A2        E4        O4    gender education       age 
+ "q1_x21"  "q1_x22"  "q1_x23"  "q1_x24"  "q1_x25"   "q2_x1"   "q2_x2"   "q2_x3" </code></pre>
 </div>
 </div>
 <p>列番号をシャッフルしたベクトルを使って、列を並び替えたdfを作ります。ついでにid列もつけておきます。</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>df_test <span class="ot">&lt;-</span> bfi[, vec_col_order] <span class="sc">|&gt;</span></span>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>df_test <span class="ot">&lt;-</span> bfi[, vec_col_order] <span class="sc">|&gt;</span></span>
 <span id="cb16-2"><a href="#cb16-2"></a>  <span class="st">`</span><span class="at">colnames&lt;-</span><span class="st">`</span>(vec_names_df_test) <span class="sc">|&gt;</span></span>
 <span id="cb16-3"><a href="#cb16-3"></a>  <span class="fu">rownames_to_column</span>(<span class="at">var =</span> <span class="st">"id"</span>)</span>
 <span id="cb16-4"><a href="#cb16-4"></a></span>
-<span id="cb16-5"><a href="#cb16-5"></a><span class="fu">colnames</span>(df_test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb16-5"><a href="#cb16-5"></a><span class="fu">colnames</span>(df_test)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1] "id"     "q1_x1"  "q1_x2"  "q1_x3"  "q1_x4"  "q1_x5"  "q1_x6"  "q1_x7" 
- [9] "q1_x8"  "q1_x9"  "q1_x10" "q1_x11" "q1_x12" "q1_x13" "q1_x14" "q1_x15"
-[17] "q1_x16" "q1_x17" "q1_x18" "q1_x19" "q1_x20" "q1_x21" "q1_x22" "q1_x23"
-[25] "q1_x24" "q1_x25" "q2_x1"  "q2_x2"  "q2_x3" </code></pre>
+<pre><code> [1] "id"     "q1_x1"  "q1_x2"  "q1_x3"  "q1_x4"  "q1_x5"  "q1_x6"  "q1_x7"  "q1_x8"  "q1_x9" 
+[11] "q1_x10" "q1_x11" "q1_x12" "q1_x13" "q1_x14" "q1_x15" "q1_x16" "q1_x17" "q1_x18" "q1_x19"
+[21] "q1_x20" "q1_x21" "q1_x22" "q1_x23" "q1_x24" "q1_x25" "q2_x1"  "q2_x2"  "q2_x3" </code></pre>
 </div>
 </div>
 <p>構成要素の分類を示すkeyを作ります。実際の場合はnamed listを自力で作成すればいいと思います（それか、<code>psych::make.keys()</code>あたりを使うか）。今回は手入力したくないのでゴリ押します。</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>list_test_keys <span class="ot">&lt;-</span></span>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>list_test_keys <span class="ot">&lt;-</span></span>
 <span id="cb18-2"><a href="#cb18-2"></a>  <span class="fu">names</span>(bfi.keys) <span class="sc">|&gt;</span></span>
 <span id="cb18-3"><a href="#cb18-3"></a>  <span class="fu">str_extract</span>(<span class="at">pattern =</span> <span class="st">"^."</span>) <span class="sc">|&gt;</span></span>
 <span id="cb18-4"><a href="#cb18-4"></a>  <span class="fu">toupper</span>() <span class="sc">|&gt;</span></span>
@@ -788,7 +808,7 @@ O5 0.27 0.32 0.19 0.13 0.07 0.03 0.01</code></pre>
 <span id="cb18-20"><a href="#cb18-20"></a>    }</span>
 <span id="cb18-21"><a href="#cb18-21"></a>  )</span>
 <span id="cb18-22"><a href="#cb18-22"></a></span>
-<span id="cb18-23"><a href="#cb18-23"></a>list_test_keys</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb18-23"><a href="#cb18-23"></a>list_test_keys</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$A
       A1       A3       A5       A4       A2 
@@ -813,8 +833,8 @@ $O
 </div>
 <p>手入力の方がむしろ省コードだし楽だろ！！という指摘は今回はなかったことにします。</p>
 <p>ちなみに逆転項目の設定はちゃんとできています。</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a><span class="fu">data.frame</span>(</span>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a><span class="fu">data.frame</span>(</span>
 <span id="cb20-2"><a href="#cb20-2"></a>  <span class="fu">enframe</span>(</span>
 <span id="cb20-3"><a href="#cb20-3"></a>    <span class="fu">unlist</span>(list_test_keys)</span>
 <span id="cb20-4"><a href="#cb20-4"></a>  ) <span class="sc">|&gt;</span></span>
@@ -822,7 +842,7 @@ $O
 <span id="cb20-6"><a href="#cb20-6"></a>  <span class="fu">enframe</span>(</span>
 <span id="cb20-7"><a href="#cb20-7"></a>    <span class="fu">unlist</span>(bfi.keys)</span>
 <span id="cb20-8"><a href="#cb20-8"></a>  )</span>
-<span id="cb20-9"><a href="#cb20-9"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-9"><a href="#cb20-9"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   name   value         name.1 value.1
 1  A.A1  -q1_x5         agree1     -A1
@@ -856,8 +876,8 @@ $O
 </div>
 </div>
 <p>元のデータと行数列数は一緒ですが、列名と順番が変わりました。コードブックの作成が必須ですね。</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a><span class="fu">str</span>(df_test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a><span class="fu">str</span>(df_test)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>'data.frame':   2800 obs. of  29 variables:
  $ id    : chr  "61617" "61618" "61620" "61621" ...
@@ -892,8 +912,8 @@ $O
 </div>
 </div>
 <p>そして構成要素の分類のkeyも用意しました。要素のベクトルに名前がついているのはチェックのためで、本来はないと思ってください。QualtricsとかMicrosoft Formsとかには項目をランダムに提示する機能があるので、それを使えば列をこんなにシャッフルする必要はないんですが、「よくわからなかったので、尺度の項目の順番を自分で頑張ってシャッフルしちゃいました…」という事案はあると思います。</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a>list_test_keys</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a>list_test_keys</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$A
       A1       A3       A5       A4       A2 
@@ -918,8 +938,8 @@ $O
 </div>
 <p>というわけで、こちらのデータでも<code>map()</code>で<code>alpha()</code>を一気に処理してみようと思います。先ほどはデータセットの列名に下位尺度の分類が入っていたので処理が少なく済みましたが、今回はそうではないので処理が少し増えます。</p>
 <p>まずlong型にした後、新たにマッチ用の列を作って逆転項目に-をつけます。（別にわざわざ新しい列を作らなくてもいいのですが、<code>alpha()</code>の出力のときに項目名の前後に-がつくのが気になるので、あえてマッチ用の列を作っています。）</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a>df_test <span class="sc">|&gt;</span></span>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a>df_test <span class="sc">|&gt;</span></span>
 <span id="cb26-2"><a href="#cb26-2"></a>  <span class="fu">pivot_longer</span>(</span>
 <span id="cb26-3"><a href="#cb26-3"></a>    <span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">"q1"</span>),</span>
 <span id="cb26-4"><a href="#cb26-4"></a>    <span class="at">names_to =</span> <span class="st">"items"</span></span>
@@ -930,7 +950,7 @@ $O
 <span id="cb26-9"><a href="#cb26-9"></a>      items,</span>
 <span id="cb26-10"><a href="#cb26-10"></a>      <span class="fu">str_c</span>(<span class="st">"-"</span>, items)</span>
 <span id="cb26-11"><a href="#cb26-11"></a>    )</span>
-<span id="cb26-12"><a href="#cb26-12"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb26-12"><a href="#cb26-12"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 70,000 × 7
    id    q2_x1 q2_x2 q2_x3 items  value match_items
@@ -949,8 +969,8 @@ $O
 </div>
 </div>
 <p>次に、マッチ用の列を<code>dplyr::case_match()</code>に入れて、分類用のリストと照合します。<code>case_match()</code>は、第一引数<code>.x</code>にマッチさせたいベクトル、以降はtwo-sided formula形式で処理を書いていきます。左側（LHS）はマッチさせたい要素、右側（RHS）にはマッチしたものに対する出力を入れます。このformulaの部分だけは頑張って書かないといけません。今回は分類リストがnamed listでその要素は文字列ベクトルなので、各要素にマッチしたらその要素のリスト名（＝下位尺度の分類）を返すようにします。</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a>df_test <span class="sc">|&gt;</span></span>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a>df_test <span class="sc">|&gt;</span></span>
 <span id="cb28-2"><a href="#cb28-2"></a>  <span class="fu">pivot_longer</span>(</span>
 <span id="cb28-3"><a href="#cb28-3"></a>    <span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">"q1"</span>),</span>
 <span id="cb28-4"><a href="#cb28-4"></a>    <span class="at">names_to =</span> <span class="st">"items"</span></span>
@@ -969,7 +989,7 @@ $O
 <span id="cb28-17"><a href="#cb28-17"></a>      list_test_keys[[<span class="st">"N"</span>]] <span class="sc">~</span> <span class="st">"N"</span>,</span>
 <span id="cb28-18"><a href="#cb28-18"></a>      list_test_keys[[<span class="st">"O"</span>]] <span class="sc">~</span> <span class="st">"O"</span>,</span>
 <span id="cb28-19"><a href="#cb28-19"></a>    )</span>
-<span id="cb28-20"><a href="#cb28-20"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb28-20"><a href="#cb28-20"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 70,000 × 8
    id    q2_x1 q2_x2 q2_x3 items  value match_items nest_key
@@ -988,8 +1008,8 @@ $O
 </div>
 </div>
 <p>後の処理は先ほどと変わりません。nestしたうえでmap処理をしていけばいいです。</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="annotated-cell-14"><pre class="sourceCode numberSource r code-annotation-code number-lines code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-14-1"><a href="#annotated-cell-14-1"></a>df_test <span class="sc">|&gt;</span></span>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="annotated-cell-14"><pre class="sourceCode numberSource r code-annotation-code number-lines code-with-copy code-annotated"><code class="sourceCode r"><span id="annotated-cell-14-1"><a href="#annotated-cell-14-1"></a>df_test <span class="sc">|&gt;</span></span>
 <span id="annotated-cell-14-2"><a href="#annotated-cell-14-2"></a>  <span class="fu">pivot_longer</span>(</span>
 <span id="annotated-cell-14-3"><a href="#annotated-cell-14-3"></a>    <span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">"q1"</span>),</span>
 <span id="annotated-cell-14-4"><a href="#annotated-cell-14-4"></a>    <span class="at">names_to =</span> <span class="st">"items"</span></span>
@@ -1032,7 +1052,7 @@ $O
 <span id="annotated-cell-14-41"><a href="#annotated-cell-14-41"></a>      <span class="fu">set_names</span>(nest_key),</span>
 <span id="annotated-cell-14-42"><a href="#annotated-cell-14-42"></a>    <span class="at">.by =</span> nest_key</span>
 <span id="annotated-cell-14-43"><a href="#annotated-cell-14-43"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="annotated-cell-14-44"><a href="#annotated-cell-14-44"></a>  <span class="fu">pull</span>(res_alpha)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="annotated-cell-14-44"><a href="#annotated-cell-14-44"></a>  <span class="fu">pull</span>(res_alpha)</span><div class="code-annotation-gutter-bg"></div><div class="code-annotation-gutter"></div></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-annotation">
 <dl class="code-annotation-container-grid">
 <dt data-target-cell="annotated-cell-14" data-target-annotation="1">1</dt>
@@ -1046,7 +1066,7 @@ $O
 </dl>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>$A
+<pre style="max-height: 500px;"><code>$A
 
 Reliability analysis   
 Call: psych::alpha(x = select(pivot_wider(select(x, -match_items), 
@@ -1250,9 +1270,80 @@ q1_x25 0.02 0.04 0.06 0.17 0.32 0.39 0.01</code></pre>
 <p>こちらのデータでもうまくできました。</p>
 </section>
 </section>
-<section id="conclusion" class="level1">
-<h1>Conclusion</h1>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
 <p>というわけで、<code>purrr::map()</code>の中で<code>psych::alpha()</code>を使って、元のdfから一気にα係数の処理をしてみました。コードの可読性という観点からみると下位尺度ごとに処理をしてオブジェクトに入れていく方法の方が見てわかりやすいし、コードの量もそれほど多くならないので、map処理で一気にやる方法が実用的かはわかりません。ただ、パイプフローの中でシーケンシャルに進められる点やミスの原因となる要素の手入力を減らせる点が個人的にはいいと思います。</p>
+</section>
+<section id="session-infomation" class="level2">
+<h2 class="anchored" data-anchor-id="session-infomation">Session Infomation</h2>
+<div class="callout callout-style-default callout-note callout-titled" title="sessioninfo">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>sessioninfo
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="cell-output cell-output-stdout">
+<pre><code>R version 4.4.2 (2024-10-31 ucrt)
+Platform: x86_64-w64-mingw32/x64
+Running under: Windows 11 x64 (build 26100)
+
+Matrix products: default
+
+
+locale:
+[1] LC_COLLATE=Japanese_Japan.utf8  LC_CTYPE=Japanese_Japan.utf8    LC_MONETARY=Japanese_Japan.utf8
+[4] LC_NUMERIC=C                    LC_TIME=Japanese_Japan.utf8    
+
+time zone: Asia/Tokyo
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] psych_2.5.6     lubridate_1.9.4 forcats_1.0.0   stringr_1.5.1   dplyr_1.1.4     purrr_1.1.0    
+ [7] readr_2.1.5     tidyr_1.3.1     tibble_3.3.0    ggplot2_3.5.2   tidyverse_2.0.0
+
+loaded via a namespace (and not attached):
+ [1] gtable_0.3.6       jsonlite_2.0.0     compiler_4.4.2     tidyselect_1.2.1   parallel_4.4.2    
+ [6] systemfonts_1.2.3  scales_1.4.0       textshaping_1.0.1  yaml_2.3.10        fastmap_1.2.0     
+[11] lattice_0.22-7     R6_2.6.1           labeling_0.4.3     generics_0.1.4     knitr_1.50        
+[16] htmlwidgets_1.6.4  pillar_1.11.0      RColorBrewer_1.1-3 tzdb_0.5.0         rlang_1.1.6       
+[21] utf8_1.2.6         stringi_1.8.7      xfun_0.52          timechange_0.3.0   cli_3.6.5         
+[26] withr_3.0.2        magrittr_2.0.3     digest_0.6.37      grid_4.4.2         rstudioapi_0.17.1 
+[31] hms_1.1.3          nlme_3.1-168       lifecycle_1.0.4    vctrs_0.6.5        mnormt_2.1.1      
+[36] evaluate_1.0.5     glue_1.8.0         farver_2.1.2       ragg_1.4.0         pacman_0.5.1      
+[41] rmarkdown_2.29     tools_4.4.2        pkgconfig_2.0.3    htmltools_0.5.8.1 </code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="log" class="level2">
+<h2 class="anchored" data-anchor-id="log">Log</h2>
+<ul>
+<li>2026-01-24
+<ul>
+<li>追加
+<ul>
+<li>サムネイル</li>
+<li>Session Information</li>
+</ul></li>
+<li>修正
+<ul>
+<li>Headingの変更</li>
+<li>出力が長いセルをスクロールに</li>
+</ul></li>
+</ul></li>
+</ul>
 
 
 </section>
@@ -1309,13 +1400,14 @@ q1_x25 0.02 0.04 0.06 0.17 0.32 0.39 0.01</code></pre>
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy
