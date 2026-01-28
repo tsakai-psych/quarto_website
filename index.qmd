@@ -2,12 +2,26 @@
 title: "さかいの備忘録"
 page-layout: full
 title-block-banner: true
+listing: 
+  id: latest_post
+  contents: posts
+  sort: "date desc"
+  sort-ui: false
+  filter-ui: false
+  type: table
+  max-items: 1
+  fields: [date, title]
 ---
 
-# Welcom to my website!
+## Welcom to my website!
 社会心理学者・社会言語学者（？）の酒井拓人のウェブサイトです。
 
 X (Twitter)で発信できる量にも限界がある（特にRのコード）ので、ウェブサイトを作ってみました。
 
 - [About](/about.qmd)：私について
 - [Content](/content.qmd)：大体の投稿がRの個人的なメモです。
+
+### Latest post
+
+::: {#latest_post}
+:::

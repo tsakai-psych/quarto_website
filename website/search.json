@@ -102,7 +102,7 @@
     "href": "index.html",
     "title": "さかいの備忘録",
     "section": "",
-    "text": "Welcom to my website!\n社会心理学者・社会言語学者（？）の酒井拓人のウェブサイトです。\nX (Twitter)で発信できる量にも限界がある（特にRのコード）ので、ウェブサイトを作ってみました。\n\nAbout：私について\nContent：大体の投稿がRの個人的なメモです。"
+    "text": "社会心理学者・社会言語学者（？）の酒井拓人のウェブサイトです。\nX (Twitter)で発信できる量にも限界がある（特にRのコード）ので、ウェブサイトを作ってみました。\n\nAbout：私について\nContent：大体の投稿がRの個人的なメモです。\n\n\n\n\n\n\n\n\n\nDate\n\n\n\nTitle\n\n\n\n\n\n\n\n\n2026-01-24\n\n\nR 69という数字の面白い性質＆文字列の処理と正規表現のメモ\n\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "posts/20251019_start_website/index.html",
@@ -334,5 +334,26 @@
     "title": "R 69という数字の面白い性質＆文字列の処理と正規表現のメモ",
     "section": "Footnotes",
     "text": "Footnotes\n\n\nhttps://tidyverse.org/blog/2025/11/stringr-1-6-0/↩︎\ntibbleの表示に関する設定を行うpillarパッケージのpillar.max_dec_widthに書いてある。 https://pillar.r-lib.org/reference/pillar_options.html↩︎\nhttps://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap09.html↩︎"
+  },
+  {
+    "objectID": "index.html#welcom-to-my-website",
+    "href": "index.html#welcom-to-my-website",
+    "title": "さかいの備忘録",
+    "section": "",
+    "text": "社会心理学者・社会言語学者（？）の酒井拓人のウェブサイトです。\nX (Twitter)で発信できる量にも限界がある（特にRのコード）ので、ウェブサイトを作ってみました。\n\nAbout：私について\nContent：大体の投稿がRの個人的なメモです。\n\n\n\n\n\n\n\n\n\nDate\n\n\n\nTitle\n\n\n\n\n\n\n\n\n2026-01-24\n\n\nR 69という数字の面白い性質＆文字列の処理と正規表現のメモ\n\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "index.html#最新の投稿はこちら",
+    "href": "index.html#最新の投稿はこちら",
+    "title": "さかいの備忘録",
+    "section": "最新の投稿はこちら",
+    "text": "最新の投稿はこちら\n\n\n\n\n\n\nDate\n\n\n\nTitle\n\n\n\nDescription\n\n\n\n\n\n\n\n\n2026-01-24\n\n\nR 69という数字の面白い性質＆文字列の処理と正規表現のメモ\n\n\n69という数字には面白い性質があるらしいので、Rを使って試してみた。あと、数字の文字列の処理と正規表現のメモ。 \n\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "index.html#whats-new",
+    "href": "index.html#whats-new",
+    "title": "さかいの備忘録",
+    "section": "Whats’ new",
+    "text": "Whats’ new\n\nAnnouncement\n\n\n\n\n\n\nDate\n\n\n\nTitle\n\n\n\n\n\n\n\n\n2025-10-19\n\n\n個人ウェブサイトを立ち上げてみました\n\n\n\n\n\n\nNo matching items\n\n\n\nLatest post\n\n\n\n\n\n\nDate\n\n\n\nTitle\n\n\n\nCategories\n\n\n\n\n\n\n\n\n2026-01-24\n\n\nR 69という数字の面白い性質＆文字列の処理と正規表現のメモ\n\n\nR memo, enjoy R, preprocess, regex\n\n\n\n\n\n\nNo matching items"
   }
 ]
