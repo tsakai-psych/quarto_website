@@ -2,6 +2,7 @@
   {
     "listing": "/content.html",
     "items": [
+      "/posts/20260211_gmp_big_integer/index.html",
       "/posts/20260124_nature_of_69_and_processing_string/index.html",
       "/posts/20260118_CFA_table_in_one_pipeline/index.html",
       "/posts/20260102_built-in_color_name/index.html",
@@ -15,6 +16,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/20260211_gmp_big_integer/index.html",
       "/posts/20260124_nature_of_69_and_processing_string/index.html",
       "/posts/20260118_CFA_table_in_one_pipeline/index.html",
       "/posts/20260102_built-in_color_name/index.html",
