@@ -1,0 +1,203 @@
+---
+title: "R gmpパッケージを使って非常に大きい整数を扱う"
+date: 2026-02-11
+abstract: |
+    `gmp`パッケージを使うと非常に大きな整数でも正確に計算できるみたいなので、試してみた。
+categories: [R memo, enjoy R, preprocess, package]
+format: html
+knitr:
+  opts_chunk: 
+    fig.align: center
+    dev: ragg_png
+    R.options:
+      width: 100
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| label: thmubnail
+#| echo: false
+#| out-width: 75%
+#| fig.asp: 0.5
+ggplot2::ggplot() +
+  ggplot2::theme_void() +
+  ggplot2::geom_text(
+    ggplot2::aes(
+      x = 1,
+      y = 1,
+      label = "gmpパッケージを使って\n非常に大きい整数を扱う"
+    ),
+    family = "Gen Jyuu GothicX",
+    fontface = "bold",
+    size = 10
+  )
+```
+
+::: {.callout-caution collapse="true"}
+
+### もしかしたらAMD Zen5 CPU（Ryzen 9000シリーズ）と相性が良くないかも？
+gmpプログラム公式サイトの報告[^gmp_zen5damage]によると、Ryzen9 9950X/Linux環境でGMPのプログラムを動かしていたら、CPUが逝ったそうです。しかも２台。AMDも公式に調査をしている模様[^gazlog_20250830]。Rのパッケージの方も影響があるかはわかりませんが、相性が悪い可能性もあるので、Zen5民の方はハードな使い方はしない方がいいかもしれないです。
+
+Zen5故障問題はAsRock製マザボで起こりがちなのは聞いていましたが、今回はASUSマザボ+Noctuaクーラーだということで、ちょっと気になるところではあります。（最初、Noctua NH-U9Sで9950Xは無理じゃねと思ったのでNoctua公式サイト見に行ったら、medium turbo headroom判定だったのでびっくりしました。PBOも切っていたようですし、冷却面は問題なさそうです。となるとCPU本体かマザボの方か……）
+
+[^gmp_zen5damage]: <https://gmplib.org/gmp-zen5>
+[^gazlog_20250830]: <https://gazlog.com/entry/amd-ryzen9000-investigation-start/>
+
+:::
+
+## packages
+```{r}
+#| output: false
+pacman::p_load(
+  tidyverse,
+  gmp
+)
+```
+
+## Contents
+### background
+Youtubeを見ていたら、面白い動画が流れてきました。
+
+{{< video https://youtube.com/watch?v=hPJA9sYUMnA?si=x6JdY34PdFLxW9eS >}}
+
+2の108乗は十進法の表記で9を含まないそうです。しかも2の累乗で9を含まないもの最大の数らしい（未解決）。出典はオンライン整数大辞典[^OEIS]みたいですね。ということで確かめてみました。
+
+[^OEIS]: <https://oeis.org/A035064>
+
+### problems
+69の性質のときみたいにやってみます。とりあえず指数は300くらいまであれば十分でしょうか。
+```{r}
+2^(1:300) |>
+  format(
+    trim = TRUE,
+    scientific = FALSE
+  ) |>
+  grep(
+    pattern = "9",
+    x = _,
+    invert = TRUE
+  )
+```
+想像よりも多くの数が残りました。多分コンピューター内部では2進数で計算してることと関係してるはずです。
+
+::: {.callout-note collapse=true}
+
+#### 処理の過程が見たい人向け
+```{r}
+#| attr-output: 'style="max-height: 350px;"'
+2^(1:300) %>%
+  format(
+    trim = TRUE,
+    scientific = FALSE
+  )%>%
+  grep(
+    pattern = "9",
+    x = .,
+    invert = TRUE
+  ) %>%
+   ViewPipeSteps::print_pipe_steps() -> results # for displaying pipeline processing
+```
+
+:::
+
+### solution
+#### `gmp` package
+というわけで、非常に大きな数でも正確に計算してくれるパッケージである`gmp`を試してみます。様々なプログラミング言語で使えるようです。任意の長さの整数や有理数、浮動小数点に対応しているそうです。
+
+`gmp::as.bigz()`で任意の数をbiz.zクラスの整数にできます。引数`a`にはintかdbl、chrがいれられて、chrの場合は0x始まりで16進数、0bで2進数、0で8進数、0のprefixなしで10進数扱いになるようです。
+```{r}
+as.bigz(2) # integer to big integer
+
+as.bigz(3.14) # double to big integer
+
+as.bigz("0xFF") # character(hex) to big integer
+```
+
+演算は普通の演算子でもできますし関数でもできます。
+```{r}
+as.bigz(2) + as.bigz(3)
+
+add.bigz(2, 3) # same as above
+```
+
+無料大数も作れます。
+```{r}
+pow.bigz(10, 64) # 10^64
+
+as.bigz(10)^64 # same as above
+
+pow.bigz(10, 64) |>
+  stringr::str_count(pattern = "0")
+```
+10の64乗なので0が64個でOKですね。
+
+`gmp::as.bigq(n, d)`は、なんと`n`が分子で`d`が分母の分数を約分してくれます。計算もOK。
+```{r}
+as.bigq(2, d = 10)
+
+as.bigq(2, d = 10) + as.bigq(3, d = 10) # 1/2
+```
+他にも、階乗を計算してくれたり、素因数分解してくれたり、baseの関数と同じ働きをしてくれる関数があったりします。
+
+#### solution
+というわけで本題に戻ります。上記の例にも挙げましたが、指数はbig.zクラスじゃなくても大丈夫なようなので、2だけbigz整数にして計算します。
+```{r}
+gmp::as.bigz(2)^(1:300) |>
+  as.character() |> # maybe not necessary
+  grep(
+    pattern = "9",
+    x = _,
+    invert = TRUE
+  )
+```
+
+こちらはうまくいきました。
+
+::: {.callout-note collapse=true}
+
+#### 処理の過程が見たい人向け
+```{r}
+#| attr-output: 'style="max-height: 350px;"'
+gmp::as.bigz(2)^(1:300) %>%
+  as.character() %>%
+  grep(
+    pattern = "9",
+    x = .,
+    invert = TRUE
+  ) %>%
+   ViewPipeSteps::print_pipe_steps() -> results # for displaying pipeline processing
+```
+
+:::
+
+helpや公式サイト[^gmp_website]によるとPCのRAMの容量にしか制限されないみたいなので、もっと大きな数も行けそうです。ということで試しに指数を10000まで増やして試してみます。
+
+[^gmp_website]: <https://gmplib.org/>
+
+```{r}
+as.bigz(2)^(1:10000) |>
+  as.character() |>
+  grep(
+    pattern = 9,
+    x = _,
+    invert = TRUE
+  )
+```
+先ほどと同じ結果が返ってきました。ちなみにこのあと指数の方を`1:100000`にしても同じ結果が返ってきたのですが、Rstudioが表示しているRAMのセッション使用量が378MiBから2.4GiBになって、処理に20秒ほどかかりました。コンピューターインテンシブな処理です。
+
+## Conclusion
+2の108乗の10進数表記には9が現れないということを標準のRでは確かめられなかったので、`gmp`パッケージを使って確かめてみました。
+
+自分の領域だとお世話になる場面があまり思いつきませんが、知っていて損はないはずと思いました。
+
+## Session Infomation
+
+:::{.callout-note collapse=true title="sessioninfo"}
+
+```{r}
+#| echo: false
+sessionInfo()
+```
+
+:::
