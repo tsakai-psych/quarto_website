@@ -1,0 +1,312 @@
+---
+title: "R ネイティブパイプ（|>）の右辺で算術演算子とか関係演算子を使う方法"
+subtitle: "How to Use Arithmetic and Relational Operators on the RHS of R’s Native Pipe (|>)"
+date: 2026-02-14
+abstract: |
+    ネイティブパイプ（|>）の右辺でも算術演算子とか関係演算子は使える。ただし、要件あり。
+categories: [R memo, Base R, R syntax, pipes]
+format:
+  html:
+    toc-depth: 4
+knitr:
+  opts_chunk: 
+    fig.align: center
+    dev: ragg_png
+    R.options:
+      width: 100
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| label: thmubnail
+#| echo: false
+#| out-width: 75%
+#| fig.asp: 0.5
+ggplot2::ggplot() +
+  ggplot2::theme_void() +
+  ggplot2::geom_text(
+    ggplot2::aes(
+      x = 1,
+      y = 1,
+      label = "ネイティブパイプ（|>）のRHSで\n算術演算子とか関係演算子を使う方法"
+    ),
+    family = "Gen Jyuu GothicX",
+    fontface = "bold",
+    size = 10
+  )
+```
+
+## Packages
+```{r}
+#| output: false
+library(magrittr)
+```
+
+## Contents
+### Problem
+R 4.1以降で使えるようになった組み込みのパイプ演算子`|>`。ネイティブパイプと呼ばれているこのパイプ演算子ですが、tidyverseでおなじみの`magrittr`パイプ演算子（`%>%`）より機能が制限されていることは有名です。詳しくは`help("|>")`やHadley氏の解説記事[^tidyverse_blog]を見てください。
+
+[^tidyverse_blog]: <https://tidyverse.org/blog/2023/04/base-vs-magrittr-pipe/>
+
+制限されていることの一つとして、`help("|>")`だとこう書いてあります。
+
+> To avoid ambiguities, functions in rhs calls may not be syntactically special, such as + or if.
+
+ネイティブパイプの右辺では`+`や`if`のような関数が特別扱いを受けません。つまりこういうことです。
+```{r}
+#| error: true
+1:3 |> _ + 2
+```
+
+```{r}
+#| error: true
+1:3 |> `+`(2)
+```
+
+```{r}
+#| error: true
+2:6 |> `<`(4)
+```
+
+```{r}
+#| error: true
+c(TRUE, FALSE, NA, TRUE, FALSE, TRUE) |> `!`()
+```
+算術演算子（`+`, `-`, `%%`, etc...）や関係演算子（`<`, `!=`,  etc...）、NOT（`!`）などがすんなり使えません。こういう演算子はバッククォートで囲むと大体OKだったりするのですが、パイプフローだとそうはいかないようです。
+
+ちなみにmagrittrパイプだとできます。
+```{r}
+1:3 %>% + 2
+
+1:3 %>% `+`(2)
+
+2:6 %>% `<`(4)
+
+c(TRUE, FALSE, NA, TRUE, FALSE, TRUE) %>% `!`()
+```
+
+そういう演算子使うときはパイプ使って書かなくていいじゃんとか、magrittrパイプ使えばいいじゃんとか思うかもしれません。ですが、パッケージの読み込みなしでそのまま使えたり、最近はmagrittr側が高速化しているとはいえネイティブパイプの方が速かったり[^r_native_pipe]と、ネイティブパイプ使用にもメリットはあります。特にモンテカルロシミュレーションを時々やる身としては、少しでも速い方がいいのです。あと私はネイティブパイプerなので、途中でmagrittrパイプが混じるのは個人的にはなんかちょっと統一性がなくてあまり好みではありません。あと、R for Data Science 2nd ed.ではネイティブパイプの使用を推奨していますし[^r4ds]。
+
+[^r_native_pipe]: 例えば<https://speakerdeck.com/s_uryu/r-native-pipe?slide=12>とか、<https://t-arae.blog/posts/2024/2024-07-27-r-pipe2/>とか。自分でも時々ベンチを回したりします。
+[^r4ds]: <https://r4ds.hadley.nz/data-transform.html#sec-the-pipe>
+
+というわけで前からちょくちょく調べたり考えたりしてました。↓
+
+<blockquote class="twitter-tweet" data-theme="dark"><p lang="ja" dir="ltr">Rの備忘録<br>native pipe のpipelineでの論理値の反転が、|&gt; (`!`) () という記法で通るらしい<br>どういうことなのかよくわからない<a href="https://t.co/RlqVIhuqnJ">https://t.co/RlqVIhuqnJ</a> <a href="https://t.co/BCpjYWhsns">pic.twitter.com/BCpjYWhsns</a></p>&mdash; Takuto SAKAI (@tsakai_psych) <a href="https://twitter.com/tsakai_psych/status/2005922436051595486?ref_src=twsrc%5Etfw">December 30, 2025</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+個人的には、無名関数も`()`によるラップも、()や\{\}が増えて何となく可読性が下がるような気がしてもやもやしています。（と言いつつ、普段は無名関数をバンバン使っています。）
+
+### Solution
+それで、このあいだ`help("groupGeneric")`とにらめっこしていろいろ試していたら、なんか通る書き方がありました。
+```{r}
+1:3 |> `+`(e1 = _, e2 = 2)
+
+2:6 |> `<`(e1 = _, e2 = 4)
+
+c(TRUE, FALSE, NA, TRUE, FALSE, TRUE) |>
+  `!`(e1 = _)
+```
+どうやら第一引数名＋プレースホルダー（`e1 = _`）で通るようです。ネイティブパイプでは第一引数以外に値を渡したいときに引数名が必要だというルールがあるのですが、これらの特別な演算子だとどうやら異なるようです。
+
+とりあえず、Opsグループの演算子のすべてで試します。
+
+#### Arithmetic operators
+
+- 足し算
+```{r}
+1:3 |> `+`(e1 = _, e2 = 2) # 3, 4, 5
+```
+
+- 引き算
+```{r}
+1:3 |> `-`(e1 = _, e2 = 2) # -1, 0, 1
+```
+
+- 掛け算
+```{r}
+1:3 |> `*`(e1 = _, e2 = 3) # 3, 6, 9
+```
+
+- 割り算
+```{r}
+1:3 |> `/`(e1 = _, e2 = 2) # 0.5, 1, 1.5
+```
+
+- 累乗
+```{r}
+1:3 |> `^`(e1 = _, e2 = 4) # 1, 16, 81
+```
+
+- Mod計算
+```{r}
+10:13 |> `%%`(e1 = _, e2 = 3) # 1, 2, 0, 1
+```
+
+- 商の計算
+```{r}
+10:13 |> `%/%`(e1 = _, e2 = 2) # 5, 5, 6, 6
+```
+
+#### Logical operators
+
+- AND
+```{r}
+c(TRUE, FALSE, NA, TRUE, TRUE, FALSE) |>
+  `&`(e1 = _, e2 = TRUE)
+```
+
+- OR
+```{r}
+c(TRUE, FALSE, NA, TRUE, TRUE, FALSE) |>
+  `|`(e1 = _, e2 = FALSE)
+```
+
+- NOT
+  - なお`!`は単項演算子（unary operator）なので、第一引数`x`に対してプレースホルダーを置くだけでいいです。引数名が`x`なのは後述します。
+```{r}
+c(TRUE, FALSE, NA, TRUE, TRUE, FALSE) |>
+  `!`(x = _)
+```
+
+#### Relational (comparison) operators
+
+- equal
+```{r}
+c("hoge", "huga", "piyo") |>
+  `==`(e1 = _, e2 = "huga")
+```
+
+- not equal
+```{r}
+c("hoge", "huga", "piyo") |>
+  `!=`(e1 = _, e2 = "huga")
+```
+
+- less
+```{r}
+1:3 |>
+  `<`(e1 = _, e2 = 2)
+
+1:3 |>
+  `<=`(e1 = _, e2 = 2)
+```
+
+- greater
+```{r}
+1:3 |>
+  `>`(e1 = _, e2 = 2)
+
+1:3 |>
+  `>=`(e1 = _, e2 = 2)
+```
+
+#### Matrix products
+
+- 行列の掛け算
+```{r}
+(mat_1 <- matrix(
+  1:4,
+  nrow = 2
+))
+
+(mat_2 <- matrix(
+  1:6,
+  nrow = 2
+))
+
+mat_1 |> `%*%`(e1 = _, e2 = mat_2)
+```
+
+#### Arguments name
+二項演算子の引数名については、`help("groupGeneric")`に倣い、また、演算子を呼び出してみると以下のように出力されるのもあって、`(e1 = _, e2 = y)`の書き方をしました。
+```{r}
+`+`
+
+`%%`
+```
+
+ですが、どうやら引数名は何でもよいみたいですし、プレースホルダー側でなければ引数名がなくても通るようです。
+```{r}
+1:3 |> `+`(x = _, y = 2)
+
+10:13 |> `%%`(hoge = _, 3)
+
+c(TRUE, FALSE, NA, TRUE, TRUE, FALSE) |>
+  `&`(lhs = _, rhs = TRUE)
+
+1:3 |> `>`(2, with = _) # 2 > 1:3
+```
+
+ちなみに、`!`は呼び出してみると以下のようになります。
+```{r}
+`!`
+```
+引数名が`x`になっています。というわけで最初の例で挙げた書き方（`e1 = _`）の時点で実は引数名が何でもよいことになっていました。
+
+#### `magrittr` aliases
+ここまで書いておいて今更感があるんですが、実はこれらの演算子がパイプで使えるように`magrittr`パッケージではエイリアスが用意されています。例えば`+`は`magrittr::add()`で書くことができます。中身も同じです。
+```{r}
+magrittr::add
+```
+
+その他の演算子については`help("extract", package = "magrittr")`で見れます。
+```{r}
+1:3 |> add(2) # same as `+`
+
+10:13 |> mod(hoge = _, 3) # same as `%%`
+
+c(TRUE, FALSE, NA, TRUE, TRUE, FALSE) |> not(x = _) # same as `!`
+```
+正直言うと、これらエイリアスを使った方がわかりやすさも可読性もがいいように思います。なお、`tidyverse`パッケージを使っている人であれば`magrittr`は必ずインストールされていますが、基本パッケージではないので`library(tidyverse)`だけでは呼び出し(`::`)なしで使えません。使いたい人は`library(magrittr)`もついでにしてください。
+
+### Supplement
+参考までに、足し算だけ処理速度の比較をしてみます。基本的な記法、ネイティブパイプ、magrittrエイリアス、magrittrパイプの4記法で比較です。ネタバレするとあまりにも速すぎるので、試行回数は1万回にしてもすぐ終わります。
+```{r}
+#| warning: false
+res_bench_n3 <- microbenchmark::microbenchmark(
+  "basic" = {1:3 + 2},
+  "native_pipe" = {1:3 |> `+`(x = _, 2)},
+  "magrittr_alias" ={1:3 |> add(2)},
+  "magrittr_pipe" = {1:3 %>% `+`(2)},
+  check = "equal",
+  times = 10000
+)
+
+res_bench_n3
+
+ggplot2::autoplot(res_bench_n3)
+```
+この中だとmagrittrパイプだけが非常に遅いです。ちなみにキャッシュを使っていないので、レンダリングするたびにベンチマークの結果が変わるのですが（ネイティブパイプとmagrittrエイリアスに差があることになったりならなかったり）、magrittrパイプが遅いのだけは変わらないです。ただし、この結果の単位はナノ秒です。体感できる差ではありません。
+
+ベクトルの要素を1万個まで増やして再度比較します。
+```{r}
+#| warning: false
+res_bench_n10k <- microbenchmark::microbenchmark(
+  "basic" = {1:10000 + 123},
+  "native_pipe" = {1:10000 |> `+`(x = _, 123)},
+  "magrittr_alias" ={1:10000 |> add(123)},
+  "magrittr_pipe" = {1:10000 %>% `+`(123)},
+  check = "equal",
+  times = 10000
+)
+
+res_bench_n10k
+
+ggplot2::autoplot(res_bench_n10k)
+```
+magrittrパイプの分布が若干他3記法よりも後ろにあるように見受けられますが、単位はマイクロ秒ですしこれも体感できる差があるとは言えないでしょう。
+
+## Conclusion
+ネイティブパイプのRHSで特別な演算子を使ってみたという話でした。調べてもでてこなくて、最初見つけたときはすごくときめいた感じがしたのですが、これを書いている間にどんどん「だからどうした」感が出てたのと、なんでパイプラインで論理値反転したかったのかをすっかり忘れました。まあ、こういう書き方もできるよということで。
+
+## Session Infomation
+
+:::{.callout-note collapse=true title="sessioninfo"}
+
+```{r}
+#| echo: false
+sessionInfo()
+```
+
+:::

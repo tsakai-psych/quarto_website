@@ -80,9 +80,9 @@ ul.task-list li input[type="checkbox"] {
     }
 
     const options = {
-      valueNames: ['listing-date','listing-title','listing-author','listing-image','listing-description','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
+      valueNames: ['listing-date','listing-title','listing-author','listing-subtitle','listing-image','listing-description','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
       
-      searchColumns: ["listing-date","listing-title","listing-author","listing-image","listing-description","listing-categories"],
+      searchColumns: ["listing-date","listing-title","listing-author","listing-subtitle","listing-image","listing-description","listing-categories"],
     };
 
     window['quarto-listings'] = window['quarto-listings'] || {};
@@ -195,7 +195,7 @@ window.Quarto = {
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         
-    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(9)</span></div><div class="category" data-category="YW5hbHlzaXM=">analysis <span class="quarto-category-count">(2)</span></div><div class="category" data-category="YW5ub3VuY2VtZW50">announcement <span class="quarto-category-count">(1)</span></div><div class="category" data-category="ZW5qb3klMjBS">enjoy R <span class="quarto-category-count">(2)</span></div><div class="category" data-category="cGFja2FnZQ==">package <span class="quarto-category-count">(1)</span></div><div class="category" data-category="cHJlcHJvY2Vzcw==">preprocess <span class="quarto-category-count">(6)</span></div><div class="category" data-category="UiUyMG1lbW8=">R memo <span class="quarto-category-count">(8)</span></div><div class="category" data-category="cmVnZXg=">regex <span class="quarto-category-count">(1)</span></div><div class="category" data-category="dmlzdWFsaXphdGlvbg==">visualization <span class="quarto-category-count">(2)</span></div></div></div>
+    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(10)</span></div><div class="category" data-category="YW5hbHlzaXM=">analysis <span class="quarto-category-count">(2)</span></div><div class="category" data-category="YW5ub3VuY2VtZW50">announcement <span class="quarto-category-count">(1)</span></div><div class="category" data-category="QmFzZSUyMFI=">Base R <span class="quarto-category-count">(1)</span></div><div class="category" data-category="ZW5qb3klMjBS">enjoy R <span class="quarto-category-count">(2)</span></div><div class="category" data-category="cGFja2FnZQ==">package <span class="quarto-category-count">(1)</span></div><div class="category" data-category="cGlwZXM=">pipes <span class="quarto-category-count">(1)</span></div><div class="category" data-category="cHJlcHJvY2Vzcw==">preprocess <span class="quarto-category-count">(6)</span></div><div class="category" data-category="UiUyMG1lbW8=">R memo <span class="quarto-category-count">(9)</span></div><div class="category" data-category="UiUyMHN5bnRheA==">R syntax <span class="quarto-category-count">(1)</span></div><div class="category" data-category="cmVnZXg=">regex <span class="quarto-category-count">(1)</span></div><div class="category" data-category="dmlzdWFsaXphdGlvbg==">visualization <span class="quarto-category-count">(2)</span></div></div></div>
 <!-- main -->
 <main class="content column-page-left" id="quarto-document-content">
 
@@ -246,7 +246,43 @@ window.Quarto = {
   </div>
 </div>
 <div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="UiUyMG1lbW8lMkNlbmpveSUyMFIlMkNwcmVwcm9jZXNzJTJDcGFja2FnZQ==" data-listing-date-sort="1770735600000" data-listing-file-modified-sort="1770794400119" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="347">
+<div class="quarto-post image-right" data-index="0" data-categories="UiUyMG1lbW8lMkNCYXNlJTIwUiUyQ1IlMjBzeW50YXglMkNwaXBlcw==" data-listing-date-sort="1770994800000" data-listing-file-modified-sort="1771068509770" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="3" data-listing-word-count-sort="571">
+<div class="thumbnail"><a href="./posts/20260214_native_pipe_rhs_arithmtic_ops/index.html" class="no-external">
+
+<p class="card-img-top"><img src="posts\20260214_native_pipe_rhs_arithmtic_ops\index_files\figure-html\thmubnail-1.png"  class="thumbnail-image card-img"/></p>
+
+</a></div>
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="./posts/20260214_native_pipe_rhs_arithmtic_ops/index.html" class="no-external">R ネイティブパイプ（|&gt;）の右辺で算術演算子とか関係演算子を使う方法</a>
+</h3>
+<div class="listing-subtitle">
+<a href="./posts/20260214_native_pipe_rhs_arithmtic_ops/index.html" class="no-external">How to Use Arithmetic and Relational Operators on the RHS of R’s Native Pipe (|&gt;)</a>
+</div>
+<div class="listing-categories">
+
+<div class="listing-category" onclick="window.quartoListingCategory('UiUyMG1lbW8='); return false;">R memo</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('QmFzZSUyMFI='); return false;">Base R</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('UiUyMHN5bnRheA=='); return false;">R syntax</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('cGlwZXM='); return false;">pipes</div>
+
+</div>
+<div class="delink listing-description"><a href="./posts/20260214_native_pipe_rhs_arithmtic_ops/index.html" class="no-external">
+<p>ネイティブパイプ（|&gt;）の右辺でも算術演算子とか関係演算子は使える。ただし、要件あり。</p>
+</a></div>
+</div>
+<div class="metadata">
+<a href="./posts/20260214_native_pipe_rhs_arithmtic_ops/index.html" class="no-external">
+<div class="listing-date">
+2026-02-14
+</div>
+</a>
+</div>
+</div>
+<div class="quarto-post image-right" data-index="1" data-categories="UiUyMG1lbW8lMkNlbmpveSUyMFIlMkNwcmVwcm9jZXNzJTJDcGFja2FnZQ==" data-listing-date-sort="1770735600000" data-listing-file-modified-sort="1770794400119" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="347">
 <div class="thumbnail"><a href="./posts/20260211_gmp_big_integer/index.html" class="no-external">
 
 <p class="card-img-top"><img src="posts\20260211_gmp_big_integer\index_files\figure-html\thmubnail-1.png"  class="thumbnail-image card-img"/></p>
@@ -256,6 +292,9 @@ window.Quarto = {
 <h3 class="no-anchor listing-title">
 <a href="./posts/20260211_gmp_big_integer/index.html" class="no-external">R gmpパッケージを使って非常に大きい整数を扱う</a>
 </h3>
+<div class="listing-subtitle">
+<a href="./posts/20260211_gmp_big_integer/index.html" class="no-external"></a>
+</div>
 <div class="listing-categories">
 
 <div class="listing-category" onclick="window.quartoListingCategory('UiUyMG1lbW8='); return false;">R memo</div>
@@ -279,7 +318,7 @@ window.Quarto = {
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="1" data-categories="UiUyMG1lbW8lMkNlbmpveSUyMFIlMkNwcmVwcm9jZXNzJTJDcmVnZXg=" data-listing-date-sort="1769180400000" data-listing-file-modified-sort="1769228153811" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="6" data-listing-word-count-sort="1020">
+<div class="quarto-post image-right" data-index="2" data-categories="UiUyMG1lbW8lMkNlbmpveSUyMFIlMkNwcmVwcm9jZXNzJTJDcmVnZXg=" data-listing-date-sort="1769180400000" data-listing-file-modified-sort="1769228153811" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="6" data-listing-word-count-sort="1020">
 <div class="thumbnail"><a href="./posts/20260124_nature_of_69_and_processing_string/index.html" class="no-external">
 
 <p class="card-img-top"><img src="posts\20260124_nature_of_69_and_processing_string\index_files\figure-html\thmubnail-1.png"  class="thumbnail-image card-img"/></p>
@@ -289,6 +328,9 @@ window.Quarto = {
 <h3 class="no-anchor listing-title">
 <a href="./posts/20260124_nature_of_69_and_processing_string/index.html" class="no-external">R 69という数字の面白い性質＆文字列の処理と正規表現のメモ</a>
 </h3>
+<div class="listing-subtitle">
+<a href="./posts/20260124_nature_of_69_and_processing_string/index.html" class="no-external"></a>
+</div>
 <div class="listing-categories">
 
 <div class="listing-category" onclick="window.quartoListingCategory('UiUyMG1lbW8='); return false;">R memo</div>
@@ -312,7 +354,7 @@ window.Quarto = {
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="2" data-categories="UiUyMG1lbW8lMkNwcmVwcm9jZXNzJTJDYW5hbHlzaXM=" data-listing-date-sort="1768662000000" data-listing-file-modified-sort="1768835716649" data-listing-date-modified-sort="1768834800000" data-listing-reading-time-sort="17" data-listing-word-count-sort="3284">
+<div class="quarto-post image-right" data-index="3" data-categories="UiUyMG1lbW8lMkNwcmVwcm9jZXNzJTJDYW5hbHlzaXM=" data-listing-date-sort="1768662000000" data-listing-file-modified-sort="1768835716649" data-listing-date-modified-sort="1768834800000" data-listing-reading-time-sort="17" data-listing-word-count-sort="3284">
 <div class="thumbnail"><a href="./posts/20260118_CFA_table_in_one_pipeline/index.html" class="no-external">
 
 <p class="card-img-top"><img src="posts\20260118_CFA_table_in_one_pipeline\index_files\figure-html\thumbnail-1.png"  class="thumbnail-image card-img"/></p>
@@ -322,6 +364,9 @@ window.Quarto = {
 <h3 class="no-anchor listing-title">
 <a href="./posts/20260118_CFA_table_in_one_pipeline/index.html" class="no-external">R 確認的因子分析の表を作ってみた、1パイプラインで</a>
 </h3>
+<div class="listing-subtitle">
+<a href="./posts/20260118_CFA_table_in_one_pipeline/index.html" class="no-external"></a>
+</div>
 <div class="listing-categories">
 
 <div class="listing-category" onclick="window.quartoListingCategory('UiUyMG1lbW8='); return false;">R memo</div>
@@ -343,7 +388,7 @@ window.Quarto = {
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="3" data-categories="UiUyMG1lbW8lMkN2aXN1YWxpemF0aW9u" data-listing-date-sort="1767279600000" data-listing-file-modified-sort="1768719957867" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="9" data-listing-word-count-sort="1790">
+<div class="quarto-post image-right" data-index="4" data-categories="UiUyMG1lbW8lMkN2aXN1YWxpemF0aW9u" data-listing-date-sort="1767279600000" data-listing-file-modified-sort="1768719957867" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="9" data-listing-word-count-sort="1790">
 <div class="thumbnail"><a href="./posts/20260102_built-in_color_name/index.html" class="no-external">
 
 <img loading="lazy" src="./posts/20260102_built-in_color_name/20260102_builtin_colorname_gt.png" class="thumbnail-image">
@@ -353,6 +398,9 @@ window.Quarto = {
 <h3 class="no-anchor listing-title">
 <a href="./posts/20260102_built-in_color_name/index.html" class="no-external">R 標準で用意されている色の名前</a>
 </h3>
+<div class="listing-subtitle">
+<a href="./posts/20260102_built-in_color_name/index.html" class="no-external"></a>
+</div>
 <div class="listing-categories">
 
 <div class="listing-category" onclick="window.quartoListingCategory('UiUyMG1lbW8='); return false;">R memo</div>
@@ -372,7 +420,7 @@ window.Quarto = {
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="4" data-categories="UiUyMG1lbW8lMkNwcmVwcm9jZXNz" data-listing-date-sort="1765551600000" data-listing-file-modified-sort="1765637955017" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="7" data-listing-word-count-sort="1372">
+<div class="quarto-post image-right" data-index="5" data-categories="UiUyMG1lbW8lMkNwcmVwcm9jZXNz" data-listing-date-sort="1765551600000" data-listing-file-modified-sort="1765637955017" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="7" data-listing-word-count-sort="1372">
 <div class="thumbnail"><a href="./posts/20251213_localize_country_name/index.html" class="no-external">
 
 <img loading="lazy" src="./posts/20251213_localize_country_name/20251213_thumbnail.jpeg" class="thumbnail-image">
@@ -382,6 +430,9 @@ window.Quarto = {
 <h3 class="no-anchor listing-title">
 <a href="./posts/20251213_localize_country_name/index.html" class="no-external">Rでデータの国名を日本語名にする</a>
 </h3>
+<div class="listing-subtitle">
+<a href="./posts/20251213_localize_country_name/index.html" class="no-external"></a>
+</div>
 <div class="listing-categories">
 
 <div class="listing-category" onclick="window.quartoListingCategory('UiUyMG1lbW8='); return false;">R memo</div>
@@ -401,7 +452,7 @@ window.Quarto = {
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="5" data-categories="UiUyMG1lbW8lMkNwcmVwcm9jZXNz" data-listing-date-sort="1762009200000" data-listing-file-modified-sort="1762057565969" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="10" data-listing-word-count-sort="1840">
+<div class="quarto-post image-right" data-index="6" data-categories="UiUyMG1lbW8lMkNwcmVwcm9jZXNz" data-listing-date-sort="1762009200000" data-listing-file-modified-sort="1762057565969" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="10" data-listing-word-count-sort="1840">
 <div class="thumbnail"><a href="./posts/20251102_rowwise_wo_rowwise/index.html" class="no-external">
 
 <p class="card-img-top"><img src="posts\20251102_rowwise_wo_rowwise\index_files\figure-html\preview-1.png"  class="thumbnail-image card-img"/></p>
@@ -411,6 +462,9 @@ window.Quarto = {
 <h3 class="no-anchor listing-title">
 <a href="./posts/20251102_rowwise_wo_rowwise/index.html" class="no-external">dplyr::rowwiseを使わないで個人の尺度得点を算出する</a>
 </h3>
+<div class="listing-subtitle">
+<a href="./posts/20251102_rowwise_wo_rowwise/index.html" class="no-external"></a>
+</div>
 <div class="listing-categories">
 
 <div class="listing-category" onclick="window.quartoListingCategory('UiUyMG1lbW8='); return false;">R memo</div>
@@ -430,7 +484,7 @@ window.Quarto = {
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="6" data-categories="UiUyMG1lbW8lMkN2aXN1YWxpemF0aW9u" data-listing-date-sort="1761404400000" data-listing-file-modified-sort="1761478858573" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="7" data-listing-word-count-sort="1337">
+<div class="quarto-post image-right" data-index="7" data-categories="UiUyMG1lbW8lMkN2aXN1YWxpemF0aW9u" data-listing-date-sort="1761404400000" data-listing-file-modified-sort="1761478858573" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="7" data-listing-word-count-sort="1337">
 <div class="thumbnail"><a href="./posts/20251026_ggplot_onesided_errorbar/index.html" class="no-external">
 
 <p class="card-img-top"><img src="posts\20251026_ggplot_onesided_errorbar\index_files\figure-html\preview-1.png"  class="thumbnail-image card-img"/></p>
@@ -440,6 +494,9 @@ window.Quarto = {
 <h3 class="no-anchor listing-title">
 <a href="./posts/20251026_ggplot_onesided_errorbar/index.html" class="no-external">ggplot2で片側だけ（上にあるやつは上、下にあるやつは下）にエラーバーをつける</a>
 </h3>
+<div class="listing-subtitle">
+<a href="./posts/20251026_ggplot_onesided_errorbar/index.html" class="no-external"></a>
+</div>
 <div class="listing-categories">
 
 <div class="listing-category" onclick="window.quartoListingCategory('UiUyMG1lbW8='); return false;">R memo</div>
@@ -459,7 +516,7 @@ window.Quarto = {
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="7" data-categories="UiUyMG1lbW8lMkNwcmVwcm9jZXNzJTJDYW5hbHlzaXM=" data-listing-date-sort="1761318000000" data-listing-file-modified-sort="1769226623164" data-listing-date-modified-sort="1769180400000" data-listing-reading-time-sort="8" data-listing-word-count-sort="1453">
+<div class="quarto-post image-right" data-index="8" data-categories="UiUyMG1lbW8lMkNwcmVwcm9jZXNzJTJDYW5hbHlzaXM=" data-listing-date-sort="1761318000000" data-listing-file-modified-sort="1769226623164" data-listing-date-modified-sort="1769180400000" data-listing-reading-time-sort="8" data-listing-word-count-sort="1453">
 <div class="thumbnail"><a href="./posts/20251025_map_alpha/index.html" class="no-external">
 
 <p class="card-img-top"><img src="posts\20251025_map_alpha\index_files\figure-html\thumbnail-1.png"  class="thumbnail-image card-img"/></p>
@@ -469,6 +526,9 @@ window.Quarto = {
 <h3 class="no-anchor listing-title">
 <a href="./posts/20251025_map_alpha/index.html" class="no-external">purrr::mapを使ってpsych::alphaを一気に処理する</a>
 </h3>
+<div class="listing-subtitle">
+<a href="./posts/20251025_map_alpha/index.html" class="no-external"></a>
+</div>
 <div class="listing-categories">
 
 <div class="listing-category" onclick="window.quartoListingCategory('UiUyMG1lbW8='); return false;">R memo</div>
@@ -490,7 +550,7 @@ window.Quarto = {
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="8" data-categories="YW5ub3VuY2VtZW50" data-listing-date-sort="1760799600000" data-listing-file-modified-sort="1760858016542" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="1">
+<div class="quarto-post image-right" data-index="9" data-categories="YW5ub3VuY2VtZW50" data-listing-date-sort="1760799600000" data-listing-file-modified-sort="1760858016542" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="1">
 <div class="thumbnail"><a href="./posts/20251019_start_website/index.html" class="no-external">
 
 <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
@@ -500,6 +560,9 @@ window.Quarto = {
 <h3 class="no-anchor listing-title">
 <a href="./posts/20251019_start_website/index.html" class="no-external">個人ウェブサイトを立ち上げてみました</a>
 </h3>
+<div class="listing-subtitle">
+<a href="./posts/20251019_start_website/index.html" class="no-external"></a>
+</div>
 <div class="listing-categories">
 
 <div class="listing-category" onclick="window.quartoListingCategory('YW5ub3VuY2VtZW50'); return false;">announcement</div>

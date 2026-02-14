@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-02-14">
+
+<title>R ネイティブパイプ（|&gt;）の右辺で算術演算子とか関係演算子を使う方法 – さかいの備忘録</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-0c23244d19d086670d6797cd5ae1fcb3.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-04790538fe244593e78e58a7cb4983f3.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+<meta property="og:title" content="R ネイティブパイプ（|>）の右辺で算術演算子とか関係演算子を使う方法 – さかいの備忘録">
+<meta property="og:description" content="ネイティブパイプ（|>）の右辺でも算術演算子とか関係演算子は使える。ただし、要件あり。">
+<meta property="og:image" content="https://tsakai-website.pages.dev/posts/20260214_native_pipe_rhs_arithmtic_ops/index_files/figure-html/thmubnail-1.png">
+<meta property="og:site_name" content="さかいの備忘録">
+<meta property="og:image:height" content="672">
+<meta property="og:image:width" content="1344">
+<meta name="twitter:title" content="R ネイティブパイプ（|>）の右辺で算術演算子とか関係演算子を使う方法 – さかいの備忘録">
+<meta name="twitter:description" content="ネイティブパイプ（|>）の右辺でも算術演算子とか関係演算子は使える。ただし、要件あり。">
+<meta name="twitter:image" content="https://tsakai-website.pages.dev/posts/20260214_native_pipe_rhs_arithmtic_ops/index_files/figure-html/thmubnail-1.png">
+<meta name="twitter:image-height" content="672">
+<meta name="twitter:image-width" content="1344">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">さかいの備忘録</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../content.html"> 
+<span class="menu-text">Content</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://x.com/tsakai_psych" target="_blank"> <i class="bi bi-twitter-x" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://researchmap.jp/takutosakai" target="_blank"> 
+<span class="menu-text">researchmap</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/tsakai-psych" target="_blank"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-page-left">
+      <h1 class="title">R ネイティブパイプ（|&gt;）の右辺で算術演算子とか関係演算子を使う方法</h1>
+            <p class="subtitle lead">How to Use Arithmetic and Relational Operators on the RHS of R’s Native Pipe (|&gt;)</p>
+                                <div class="quarto-categories">
+                <div class="quarto-category">R memo</div>
+                <div class="quarto-category">Base R</div>
+                <div class="quarto-category">R syntax</div>
+                <div class="quarto-category">pipes</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta column-page-left">
+
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">2026-02-14</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  <div>
+    <div class="abstract">
+      <div class="block-title">Abstract</div>
+      <p>ネイティブパイプ（|&gt;）の右辺でも算術演算子とか関係演算子は使える。ただし、要件あり。</p>
+    </div>
+  </div>
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#packages" id="toc-packages" class="nav-link active" data-scroll-target="#packages">Packages</a></li>
+  <li><a href="#contents" id="toc-contents" class="nav-link" data-scroll-target="#contents">Contents</a>
+  <ul>
+  <li><a href="#problem" id="toc-problem" class="nav-link" data-scroll-target="#problem">Problem</a></li>
+  <li><a href="#solution" id="toc-solution" class="nav-link" data-scroll-target="#solution">Solution</a>
+  <ul class="collapse">
+  <li><a href="#arithmetic-operators" id="toc-arithmetic-operators" class="nav-link" data-scroll-target="#arithmetic-operators">Arithmetic operators</a></li>
+  <li><a href="#logical-operators" id="toc-logical-operators" class="nav-link" data-scroll-target="#logical-operators">Logical operators</a></li>
+  <li><a href="#relational-comparison-operators" id="toc-relational-comparison-operators" class="nav-link" data-scroll-target="#relational-comparison-operators">Relational (comparison) operators</a></li>
+  <li><a href="#matrix-products" id="toc-matrix-products" class="nav-link" data-scroll-target="#matrix-products">Matrix products</a></li>
+  <li><a href="#arguments-name" id="toc-arguments-name" class="nav-link" data-scroll-target="#arguments-name">Arguments name</a></li>
+  <li><a href="#magrittr-aliases" id="toc-magrittr-aliases" class="nav-link" data-scroll-target="#magrittr-aliases"><code>magrittr</code> aliases</a></li>
+  </ul></li>
+  <li><a href="#supplement" id="toc-supplement" class="nav-link" data-scroll-target="#supplement">Supplement</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  <li><a href="#session-infomation" id="toc-session-infomation" class="nav-link" data-scroll-target="#session-infomation">Session Infomation</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block column-page-left" id="quarto-document-content">
+
+
+
+
+
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/thmubnail-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:75.0%"></p>
+</figure>
+</div>
+</div>
+</div>
+<section id="packages" class="level2">
+<h2 class="anchored" data-anchor-id="packages">Packages</h2>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">library</span>(magrittr)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="contents" class="level2">
+<h2 class="anchored" data-anchor-id="contents">Contents</h2>
+<section id="problem" class="level3">
+<h3 class="anchored" data-anchor-id="problem">Problem</h3>
+<p>R 4.1以降で使えるようになった組み込みのパイプ演算子<code>|&gt;</code>。ネイティブパイプと呼ばれているこのパイプ演算子ですが、tidyverseでおなじみの<code>magrittr</code>パイプ演算子（<code>%&gt;%</code>）より機能が制限されていることは有名です。詳しくは<code>help("|&gt;")</code>やHadley氏の解説記事<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>を見てください。</p>
+<p>制限されていることの一つとして、<code>help("|&gt;")</code>だとこう書いてあります。</p>
+<blockquote class="blockquote">
+<p>To avoid ambiguities, functions in rhs calls may not be syntactically special, such as + or if.</p>
+</blockquote>
+<p>ネイティブパイプの右辺では<code>+</code>や<code>if</code>のような関数が特別扱いを受けません。つまりこういうことです。</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="dv">1</span><span class="sc">:</span><span class="dv">3</span> <span class="sc">|&gt;</span> _ <span class="sc">+</span> <span class="dv">2</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in "_": The pipe operator requires a function call as RHS (&lt;input&gt;:1:8)</code></pre>
+</div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="dv">1</span><span class="sc">:</span><span class="dv">3</span> <span class="sc">|&gt;</span> <span class="st">`</span><span class="at">+</span><span class="st">`</span>(<span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in +2: function '+' not supported in RHS call of a pipe (&lt;input&gt;:1:8)</code></pre>
+</div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="dv">2</span><span class="sc">:</span><span class="dv">6</span> <span class="sc">|&gt;</span> <span class="st">`</span><span class="at">&lt;</span><span class="st">`</span>(<span class="dv">4</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in &lt;4: function '&lt;' not supported in RHS call of a pipe (&lt;input&gt;:1:8)</code></pre>
+</div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">NA</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>) <span class="sc">|&gt;</span> <span class="st">`</span><span class="at">!</span><span class="st">`</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-error">
+<pre><code>Error in !NULL: function '!' not supported in RHS call of a pipe (&lt;input&gt;:1:42)</code></pre>
+</div>
+</div>
+<p>算術演算子（<code>+</code>, <code>-</code>, <code>%%</code>, etc…）や関係演算子（<code>&lt;</code>, <code>!=</code>, etc…）、NOT（<code>!</code>）などがすんなり使えません。こういう演算子はバッククォートで囲むと大体OKだったりするのですが、パイプフローだとそうはいかないようです。</p>
+<p>ちなみにmagrittrパイプだとできます。</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="dv">1</span><span class="sc">:</span><span class="dv">3</span> <span class="sc">%&gt;%</span> <span class="sc">+</span> <span class="dv">2</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 3 4 5</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="dv">1</span><span class="sc">:</span><span class="dv">3</span> <span class="sc">%&gt;%</span> <span class="st">`</span><span class="at">+</span><span class="st">`</span>(<span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 3 4 5</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="dv">2</span><span class="sc">:</span><span class="dv">6</span> <span class="sc">%&gt;%</span> <span class="st">`</span><span class="at">&lt;</span><span class="st">`</span>(<span class="dv">4</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1]  TRUE  TRUE FALSE FALSE FALSE</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a><span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">NA</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> <span class="st">`</span><span class="at">!</span><span class="st">`</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] FALSE  TRUE    NA FALSE  TRUE FALSE</code></pre>
+</div>
+</div>
+<p>そういう演算子使うときはパイプ使って書かなくていいじゃんとか、magrittrパイプ使えばいいじゃんとか思うかもしれません。ですが、パッケージの読み込みなしでそのまま使えたり、最近はmagrittr側が高速化しているとはいえネイティブパイプの方が速かったり<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>と、ネイティブパイプ使用にもメリットはあります。特にモンテカルロシミュレーションを時々やる身としては、少しでも速い方がいいのです。あと私はネイティブパイプerなので、途中でmagrittrパイプが混じるのは個人的にはなんかちょっと統一性がなくてあまり好みではありません。あと、R for Data Science 2nd ed.ではネイティブパイプの使用を推奨していますし<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>。</p>
+<p>というわけで前からちょくちょく調べたり考えたりしてました。↓</p>
+<blockquote class="twitter-tweet blockquote" data-theme="dark">
+<p lang="ja" dir="ltr">
+Rの備忘録<br>native pipe のpipelineでの論理値の反転が、|&gt; (<code>!</code>) () という記法で通るらしい<br>どういうことなのかよくわからない<a href="https://t.co/RlqVIhuqnJ">https://t.co/RlqVIhuqnJ</a> <a href="https://t.co/BCpjYWhsns">pic.twitter.com/BCpjYWhsns</a>
+</p>
+— Takuto SAKAI (<span class="citation" data-cites="tsakai_psych">@tsakai_psych</span>) <a href="https://twitter.com/tsakai_psych/status/2005922436051595486?ref_src=twsrc%5Etfw">December 30, 2025</a>
+</blockquote>
+<script async="" src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<p>個人的には、無名関数も<code>()</code>によるラップも、()や{}が増えて何となく可読性が下がるような気がしてもやもやしています。（と言いつつ、普段は無名関数をバンバン使っています。）</p>
+</section>
+<section id="solution" class="level3">
+<h3 class="anchored" data-anchor-id="solution">Solution</h3>
+<p>それで、このあいだ<code>help("groupGeneric")</code>とにらめっこしていろいろ試していたら、なんか通る書き方がありました。</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a><span class="dv">1</span><span class="sc">:</span><span class="dv">3</span> <span class="sc">|&gt;</span> <span class="st">`</span><span class="at">+</span><span class="st">`</span>(<span class="at">e1 =</span> _, <span class="at">e2 =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 3 4 5</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a><span class="dv">2</span><span class="sc">:</span><span class="dv">6</span> <span class="sc">|&gt;</span> <span class="st">`</span><span class="at">&lt;</span><span class="st">`</span>(<span class="at">e1 =</span> _, <span class="at">e2 =</span> <span class="dv">4</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1]  TRUE  TRUE FALSE FALSE FALSE</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a><span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">NA</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb22-2"><a href="#cb22-2"></a>  <span class="st">`</span><span class="at">!</span><span class="st">`</span>(<span class="at">e1 =</span> _)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] FALSE  TRUE    NA FALSE  TRUE FALSE</code></pre>
+</div>
+</div>
+<p>どうやら第一引数名＋プレースホルダー（<code>e1 = _</code>）で通るようです。ネイティブパイプでは第一引数以外に値を渡したいときに引数名が必要だというルールがあるのですが、これらの特別な演算子だとどうやら異なるようです。</p>
+<p>とりあえず、Opsグループの演算子のすべてで試します。</p>
+<section id="arithmetic-operators" class="level4">
+<h4 class="anchored" data-anchor-id="arithmetic-operators">Arithmetic operators</h4>
+<ul>
+<li>足し算</li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a><span class="dv">1</span><span class="sc">:</span><span class="dv">3</span> <span class="sc">|&gt;</span> <span class="st">`</span><span class="at">+</span><span class="st">`</span>(<span class="at">e1 =</span> _, <span class="at">e2 =</span> <span class="dv">2</span>) <span class="co"># 3, 4, 5</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 3 4 5</code></pre>
+</div>
+</div>
+<ul>
+<li>引き算</li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a><span class="dv">1</span><span class="sc">:</span><span class="dv">3</span> <span class="sc">|&gt;</span> <span class="st">`</span><span class="at">-</span><span class="st">`</span>(<span class="at">e1 =</span> _, <span class="at">e2 =</span> <span class="dv">2</span>) <span class="co"># -1, 0, 1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -1  0  1</code></pre>
+</div>
+</div>
+<ul>
+<li>掛け算</li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a><span class="dv">1</span><span class="sc">:</span><span class="dv">3</span> <span class="sc">|&gt;</span> <span class="st">`</span><span class="at">*</span><span class="st">`</span>(<span class="at">e1 =</span> _, <span class="at">e2 =</span> <span class="dv">3</span>) <span class="co"># 3, 6, 9</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 3 6 9</code></pre>
+</div>
+</div>
+<ul>
+<li>割り算</li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1"></a><span class="dv">1</span><span class="sc">:</span><span class="dv">3</span> <span class="sc">|&gt;</span> <span class="st">`</span><span class="at">/</span><span class="st">`</span>(<span class="at">e1 =</span> _, <span class="at">e2 =</span> <span class="dv">2</span>) <span class="co"># 0.5, 1, 1.5</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.5 1.0 1.5</code></pre>
+</div>
+</div>
+<ul>
+<li>累乗</li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1"></a><span class="dv">1</span><span class="sc">:</span><span class="dv">3</span> <span class="sc">|&gt;</span> <span class="st">`</span><span class="at">^</span><span class="st">`</span>(<span class="at">e1 =</span> _, <span class="at">e2 =</span> <span class="dv">4</span>) <span class="co"># 1, 16, 81</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1]  1 16 81</code></pre>
+</div>
+</div>
+<ul>
+<li>Mod計算</li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1"></a><span class="dv">10</span><span class="sc">:</span><span class="dv">13</span> <span class="sc">|&gt;</span> <span class="st">`</span><span class="at">%%</span><span class="st">`</span>(<span class="at">e1 =</span> _, <span class="at">e2 =</span> <span class="dv">3</span>) <span class="co"># 1, 2, 0, 1</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1 2 0 1</code></pre>
+</div>
+</div>
+<ul>
+<li>商の計算</li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1"></a><span class="dv">10</span><span class="sc">:</span><span class="dv">13</span> <span class="sc">|&gt;</span> <span class="st">`</span><span class="at">%/%</span><span class="st">`</span>(<span class="at">e1 =</span> _, <span class="at">e2 =</span> <span class="dv">2</span>) <span class="co"># 5, 5, 6, 6</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 5 5 6 6</code></pre>
+</div>
+</div>
+</section>
+<section id="logical-operators" class="level4">
+<h4 class="anchored" data-anchor-id="logical-operators">Logical operators</h4>
+<ul>
+<li>AND</li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1"></a><span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">NA</span>, <span class="cn">TRUE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb38-2"><a href="#cb38-2"></a>  <span class="st">`</span><span class="at">&amp;</span><span class="st">`</span>(<span class="at">e1 =</span> _, <span class="at">e2 =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1]  TRUE FALSE    NA  TRUE  TRUE FALSE</code></pre>
+</div>
+</div>
+<ul>
+<li>OR</li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1"></a><span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">NA</span>, <span class="cn">TRUE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb40-2"><a href="#cb40-2"></a>  <span class="st">`</span><span class="at">|</span><span class="st">`</span>(<span class="at">e1 =</span> _, <span class="at">e2 =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1]  TRUE FALSE    NA  TRUE  TRUE FALSE</code></pre>
+</div>
+</div>
+<ul>
+<li>NOT
+<ul>
+<li>なお<code>!</code>は単項演算子（unary operator）なので、第一引数<code>x</code>に対してプレースホルダーを置くだけでいいです。引数名が<code>x</code>なのは後述します。</li>
+</ul></li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1"></a><span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">NA</span>, <span class="cn">TRUE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb42-2"><a href="#cb42-2"></a>  <span class="st">`</span><span class="at">!</span><span class="st">`</span>(<span class="at">x =</span> _)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] FALSE  TRUE    NA FALSE FALSE  TRUE</code></pre>
+</div>
+</div>
+</section>
+<section id="relational-comparison-operators" class="level4">
+<h4 class="anchored" data-anchor-id="relational-comparison-operators">Relational (comparison) operators</h4>
+<ul>
+<li>equal</li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1"></a><span class="fu">c</span>(<span class="st">"hoge"</span>, <span class="st">"huga"</span>, <span class="st">"piyo"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb44-2"><a href="#cb44-2"></a>  <span class="st">`</span><span class="at">==</span><span class="st">`</span>(<span class="at">e1 =</span> _, <span class="at">e2 =</span> <span class="st">"huga"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] FALSE  TRUE FALSE</code></pre>
+</div>
+</div>
+<ul>
+<li>not equal</li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1"></a><span class="fu">c</span>(<span class="st">"hoge"</span>, <span class="st">"huga"</span>, <span class="st">"piyo"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb46-2"><a href="#cb46-2"></a>  <span class="st">`</span><span class="at">!=</span><span class="st">`</span>(<span class="at">e1 =</span> _, <span class="at">e2 =</span> <span class="st">"huga"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1]  TRUE FALSE  TRUE</code></pre>
+</div>
+</div>
+<ul>
+<li>less</li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1"></a><span class="dv">1</span><span class="sc">:</span><span class="dv">3</span> <span class="sc">|&gt;</span></span>
+<span id="cb48-2"><a href="#cb48-2"></a>  <span class="st">`</span><span class="at">&lt;</span><span class="st">`</span>(<span class="at">e1 =</span> _, <span class="at">e2 =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1]  TRUE FALSE FALSE</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1"></a><span class="dv">1</span><span class="sc">:</span><span class="dv">3</span> <span class="sc">|&gt;</span></span>
+<span id="cb50-2"><a href="#cb50-2"></a>  <span class="st">`</span><span class="at">&lt;=</span><span class="st">`</span>(<span class="at">e1 =</span> _, <span class="at">e2 =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1]  TRUE  TRUE FALSE</code></pre>
+</div>
+</div>
+<ul>
+<li>greater</li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1"></a><span class="dv">1</span><span class="sc">:</span><span class="dv">3</span> <span class="sc">|&gt;</span></span>
+<span id="cb52-2"><a href="#cb52-2"></a>  <span class="st">`</span><span class="at">&gt;</span><span class="st">`</span>(<span class="at">e1 =</span> _, <span class="at">e2 =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] FALSE FALSE  TRUE</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1"></a><span class="dv">1</span><span class="sc">:</span><span class="dv">3</span> <span class="sc">|&gt;</span></span>
+<span id="cb54-2"><a href="#cb54-2"></a>  <span class="st">`</span><span class="at">&gt;=</span><span class="st">`</span>(<span class="at">e1 =</span> _, <span class="at">e2 =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] FALSE  TRUE  TRUE</code></pre>
+</div>
+</div>
+</section>
+<section id="matrix-products" class="level4">
+<h4 class="anchored" data-anchor-id="matrix-products">Matrix products</h4>
+<ul>
+<li>行列の掛け算</li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1"></a>(mat_1 <span class="ot">&lt;-</span> <span class="fu">matrix</span>(</span>
+<span id="cb56-2"><a href="#cb56-2"></a>  <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>,</span>
+<span id="cb56-3"><a href="#cb56-3"></a>  <span class="at">nrow =</span> <span class="dv">2</span></span>
+<span id="cb56-4"><a href="#cb56-4"></a>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     [,1] [,2]
+[1,]    1    3
+[2,]    2    4</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1"></a>(mat_2 <span class="ot">&lt;-</span> <span class="fu">matrix</span>(</span>
+<span id="cb58-2"><a href="#cb58-2"></a>  <span class="dv">1</span><span class="sc">:</span><span class="dv">6</span>,</span>
+<span id="cb58-3"><a href="#cb58-3"></a>  <span class="at">nrow =</span> <span class="dv">2</span></span>
+<span id="cb58-4"><a href="#cb58-4"></a>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     [,1] [,2] [,3]
+[1,]    1    3    5
+[2,]    2    4    6</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb60"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1"></a>mat_1 <span class="sc">|&gt;</span> <span class="st">`</span><span class="at">%*%</span><span class="st">`</span>(<span class="at">e1 =</span> _, <span class="at">e2 =</span> mat_2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     [,1] [,2] [,3]
+[1,]    7   15   23
+[2,]   10   22   34</code></pre>
+</div>
+</div>
+</section>
+<section id="arguments-name" class="level4">
+<h4 class="anchored" data-anchor-id="arguments-name">Arguments name</h4>
+<p>二項演算子の引数名については、<code>help("groupGeneric")</code>に倣い、また、演算子を呼び出してみると以下のように出力されるのもあって、<code>(e1 = _, e2 = y)</code>の書き方をしました。</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1"></a><span class="st">`</span><span class="at">+</span><span class="st">`</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>function (e1, e2)  .Primitive("+")</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb64"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1"></a><span class="st">`</span><span class="at">%%</span><span class="st">`</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>function (e1, e2)  .Primitive("%%")</code></pre>
+</div>
+</div>
+<p>ですが、どうやら引数名は何でもよいみたいですし、プレースホルダー側でなければ引数名がなくても通るようです。</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb66"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1"></a><span class="dv">1</span><span class="sc">:</span><span class="dv">3</span> <span class="sc">|&gt;</span> <span class="st">`</span><span class="at">+</span><span class="st">`</span>(<span class="at">x =</span> _, <span class="at">y =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 3 4 5</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb68"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1"></a><span class="dv">10</span><span class="sc">:</span><span class="dv">13</span> <span class="sc">|&gt;</span> <span class="st">`</span><span class="at">%%</span><span class="st">`</span>(<span class="at">hoge =</span> _, <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1 2 0 1</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb70"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1"></a><span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">NA</span>, <span class="cn">TRUE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb70-2"><a href="#cb70-2"></a>  <span class="st">`</span><span class="at">&amp;</span><span class="st">`</span>(<span class="at">lhs =</span> _, <span class="at">rhs =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1]  TRUE FALSE    NA  TRUE  TRUE FALSE</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb72"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1"></a><span class="dv">1</span><span class="sc">:</span><span class="dv">3</span> <span class="sc">|&gt;</span> <span class="st">`</span><span class="at">&gt;</span><span class="st">`</span>(<span class="dv">2</span>, <span class="at">with =</span> _) <span class="co"># 2 &gt; 1:3</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1]  TRUE FALSE FALSE</code></pre>
+</div>
+</div>
+<p>ちなみに、<code>!</code>は呼び出してみると以下のようになります。</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb74"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1"></a><span class="st">`</span><span class="at">!</span><span class="st">`</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>function (x)  .Primitive("!")</code></pre>
+</div>
+</div>
+<p>引数名が<code>x</code>になっています。というわけで最初の例で挙げた書き方（<code>e1 = _</code>）の時点で実は引数名が何でもよいことになっていました。</p>
+</section>
+<section id="magrittr-aliases" class="level4">
+<h4 class="anchored" data-anchor-id="magrittr-aliases"><code>magrittr</code> aliases</h4>
+<p>ここまで書いておいて今更感があるんですが、実はこれらの演算子がパイプで使えるように<code>magrittr</code>パッケージではエイリアスが用意されています。例えば<code>+</code>は<code>magrittr::add()</code>で書くことができます。中身も同じです。</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb76"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1"></a>magrittr<span class="sc">::</span>add</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>function (e1, e2)  .Primitive("+")</code></pre>
+</div>
+</div>
+<p>その他の演算子については<code>help("extract", package = "magrittr")</code>で見れます。</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb78"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1"></a><span class="dv">1</span><span class="sc">:</span><span class="dv">3</span> <span class="sc">|&gt;</span> <span class="fu">add</span>(<span class="dv">2</span>) <span class="co"># same as `+`</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 3 4 5</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb80"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1"></a><span class="dv">10</span><span class="sc">:</span><span class="dv">13</span> <span class="sc">|&gt;</span> <span class="fu">mod</span>(<span class="at">hoge =</span> _, <span class="dv">3</span>) <span class="co"># same as `%%`</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1 2 0 1</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb82"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb82-1"><a href="#cb82-1"></a><span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">NA</span>, <span class="cn">TRUE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>) <span class="sc">|&gt;</span> <span class="fu">not</span>(<span class="at">x =</span> _) <span class="co"># same as `!`</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] FALSE  TRUE    NA FALSE FALSE  TRUE</code></pre>
+</div>
+</div>
+<p>正直言うと、これらエイリアスを使った方がわかりやすさも可読性もがいいように思います。なお、<code>tidyverse</code>パッケージを使っている人であれば<code>magrittr</code>は必ずインストールされていますが、基本パッケージではないので<code>library(tidyverse)</code>だけでは呼び出し(<code>::</code>)なしで使えません。使いたい人は<code>library(magrittr)</code>もついでにしてください。</p>
+</section>
+</section>
+<section id="supplement" class="level3">
+<h3 class="anchored" data-anchor-id="supplement">Supplement</h3>
+<p>参考までに、足し算だけ処理速度の比較をしてみます。基本的な記法、ネイティブパイプ、magrittrエイリアス、magrittrパイプの4記法で比較です。ネタバレするとあまりにも速すぎるので、試行回数は1万回にしてもすぐ終わります。</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb84"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb84-1"><a href="#cb84-1"></a>res_bench_n3 <span class="ot">&lt;-</span> microbenchmark<span class="sc">::</span><span class="fu">microbenchmark</span>(</span>
+<span id="cb84-2"><a href="#cb84-2"></a>  <span class="st">"basic"</span> <span class="ot">=</span> {<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span> <span class="sc">+</span> <span class="dv">2</span>},</span>
+<span id="cb84-3"><a href="#cb84-3"></a>  <span class="st">"native_pipe"</span> <span class="ot">=</span> {<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span> <span class="sc">|&gt;</span> <span class="st">`</span><span class="at">+</span><span class="st">`</span>(<span class="at">x =</span> _, <span class="dv">2</span>)},</span>
+<span id="cb84-4"><a href="#cb84-4"></a>  <span class="st">"magrittr_alias"</span> <span class="ot">=</span>{<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span> <span class="sc">|&gt;</span> <span class="fu">add</span>(<span class="dv">2</span>)},</span>
+<span id="cb84-5"><a href="#cb84-5"></a>  <span class="st">"magrittr_pipe"</span> <span class="ot">=</span> {<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span> <span class="sc">%&gt;%</span> <span class="st">`</span><span class="at">+</span><span class="st">`</span>(<span class="dv">2</span>)},</span>
+<span id="cb84-6"><a href="#cb84-6"></a>  <span class="at">check =</span> <span class="st">"equal"</span>,</span>
+<span id="cb84-7"><a href="#cb84-7"></a>  <span class="at">times =</span> <span class="dv">10000</span></span>
+<span id="cb84-8"><a href="#cb84-8"></a>)</span>
+<span id="cb84-9"><a href="#cb84-9"></a></span>
+<span id="cb84-10"><a href="#cb84-10"></a>res_bench_n3</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Unit: nanoseconds
+           expr  min   lq    mean median   uq   max neval cld
+          basic  100  100  184.02    200  200 20800 10000 a  
+    native_pipe  100  100  184.02    200  200 24900 10000 a  
+ magrittr_alias  100  100  207.64    200  200 24400 10000  b 
+  magrittr_pipe 1300 1400 1515.64   1500 1500 25300 10000   c</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb86"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb86-1"><a href="#cb86-1"></a>ggplot2<span class="sc">::</span><span class="fu">autoplot</span>(res_bench_n3)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>この中だとmagrittrパイプだけが非常に遅いです。ちなみにキャッシュを使っていないので、レンダリングするたびにベンチマークの結果が変わるのですが（ネイティブパイプとmagrittrエイリアスに差があることになったりならなかったり）、magrittrパイプが遅いのだけは変わらないです。ただし、この結果の単位はナノ秒です。体感できる差ではありません。</p>
+<p>ベクトルの要素を1万個まで増やして再度比較します。</p>
+<div class="cell" data-layout-align="center">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb87"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1"></a>res_bench_n10k <span class="ot">&lt;-</span> microbenchmark<span class="sc">::</span><span class="fu">microbenchmark</span>(</span>
+<span id="cb87-2"><a href="#cb87-2"></a>  <span class="st">"basic"</span> <span class="ot">=</span> {<span class="dv">1</span><span class="sc">:</span><span class="dv">10000</span> <span class="sc">+</span> <span class="dv">123</span>},</span>
+<span id="cb87-3"><a href="#cb87-3"></a>  <span class="st">"native_pipe"</span> <span class="ot">=</span> {<span class="dv">1</span><span class="sc">:</span><span class="dv">10000</span> <span class="sc">|&gt;</span> <span class="st">`</span><span class="at">+</span><span class="st">`</span>(<span class="at">x =</span> _, <span class="dv">123</span>)},</span>
+<span id="cb87-4"><a href="#cb87-4"></a>  <span class="st">"magrittr_alias"</span> <span class="ot">=</span>{<span class="dv">1</span><span class="sc">:</span><span class="dv">10000</span> <span class="sc">|&gt;</span> <span class="fu">add</span>(<span class="dv">123</span>)},</span>
+<span id="cb87-5"><a href="#cb87-5"></a>  <span class="st">"magrittr_pipe"</span> <span class="ot">=</span> {<span class="dv">1</span><span class="sc">:</span><span class="dv">10000</span> <span class="sc">%&gt;%</span> <span class="st">`</span><span class="at">+</span><span class="st">`</span>(<span class="dv">123</span>)},</span>
+<span id="cb87-6"><a href="#cb87-6"></a>  <span class="at">check =</span> <span class="st">"equal"</span>,</span>
+<span id="cb87-7"><a href="#cb87-7"></a>  <span class="at">times =</span> <span class="dv">10000</span></span>
+<span id="cb87-8"><a href="#cb87-8"></a>)</span>
+<span id="cb87-9"><a href="#cb87-9"></a></span>
+<span id="cb87-10"><a href="#cb87-10"></a>res_bench_n10k</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Unit: microseconds
+           expr  min   lq     mean median   uq      max neval cld
+          basic  9.4 10.4 15.63672   10.8 11.5   3042.0 10000   a
+    native_pipe  9.4 10.4 61.00143   10.8 11.5 117682.7 10000   a
+ magrittr_alias  9.5 10.5 28.25475   10.9 11.5 111963.6 10000   a
+  magrittr_pipe 10.8 12.2 30.34975   12.7 13.6 112676.1 10000   a</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb89"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb89-1"><a href="#cb89-1"></a>ggplot2<span class="sc">::</span><span class="fu">autoplot</span>(res_bench_n10k)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>magrittrパイプの分布が若干他3記法よりも後ろにあるように見受けられますが、単位はマイクロ秒ですしこれも体感できる差があるとは言えないでしょう。</p>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>ネイティブパイプのRHSで特別な演算子を使ってみたという話でした。調べてもでてこなくて、最初見つけたときはすごくときめいた感じがしたのですが、これを書いている間にどんどん「だからどうした」感が出てたのと、なんでパイプラインで論理値反転したかったのかをすっかり忘れました。まあ、こういう書き方もできるよということで。</p>
+</section>
+<section id="session-infomation" class="level2">
+<h2 class="anchored" data-anchor-id="session-infomation">Session Infomation</h2>
+<div class="callout callout-style-default callout-note callout-titled" title="sessioninfo">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>sessioninfo
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="cell" data-layout-align="center">
+<div class="cell-output cell-output-stdout">
+<pre><code>R version 4.5.2 (2025-10-31 ucrt)
+Platform: x86_64-w64-mingw32/x64
+Running under: Windows 11 x64 (build 26100)
+
+Matrix products: default
+  LAPACK version 3.12.1
+
+locale:
+[1] LC_COLLATE=Japanese_Japan.utf8  LC_CTYPE=Japanese_Japan.utf8    LC_MONETARY=Japanese_Japan.utf8
+[4] LC_NUMERIC=C                    LC_TIME=Japanese_Japan.utf8    
+
+time zone: Asia/Tokyo
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] magrittr_2.0.4
+
+loaded via a namespace (and not attached):
+ [1] Matrix_1.7-4         gtable_0.3.6         jsonlite_2.0.0       dplyr_1.2.0         
+ [5] compiler_4.5.2       tidyselect_1.2.1     splines_4.5.2        systemfonts_1.3.1   
+ [9] scales_1.4.0         textshaping_1.0.4    yaml_2.3.12          fastmap_1.2.0       
+[13] TH.data_1.1-5        lattice_0.22-7       ggplot2_4.0.2        R6_2.6.1            
+[17] labeling_0.4.3       generics_0.1.4       microbenchmark_1.5.0 knitr_1.51          
+[21] MASS_7.3-65          htmlwidgets_1.6.4    tibble_3.3.1         pillar_1.11.1       
+[25] RColorBrewer_1.1-3   rlang_1.1.7          multcomp_1.4-29      xfun_0.56           
+[29] S7_0.2.1             otel_0.2.0           cli_3.6.5            withr_3.0.2         
+[33] digest_0.6.39        grid_4.5.2           mvtnorm_1.3-3        rstudioapi_0.18.0   
+[37] sandwich_3.1-1       lifecycle_1.0.5      vctrs_0.7.1          evaluate_1.0.5      
+[41] glue_1.8.0           farver_2.1.2         codetools_0.2-20     ragg_1.5.0          
+[45] zoo_1.8-15           survival_3.8-3       rmarkdown_2.30       tools_4.5.2         
+[49] pkgconfig_2.0.3      htmltools_0.5.9     </code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+</section>
+
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p><a href="https://tidyverse.org/blog/2023/04/base-vs-magrittr-pipe/" class="uri">https://tidyverse.org/blog/2023/04/base-vs-magrittr-pipe/</a><a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>例えば<a href="https://speakerdeck.com/s_uryu/r-native-pipe?slide=12" class="uri">https://speakerdeck.com/s_uryu/r-native-pipe?slide=12</a>とか、<a href="https://t-arae.blog/posts/2024/2024-07-27-r-pipe2/" class="uri">https://t-arae.blog/posts/2024/2024-07-27-r-pipe2/</a>とか。自分でも時々ベンチを回したりします。<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p><a href="https://r4ds.hadley.nz/data-transform.html#sec-the-pipe" class="uri">https://r4ds.hadley.nz/data-transform.html#sec-the-pipe</a><a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/tsakai-website\.pages\.dev");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+            // default icon
+            link.classList.add("external");
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>Copyright 2025 Takuto Sakai<br> Content on this website is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.en">CC BY-SA 4.0</a>.<br> Code is released under the <a href="../../LICENSE.html">MIT License</a>.</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>Please contact me via <a href="https://x.com/tsakai_psych">X (Twitter)</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
