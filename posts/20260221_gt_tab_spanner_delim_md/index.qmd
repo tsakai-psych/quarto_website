@@ -1,5 +1,5 @@
 ---
-title: "gt::tab_spanner_delimで作ったspannerにgt::mdを効かせる"
+title: "R gt::tab_spanner_delimで作ったspannerにgt::mdを効かせる"
 subtitle: "How to Apply gt::md to Spanner Labels from gt::tab_spanner_delim"
 date: 2026-02-21
 abstract: |
