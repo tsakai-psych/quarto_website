@@ -95,7 +95,7 @@
     "href": "about.html",
     "title": "About",
     "section": "",
-    "text": "名前\n酒井拓人 (SAKAI, Takuto)\n\n\n現所属\n\n愛知学院大学心理学部 実験助手（教員）\n\n（教員）までが正式な職位です。\n\n\n\n\n研究領域\n\n言い方や言葉遣いが印象にどのような影響を与えるかについて興味があります。\n\n自分は心理学科で育ったので心理学の人だと思っているのですが、やっている内容はなんかそうじゃない気もします。\n\n\n\n\nLinks\n\nreseachmap.jp\n\n業績などはresearchmapにまとめてあります。学会発表のポスター（pdf）もなるべくアップロードするようにしています。\n\n  https://orcid.org/0009-0004-0736-5229 \n\nE-mailアドレスはORCIDに掲載しています。\n\nOSF\n\n一部の発表資料はOSFに置いています。"
+    "text": "酒井 拓人 (SAKAI, Takuto)"
   },
   {
     "objectID": "index.html",
@@ -460,5 +460,54 @@
     "title": "R gt::tab_spanner_delimで作ったspannerにgt::mdを効かせる",
     "section": "Footnotes",
     "text": "Footnotes\n\n\nhttps://gt.rstudio.com/↩︎"
+  },
+  {
+    "objectID": "about.html#名前",
+    "href": "about.html#名前",
+    "title": "About",
+    "section": "",
+    "text": "酒井拓人 (SAKAI, Takuto)"
+  },
+  {
+    "objectID": "about.html#現所属",
+    "href": "about.html#現所属",
+    "title": "About",
+    "section": "現所属",
+    "text": "現所属\n\nなし\n\n近辺のいくつかの大学の非常勤講師として何とか生きています。"
+  },
+  {
+    "objectID": "about.html#研究領域",
+    "href": "about.html#研究領域",
+    "title": "About",
+    "section": "研究領域",
+    "text": "研究領域\n\n言い方や言葉遣いが印象にどのような影響を与えるかについて興味があります。\n\n自分は心理学科で育ったので心理学の人だと思っているのですが、やっている内容はなんかそうじゃない気もします。"
+  },
+  {
+    "objectID": "about.html#links",
+    "href": "about.html#links",
+    "title": "About",
+    "section": "Links",
+    "text": "Links\n\nreseachmap.jp\n\n経歴や業績などはresearchmapにまとめてあります。学会発表のポスター（pdf）やスライドもなるべくアップロードするようにしています。\n\n  https://orcid.org/0009-0004-0736-5229 \n\nE-mailアドレスはORCIDに掲載しています。\n\nOSF\n\n一部の発表資料はOSFに置いています。"
+  },
+  {
+    "objectID": "about.html#name",
+    "href": "about.html#name",
+    "title": "About",
+    "section": "",
+    "text": "酒井 拓人 (SAKAI, Takuto)"
+  },
+  {
+    "objectID": "about.html#current-affiliation",
+    "href": "about.html#current-affiliation",
+    "title": "About",
+    "section": "Current Affiliation",
+    "text": "Current Affiliation\n\nなし\n\n近辺のいくつかの大学の非常勤講師をして、何とか生きています。"
+  },
+  {
+    "objectID": "about.html#research-interests",
+    "href": "about.html#research-interests",
+    "title": "About",
+    "section": "Research Interests",
+    "text": "Research Interests\n\n言い方や言葉遣いが印象にどのような影響を与えるかについて興味があります。\n\n自分は心理学科で育ったので心理学の人だと思っているのですが、やっている内容はなんかそうじゃない気もします。"
   }
 ]

@@ -5,20 +5,20 @@ about:
   template: trestles
 ---
 
-# 名前
-酒井拓人 (SAKAI, Takuto)
+## Name
+酒井 拓人 (SAKAI, Takuto)
 
-# 現所属
-- 愛知学院大学心理学部 実験助手（教員）
-  - （教員）までが正式な職位です。
+## Current Affiliation
+- なし
+    - 近辺のいくつかの大学の非常勤講師をして、何とか生きています。
 
-# 研究領域
+## Research Interests
 - 言い方や言葉遣いが印象にどのような影響を与えるかについて興味があります。
     - 自分は心理学科で育ったので心理学の人だと思っているのですが、やっている内容はなんかそうじゃない気もします。
 
-# Links
+## Links
   - [reseachmap.jp](https://researchmap.jp/takutosakai){.external target="_blank"}
-    - 業績などはresearchmapにまとめてあります。学会発表のポスター（pdf）もなるべくアップロードするようにしています。
+    - 経歴や業績などはresearchmapにまとめてあります。学会発表のポスター（pdf）やスライドもなるべくアップロードするようにしています。
   -  <a
     id="cy-effective-orcid-url"
     class="underline"
