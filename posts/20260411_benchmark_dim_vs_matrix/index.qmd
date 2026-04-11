@@ -1,0 +1,325 @@
+---
+title: "R byrowしないならmatrixよりdim<-の方が速そう"
+subtitle: "Benchmark: `` `dim<-`() `` vs `matrix()`— `` `dim<-`() `` Seems Faster When Row-Wise Filling Isn’t Needed"
+date: 2026-04-11
+abstract: |
+    シミュレーションとかで何万回～も回す人向け。Rで行列を作るときに、要素をbyrowで入れないなら`` `dim<-`() ``使う方が速い。
+categories: [R memo, Base R, bench mark]
+format: html
+knitr:
+  opts_chunk:
+    fig.align: center
+    dev: ragg_png
+    R.options:
+      width: 100
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| label: thumbnail
+#| echo: false
+#| out-width: 75%
+#| fig.asp: 0.525
+ggplot2::ggplot() +
+  ggplot2::theme_void() +
+  ggplot2::annotate(
+    geom = "text",
+    x = 0,
+    y = 0,
+    label = "行列を作るとき\nbyrowしないならmatrixより\n`dim<-`の方が速そう",
+    family = "Gen Jyuu GothicX",
+    fontface = "bold",
+    size = 10
+  ) +
+  patchwork::inset_element(
+    p = png::readPNG(
+      source = paste0(Sys.getenv("R_USER"), "/resources/Rlogo.png"),
+      native = TRUE
+    ),
+    left = 0,
+    bottom = .8,
+    right = .2,
+    top = 1
+  )
+```
+
+## Pacakges
+```{r}
+#| output: false
+pacman::p_load(
+  tidyverse,
+  microbenchmark,
+  bench
+)
+```
+
+## Background
+Rで行列を作るとき、`matrix()`でも`` `dim<-`()  ``でも作れるのですが、どっちが速いのかなーと比べたくなりました。シミュレーションで1条件当たり何万回～も回すときは少しでも速い方がいいのです。
+
+前にちょこっとやったものの条件をもっと増やしてみました。
+
+<blockquote class="twitter-tweet" data-theme="dark"><p lang="ja" dir="ltr">Rの備忘録<br>2x2と3x3しかやってないけど、byrowで入れないならmatrixよりも`dim&lt;-`の方が速そう <a href="https://t.co/17emiEOTyQ">pic.twitter.com/17emiEOTyQ</a></p>&mdash; Takuto SAKAI (@tsakai_psych) <a href="https://twitter.com/tsakai_psych/status/2035719651196588408?ref_src=twsrc%5Etfw">March 22, 2026</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+### `matrix()`
+ベクトルを行列にできます。引数`nrow`で行数を指定するか、引数`ncol`で列数を指定します。
+```{r}
+matrix(1:4, nrow = 2)
+```
+
+行数や列数を指定しない場合、n行1列の行列ができます。
+```{r}
+matrix(1:4)
+```
+
+基本的には列方向にベクトルを入れていくようですが、引数`byrow`をTRUEにすると行方向にベクトルを入れられます。
+```{r}
+matrix(1:4, nrow = 2, byrow = TRUE)
+```
+
+引数`dimnames`に`list(行名のベクトル, 列名のベクトル)`を入れることで、行名と列名を設定できます。いらないところは`NULL`を入れると設定されません。
+```{r}
+matrix(
+  1:4,
+  nrow = 2,
+  dimnames = list(c("r1", "r2"), c("c1", "c2"))
+)
+
+matrix(
+  1:4,
+  nrow = 2,
+  dimnames = list(NULL, c("c1", "c2"))
+)
+```
+
+### `` `dim<-`()  ``
+オブジェクトに次元を付与したりなくしたりできます。ふつうは`dim(obj) <- value`で使うと思いますが、`` `dim<-`(obj, value) ``[^backtick]も使えます。後者の記法はパイプラインと相性がいいです。引数`value`には整数ベクトルを入れます。行列なら長さ2のベクトルを入れればいいです。
+```{r}
+`dim<-`(1:4, c(2, 2))
+```
+
+オブジェクトの長さと次元数がマッチしない場合はエラーを吐きます。
+```{r}
+#| error: true
+`dim<-`(1:4, c(2, 4))
+```
+
+あと、`matrix(..., byrow = TRUE)`みたいなことはできないっぽいです、多分。
+
+[^backtick]: `f(x) <- value`みたいな書き方をする関数には、結構この記法（`` `f<-`(x, value)  ``）に対応しているものがあります。代入演算子（`<-`）まで含めて関数の名前になっているので、関数名を必ずバッククォート記号（`` ` ``、backtickとも言うみたい）で囲む必要があります。コード補完をオンにしていると、候補に出てきます。
+
+## Benchmark
+いつも使っている`microbenchmark::microbenchmark()`と、最近なんとなく使い方がわかってきた`bench::mark()`でベンチマークを回してみます。実際の場面ではintかnumericを扱う場合が多いと思うので、入力は`runif()`で作ることにします。
+
+### `microbenchmark`
+行数と列数に複数の水準を作りたいので、条件のdfを作って回したいと思います。条件は行列それぞれ1から10までです。1×1は除きます。
+```{r}
+#| attr-output: 'style="max-height: 350px;"'
+df_condition <-
+  tidyr::expand_grid(
+    nr = 1:10,
+    nc = 1:10
+  ) |>
+  dplyr::filter_out(nr == 1 & nc == 1)
+
+print(df_condition, n = 99)
+```
+
+ベンチマークを回します。
+```{r}
+res_mb <-
+  df_condition |>
+  dplyr::mutate(
+    res = purrr::pmap(
+      .l = list(
+        x = nr,
+        y = nc
+      ),
+      .f = \(x, y) {
+        elements <- runif(x * y)
+        microbenchmark::microbenchmark(
+          "matrix" = matrix(elements, nrow = x),
+          "dim" = `dim<-`(elements, c(x, y)),
+          check = "equal"
+        )
+      },
+      .progress = list(
+        clear = FALSE,
+        show_after = 0,
+        format = "{cli::pb_bar} ({cli::pb_percent} in {cli::pb_elapsed})|{cli::pb_eta_str}"
+      )
+    ) |>
+      setNames(paste0("r", nr, "c", nc)) # <1>
+  )
+```
+1. `purrr::pmap`の戻り値を名前付きにしておくと、後で`ggplot2::autoplot()`するときとかに便利。
+
+結果は以下の通りです。まとめるのが面倒なのでそのまま出します。
+```{r}
+#| attr-output: 'style="max-height: 350px;"'
+res_mb$res
+```
+どの条件でも`matrix()`に比べて`` `dim<-`()  ``の方が2～3倍くらい速いですが、結果の単位はナノ秒なので、1回実行するときには体感できる差はないですね。何万回以上も回すとなると地味に変わってくると思います。
+
+結果のグラフ化も可能です。列数ごとに分割して`ggplot2::autoplot`を使います。`microbenchmark::microbenchmark()`の戻り値に対しては`microbenchmark:::autoplot.microbenchmark()`が適用されます。
+```{r}
+split(res_mb, res_mb$nr) |>
+  purrr::walk(
+    .f = \(x) {
+      x |>
+        dplyr::pull(res) |>
+        purrr::imap(
+          .f = \(y, idx) {
+            ggplot2::autoplot(y) + # <1>
+              ggplot2::labs(title = idx) # <2>
+          }
+        ) |>
+        patchwork::wrap_plots(
+          ncol = 5,
+          byrow = TRUE,
+          axes = "collect_y",
+          axis_titles = "collect"
+        ) |>
+        print() # <2>
+    }
+  )
+```
+1. `autoplot.microbenchmark()`内部の関数がggplot2側でdeprecatedになったものがあるらしく、警告が出ます。
+2. `purrr::map()`にすると、戻り値がレンダリングされるので、`purrr::walk()`にしてplotだけ無理やり表示させました。
+
+どの条件でも`` `dim<-`()  ``の方が速いように見受けられます。
+
+### `bench`
+最近使い方をなんとなく覚えてきました。`bench::mark()`はベンチマーク時間を設定できたり、メモリアロケーションも出してくれたりするところがいいです。あと、デフォルトで出力が一致しているかどうかチェックしてくれます。`bench::mark()`を複数条件で実行したいときは`bench::press()`を併用します。`bench::press()`では、パラメーター（条件）を名前付きで指定して、名前なしのexprとして`{}`の中で`bench::mark()`を実行するという感じです。普通にやるならこんな感じになると思います。
+```{r}
+#| eval: false
+bench::press(
+  nr = 2:5, # <1>
+  nc = 2:5, # <1>
+  { # <2>
+    elements <- runif(nr * nc) # <2>
+    bench::mark( # <2>
+      "matrix" = matrix(elements, nrow = nr), # <2>
+      "dim" = `dim<-`(elements, c(nr, nc)) # <2>
+    ) # <2>
+  } # <2>
+)
+```
+1. 条件を列挙する。`tidyr::expand_grid()`っぽく展開される（けど、中で使っているのは`expand.grid()`だった）。
+2. `{}`の中では単発の`bench::mark()`っぽく記述すればいいです。
+
+今回は条件のdfをすでに作ってあるので、それを引数`.grid`に渡せばいいです。
+```{r}
+#| message: false
+#| attr-output: 'style="max-height: 350px;"'
+res_bm <- bench::press(
+  .grid = df_condition,
+  {
+    elements <- runif(nr * nc)
+    bench::mark(
+      "matrix" = matrix(elements, nrow = nr),
+      "dim" = `dim<-`(elements, c(nr, nc))
+    )
+  }
+)
+```
+
+結果は以下の通りです。まとめるのが面倒なのでそのまま出します。
+```{r}
+#| attr-output: 'style="max-height: 350px;"'
+print(res_bm, n = 999)
+```
+結果は先ほどと変わらず、単位は相変わらずナノ秒とか1桁マイクロ秒ですが、どの条件でも`matrix()`より`` `dim<-`()  ``の方が2～3倍くらい速いです。
+
+こちらも結果のグラフ化が可能です。先ほどと同じく`autoplot()`で自動的に出来上がります。`bench::mark()`の戻り値には`bench:::autoplot.bench_mark()`が適用されます。
+```{r}
+res_bm |>
+  dplyr::filter(nr == 1) |>
+  ggplot2::autoplot() # <1>
+```
+1. 引数`type`で描画方法をいろいろ指定できます。ただし、デフォルトの`"beeswarm"`は`ggbeeswarm`パッケージ、`"ridge"`は`ggridges`パッケージが必要です。インストールされてない場合は、インストールするかどうか聞いてきます。
+
+条件がいくつかある場合は自動でfacetに分けてくれるようです。ただこのまま列に条件がすべて入るとちょっと見にくいので、これも行ごとに分割してもう少し見やすくしてみます。内部ですでに`ggplot2::facet_*()`が使われているのですが、上書きしてしまいます。[^beeswarm_slow]
+```{r}
+split(res_bm, res_bm$nr) |>
+  setNames(paste0("r", 1:10)) |>
+  purrr::imap(
+    .f = \(x, idx) {
+      ggplot2::autoplot(x) +
+        ggplot2::facet_wrap(
+          ggplot2::vars(nc),
+          ncol = 5,
+          labeller = ggplot2::labeller(nc = ggplot2::label_both)
+        ) +
+        ggplot2::labs(title = idx)
+    }
+  )
+```
+どの条件でも`` `dim<-`()  ``の方が速いですね。
+
+[^beeswarm_slow]: ほとんどの条件で実行回数（n_iter）が上限の１万回に達しているからか、beeswarmの処理にやたら時間がかかる気がします。`"violin"`とか`"boxplot"`だと処理が速いです。`"jitter"`も重かったです。`"ridge"`は割と速かったのですが、今回のデータだと`"violin"`の方が見やすかったです。
+
+## Supplyment
+### chr
+念のため文字型でもやってみます。時間削減で10行だけやります。文字列は一文字のベクトルである`letters`でもよかったんですが、せっかくなので短めの文章が集められている`stringr::sentences`を使ってみたいと思います。
+```{r}
+#| message: false
+#| attr-output: 'style="max-height: 350px;"'
+df_condition |>
+  subset(nr == 10) |>
+  bench::press(
+    .grid = _,
+    {
+      elements <- sample(
+        stringr::sentences,
+        size = nr * nc,
+        replace = TRUE
+      )
+      bench::mark(
+        "matrix" = matrix(elements, nrow = nr),
+        "dim" = `dim<-`(elements, c(nr, nc))
+      )
+    }
+  )
+```
+文字型でも`` `dim<-`() ``の方が速いですね。
+
+### logical
+論理値も念のため。
+```{r}
+#| message: false
+#| attr-output: 'style="max-height: 350px;"'
+df_condition |>
+  subset(nr == 10) |>
+  bench::press(
+    .grid = _,
+    {
+      elements <- sample(
+        c(TRUE, FALSE),
+        size = nr * nc,
+        replace = TRUE
+      )
+      bench::mark(
+        "matrix" = matrix(elements, nrow = nr),
+        "dim" = `dim<-`(elements, c(nr, nc))
+      )
+    }
+  )
+```
+論理値型でも`` `dim<-`() ``の方が速いですね。
+
+## Conclusion
+ベクトルから行列を作るときの速さを`matrix()`と`` `dim<-`()  ``で比べてみました。1×1を除く10×10の行列の作成までベンチマークを回してみましたが、`matrix()`は大体1～1.1マイクロ秒、`` `dim<-`() ``は大体0.4～0.5マイクロ秒ということで、後者の方が速かったです。
+
+…といっても普段の分析で使うときに体感できる差ではないので、ふつうに使うなら分かりやすいし行方向にも値を入れられる`matrix()`を使うのがいいと思います。シミュレーションで行列を大量に作る際に、要素をbyrowで入れる必要がなく少しでも時間を節約したいなら`` `dim<-`()  ``を使うのもいいかもしれません。（でも、おそらく他の部分とか関数の方がボトルネックになると思います…。）
+
+## Session Infomation
+
+:::{.callout-note collapse=true title="sessionInfo"}
+
+```{r}
+#| echo: false
+sessionInfo()
+```
+
+:::

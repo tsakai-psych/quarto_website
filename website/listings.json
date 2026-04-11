@@ -2,6 +2,7 @@
   {
     "listing": "/content.html",
     "items": [
+      "/posts/20260411_benchmark_dim_vs_matrix/index.html",
       "/posts/20260221_gt_tab_spanner_delim_md/index.html",
       "/posts/20260214_native_pipe_rhs_arithmtic_ops/index.html",
       "/posts/20260211_gmp_big_integer/index.html",
@@ -18,6 +19,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/20260411_benchmark_dim_vs_matrix/index.html",
       "/posts/20260221_gt_tab_spanner_delim_md/index.html",
       "/posts/20260214_native_pipe_rhs_arithmtic_ops/index.html",
       "/posts/20260211_gmp_big_integer/index.html",
