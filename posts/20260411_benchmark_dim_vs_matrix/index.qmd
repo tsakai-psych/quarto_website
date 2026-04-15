@@ -2,6 +2,7 @@
 title: "R byrowしないならmatrixよりdim<-の方が速そう"
 subtitle: "Benchmark: `` `dim<-`() `` vs `matrix()`— `` `dim<-`() `` Seems Faster When Row-Wise Filling Isn’t Needed"
 date: 2026-04-11
+date-modified: 2026-04-15
 abstract: |
     シミュレーションとかで何万回～も回す人向け。Rで行列を作るときに、要素をbyrowで入れないなら`` `dim<-`() ``使う方が速い。
 categories: [R memo, Base R, bench mark]
@@ -154,24 +155,38 @@ res_mb <-
 ```
 1. `purrr::pmap`の戻り値を名前付きにしておくと、後で`ggplot2::autoplot()`するときとかに便利。
 
-結果は以下の通りです。まとめるのが面倒なのでそのまま出します。
+結果は以下の通りです。
 ```{r}
 #| attr-output: 'style="max-height: 350px;"'
-res_mb$res
+res_mb |>
+  reframe( # <1>
+    temp = purrr::map( # <1>
+      .x = res, # <1>
+      .f = \(x) microbenchmark:::summary.microbenchmark(x) # <1>
+    ), # <1>
+    .by = c(nr, nc) # <1>
+  ) |> # <1>
+  unnest(temp) |>
+  print(n = 999)
 ```
+1. そのまま`res_mb$res`とか`dplyr::pull()`とかで引っ張ってくると出力が縦に長すぎちゃうので、`microbenchmark:::summary.microbenchmark()`がdata.frameを返してくるのを利用して`dplyr::reframe()`して多少短くします。（条件が多くて時間がかかるのであんまり意味はなさそうですが…。）
+
 どの条件でも`matrix()`に比べて`` `dim<-`()  ``の方が2～3倍くらい速いですが、結果の単位はナノ秒なので、1回実行するときには体感できる差はないですね。何万回以上も回すとなると地味に変わってくると思います。
 
 結果のグラフ化も可能です。列数ごとに分割して`ggplot2::autoplot`を使います。`microbenchmark::microbenchmark()`の戻り値に対しては`microbenchmark:::autoplot.microbenchmark()`が適用されます。
 ```{r}
-split(res_mb, res_mb$nr) |>
-  purrr::walk(
-    .f = \(x) {
+#| lightbox:
+#|   group: res_microbenchmark
+res_mb |>
+  dplyr::group_by(nr) |>
+  dplyr::group_walk(
+    .f = \(x, idx) {
       x |>
         dplyr::pull(res) |>
         purrr::imap(
           .f = \(y, idx) {
             ggplot2::autoplot(y) + # <1>
-              ggplot2::labs(title = idx) # <2>
+              ggplot2::labs(title = idx) 
           }
         ) |>
         patchwork::wrap_plots(
@@ -185,7 +200,7 @@ split(res_mb, res_mb$nr) |>
   )
 ```
 1. `autoplot.microbenchmark()`内部の関数がggplot2側でdeprecatedになったものがあるらしく、警告が出ます。
-2. `purrr::map()`にすると、戻り値がレンダリングされるので、`purrr::walk()`にしてplotだけ無理やり表示させました。
+2. `dplyr::group_map()`にすると、戻り値でインデックスがレンダリングされるので、`dplyr::group_walk()`にしてplotだけ無理やり表示させました。
 
 どの条件でも`` `dim<-`()  ``の方が速いように見受けられます。
 
@@ -241,20 +256,30 @@ res_bm |>
 
 条件がいくつかある場合は自動でfacetに分けてくれるようです。ただこのまま列に条件がすべて入るとちょっと見にくいので、これも行ごとに分割してもう少し見やすくしてみます。内部ですでに`ggplot2::facet_*()`が使われているのですが、上書きしてしまいます。[^beeswarm_slow]
 ```{r}
-split(res_bm, res_bm$nr) |>
-  setNames(paste0("r", 1:10)) |>
-  purrr::imap(
+#| lightbox:
+#|   group: res_bench
+res_bm |>
+  tidyr::nest(.by = nr) |>
+  dplyr::mutate(
+    data = purrr::set_names(data, paste0("nr: ", nr))
+  ) |>
+  dplyr::pull(data) |> # <1>
+  purrr::iwalk( # <1>
     .f = \(x, idx) {
-      ggplot2::autoplot(x) +
+      temp_p <- ggplot2::autoplot(x, size = 1) +
         ggplot2::facet_wrap(
           ggplot2::vars(nc),
           ncol = 5,
           labeller = ggplot2::labeller(nc = ggplot2::label_both)
         ) +
-        ggplot2::labs(title = idx)
+        ggplot2::labs(title = idx) +
+        ggplot2::theme_bw()
+      print(temp_p)
     }
   )
 ```
+1. `dplyr::group_map()`でやろうとすると、`bench:::autoplot.bench_mark(obj, type = "beeswarm")`でエラーを吐くので`dplyr::pull() |> purrr::iwalk()`にしました。
+
 どの条件でも`` `dim<-`()  ``の方が速いですね。
 
 [^beeswarm_slow]: ほとんどの条件で実行回数（n_iter）が上限の１万回に達しているからか、beeswarmの処理にやたら時間がかかる気がします。`"violin"`とか`"boxplot"`だと処理が速いです。`"jitter"`も重かったです。`"ridge"`は割と速かったのですが、今回のデータだと`"violin"`の方が見やすかったです。
@@ -321,5 +346,14 @@ df_condition |>
 #| echo: false
 sessionInfo()
 ```
+
+:::
+
+## Change Log
+
+:::{.callout-note collapse=true title="change log"}
+
+- 2026-04-15
+  - `microbenchmark`の結果をtbl_df化。プロットをlightboxに対応。
 
 :::
