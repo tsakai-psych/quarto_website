@@ -9,3 +9,4 @@
 # for renderd files
 # /website/
 **/*.quarto_ipynb
+.positai

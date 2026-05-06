@@ -1,0 +1,390 @@
+---
+title: "2種類以下の数字で構成されていて、かつ0で終わらない平方数"
+date: "2026-05-06"
+abstract: |
+    2種類以下の数字で構成されていて、かつ0で終わらない平方数は意外にも少ないらしい。
+categories: [R memo, enjoy R]
+format: html
+lightbox: true
+knitr:
+  opts_chunk: 
+    fig.align: center
+    dev: ragg_png
+    R.options:
+      width: 100
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| label: thumbnail
+#| fig-cap: "The R logo is \u00A9 2016 The R Foundation"
+#| echo: false
+#| out-width: 75%
+#| fig.asp: 0.525
+#| lightbox: false
+ggplot2::ggplot() +
+  ggplot2::theme_void() +
+  ggplot2::annotate(
+    geom = "text",
+    x = 0,
+    y = 0,
+    label = "enjoy R:\n2種類以下の数字で構成されていて、\nかつ0で終わらない平方数",
+    family = "Gen Jyuu GothicX",
+    fontface = "bold",
+    size = 10
+  ) +
+  patchwork::inset_element(
+    p = png::readPNG(
+      source = paste0(Sys.getenv("R_USER"), "/resources/Rlogo.png"),
+      native = TRUE
+    ),
+    left = 0,
+    bottom = .8,
+    right = .2,
+    top = 1
+  )
+```
+
+## Packages
+```{r}
+#| output: false
+pacman::p_load(
+  tidyverse,
+  gmp
+)
+```
+
+## Contents
+### Background
+Youtubeを見てたら遭遇した面白い動画の話。数学は全然わからないんですが、この方の動画は面白く拝見させてもらっています。
+
+{{< video https://www.youtube.com//watch?v=teCVar15A70>}}
+
+2種類以下の数字で構成されていて、かつ0で終わらない平方数は意外と少なく、今知られている最大の数は$81619^2=6661661161$だそうです[^oeis]。というわけで、Rで確認してみましょう。大きな数を扱うので、`gmp`パッケージでちゃんと表せるようにします。
+
+[^oeis]: オンライン整数辞典 <https://oeis.org/A018884>
+
+### Process
+あまり扱う数字が大きいと時間がかかるので、2乗する前の数を100万くらいまで確認してみます。100万でも体感5秒以上かかります。普段の感覚からすれば時間がかかっている方です。
+```{r}
+#| attr-output: 'style="max-height: 350px;"'
+gmp::pow.bigz(1:1e6, e2 = 2) |> # <1>
+  as.character() |> # <2>
+  setNames(nm = 1:1e6) |>
+  (\(x) x[!grepl("0$", x = names(x))]) () |> # <3>
+  (\(x) {
+    temp_kinds <- strsplit(x, split = "") |> # <4>
+      vapply( # <4>
+        FUN = \(x) { # <4>
+          unique(x) |> # <4>
+            length() # <4>
+        }, # <4>
+        FUN.VALUE = integer(1) # <4>
+      ) # <4>
+    x[temp_kinds <= 2]
+  }) ()
+```
+1. `e1 ^ e2`のこと。戻り値はbigzクラスになります。
+2. 中身は`gmp:::as.character.bigz()`。
+3. `grep("0$", x = names(x), invert = TRUE)`でも可。`grepl()`だとlogical vectorが返ってきて、`grep()`だとindexのinteger vectorが返ってくる。どっちの方が好ましいのかは不明。
+4. `strsplit()`はlistを返すので、`vapply()`で処理。あとでブラケット（`[`）の中にindexとして入れる予定なので、引数`FUN.VALUE`は`integer(1)`で整数を指定。
+
+要素が100万もあるのでちょっと時間がかかりますが、無事に掲載されている数列と同じ数を得ることができました。
+
+::: {.callout-note collapse=true}
+
+#### 処理の過程が見たい人向け
+なんかそのままだと`ViewPipeSteps::print_pipe_steps()`がエラーを吐くので、最後のパイプ処理のところだけ見づらい書き方をしています。
+```{r}
+#| echo: false
+#| results: false
+options(max.print = 500)
+```
+
+```{r}
+#| attr-output: 'style="max-height: 350px;"'
+pow.bigz(1:1e6, e2 = 2) %>% 
+  as.character() %>% 
+  setNames(nm = 1:1e6) %>%
+  .[!grepl("0$", x = names(.))] %>%
+  .[
+    strsplit(., split = "") |>
+      vapply(
+        FUN = \(x) {
+          unique(x) |>
+            length()
+        },
+        FUN.VALUE = integer(1)
+      ) |>
+      `<=`(e1 = _, e2 = 2)
+  ] %>%
+  ViewPipeSteps::print_pipe_steps() -> res # for displaying pipeline processing
+```
+
+:::
+
+data.frameを使ってやるとしたらこんな感じでしょうか？
+```{r}
+data.frame(nums = gmp::as.bigz(1:1e6)) |>
+  subset(subset = nums %% 10 != 0) |> # <1>
+  transform(
+    powers = gmp::pow.bigz(nums, e2 = 2) |>
+      as.character()
+  ) |>
+  transform( # <2>
+    n_kinds_digit = strsplit(powers, split = "") |> # <2>
+      vapply( # <2>
+        FUN = \(x) { # <2>
+          unique(x) |> # <2>
+            length() # <2>
+        }, # <2>
+        FUN.VALUE = integer(1) # <2>
+      ) # <2>
+  ) |> # <2>
+  subset(subset = n_kinds_digit <= 2)
+```
+1. 前の処理でbigzクラスを作っているので、ここの処理は多分`gmp::mod.bigz()`になってると思います。
+2. `transform()`は`dplyr::mutate()`と違って、中で作った変数をすぐ使えるわけじゃないというふうに理解しています。微妙に使いづらいです。中で同じ処理を繰り返して書くか、`transform()`を繰り返すかですかね。
+
+::: {.callout-note collapse=true}
+
+#### 処理の過程が見たい人向け
+tibbleがbigzクラスとかと相性が悪いみたいなのですが[^tibble_gmp]、`ViewPipeSteps::print_pipe_steps()`がdata.frameをtibbleに変換しちゃうので、bigzクラスをchrに変えています。
+
+[^tibble_gmp]: tibble and gmp #1669 (Github, tidyverse/tibble) <https://github.com/tidyverse/tibble/issues/1669>
+
+```{r}
+#| attr-output: 'style="max-height: 350px;"'
+data.frame(
+  nums = gmp::as.bigz(1:1e6) |>
+    as.character()
+) %>% 
+  subset(subset = !grepl(pattern = "0$", x = nums)) %>% 
+  transform(
+    powers = gmp::pow.bigz(nums, e2 = 2) |>
+      as.character()
+  ) %>% 
+  transform(
+    n_kinds_digit = strsplit(powers, split = "") |>
+      vapply(
+        FUN = \(x) {
+          unique(x) |>
+            length()
+        },
+        FUN.VALUE = integer(1)
+      )
+  ) %>% 
+  subset(subset = n_kinds_digit <= 2) %>% 
+  ViewPipeSteps::print_pipe_steps() -> res # for displaying pipeline processing
+```
+
+:::
+
+### Plot
+平方数の方で出てきた数字の種類について、いろいろ図にしてみました。まずは結果だけオブジェクトにします。
+```{r}
+df_res <- tibble(nums = 1:1e6) |> # <1>
+  mutate(
+    powers = pow.bigz(nums, e2 = 2) |>
+      as.character(),
+    n_kinds_digits = str_split(powers, pattern = "") |>
+      map_int(
+        .f = \(x) {
+          unique(x) |>
+            length()
+        }
+      )
+  )
+```
+1. ggplotがbigzクラスを受け取ってくれないので仕方なく。演算しないで並べてるだけだから、多分問題ないはず…。
+
+こんな感じで結果が収められています。ここでは数字の種類ごとに2個ずつ抽出しています。
+```{r}
+df_res |>
+  slice_head(n = 2, by = n_kinds_digits)
+```
+
+もちろん、平方数に現れる数字が2種類以下のもの（元の数の末尾が0のものを除く）の結果はさきほどと同じです。
+```{r}
+df_res |>
+  filter_out(nums %% 10 == 0) |> # <1>
+  filter(n_kinds_digits <= 2) |>
+  print(n = 99)
+```
+1. `dplyr` >= 1.2.0で使えます。要素を除外したいときは`filter_out()`を使う方が意思がわかってよいです。前の書き方だと`filter(nums %% 10 != 0)`ですね。あとデカい数字を扱うときにそのまま計算するのは地味に危ない気がする。（7桁ぐらいならセーフなのだろうか？）
+
+分布は以下の通りです。
+
+::: {.panel-tabset}
+
+#### numbers not ending in 0
+```{r}
+df_res |>
+  filter_out(nums %% 10 == 0) |>
+  count(n_kinds_digits)
+```
+
+#### all numbers
+```{r}
+df_res |>
+  count(n_kinds_digits)
+```
+
+:::
+
+100万までの数字であれば、その平方数に現れる数字の種類は6~8種類が多く、最多は7種類のようです。ヒストグラムにするとこんな感じ。
+
+::: {.panel-tabset}
+
+#### numbers not ending in 0
+```{r}
+df_res |>
+  filter_out(nums %% 10 == 0) |>
+  ggplot(aes(x = n_kinds_digits)) +
+  geom_histogram(
+    bins = 10,
+    color = "black",
+    fill = "grey"
+  ) +
+  scale_x_continuous(
+    breaks = 1:10,
+    minor_breaks = NULL,
+    expand = expansion(add = 0)
+  ) +
+  scale_y_continuous(
+    labels = scales::label_number(big.mark = ","),
+    expand = expansion(mult = c(0, .1))
+  ) +
+  theme_bw()
+```
+
+#### all numbers
+```{r}
+df_res |>
+  ggplot(aes(x = n_kinds_digits)) +
+  geom_histogram(
+    bins = 10,
+    color = "black",
+    fill = "grey"
+  ) +
+  scale_x_continuous(
+    breaks = 1:10,
+    minor_breaks = NULL,
+    expand = expansion(add = 0)
+  ) +
+  scale_y_continuous(
+    labels = scales::label_number(big.mark = ","),
+    expand = expansion(mult = c(0, .1))
+  ) +
+  theme_bw()
+```
+
+:::
+
+元の数と平方数に現れる数字の種類を点で表してみます。コラッツ予想の元の数と計算回数なんかもそうですが、こういうのって図示してみると、特徴があったりなかったり規則性が見えそうで見えなかったりで面白いです。
+
+::: {.panel-tabset}
+
+#### numbers not ending in 0
+```{r}
+#| results: false
+#| lightbox:
+#|   group: "plot_wo_0"
+map(
+  .x = 10^c(3:6),
+  .f = \(x) {
+    df_res |>
+      slice_head(n = x) |>
+      filter_out(nums %% 10 == 0) |>
+      ggplot(aes(x = nums, y = n_kinds_digits)) +
+      geom_point(size = .5) +
+      scale_x_continuous(
+        limits = c(1, x),
+        breaks = c(1, seq(x/10, x, length.out = 10))
+      ) +
+      scale_y_continuous(
+        limits = c(1, 10),
+        breaks = 1:10,
+        minor_breaks = NULL
+      ) +
+      theme_bw() +
+      labs(title = paste0(
+        "n: 1 ~ ",
+        format(x, scientific = FALSE, big.mark = ","),
+        " (without ending in 0)"
+      ))
+  }
+)
+```
+
+#### all numbers
+```{r}
+#| results: false
+#| lightbox:
+#|   group: "plot_all_n"
+map(
+  .x = 10^c(3:6),
+  .f = \(x) {
+    df_res |>
+      slice_head(n = x) |>
+      ggplot(aes(x = nums, y = n_kinds_digits)) +
+      geom_point(size = .5) +
+      scale_x_continuous(
+        limits = c(1, x),
+        breaks = c(1, seq(x/10, x, length.out = 10))
+      ) +
+      scale_y_continuous(
+        limits = c(1, 10),
+        breaks = 1:10,
+        minor_breaks = NULL
+      ) +
+      theme_bw() +
+      labs(title = paste0(
+        "n: 1 ~ ",
+        format(x, scientific = FALSE, big.mark = ",")
+      ))
+  }
+)
+```
+
+:::
+
+## Conclusion
+というわけで、2種類以下の数字で構成されていて、かつ0で終わらない平方数は意外にも少ないらしいという話でした。数の不思議って面白いですね。もっと桁数を増やしてみたいとは思ったんですが、判定処理にも描画処理にも時間がかかるのでやめました。もっと効率がいいコードが書けるようになりたいです。
+
+あとtibbleがbigz/qクラスと相性が悪いのと、ggplotがbigzクラスをそのまま扱ってくれないのは勉強になりました。組み込みのdata.frameとかplotだとそのままでも平気なので、改めて組み込み関数を勉強する必要性を感じました。特にplot関係は全く覚えられていないので、そのうち気合を入れて勉強したいです。
+
+:::{.callout-note collapse=true}
+
+#### 試しにplotでやってみたやつ
+```{r}
+df_res |>
+  as.data.frame() |>
+  transform(nums = as.bigz(nums)) |>
+  (\(x) {
+    str(x)
+    x
+  }) () |>
+  subset(select = c(nums, n_kinds_digits)) |>
+  plot(
+    ylim = c(1, 10),
+    pch = 20,
+    cex = .5,
+    yaxp = c(1, 10, 9)
+  )
+```
+わるくないかも。
+
+:::
+
+## Session Infomation
+
+:::{.callout-note collapse=true title="sessioninfo"}
+
+```{r}
+#| echo: false
+sessionInfo()
+```
+
+:::
