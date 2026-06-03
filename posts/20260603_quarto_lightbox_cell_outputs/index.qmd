@@ -1,0 +1,298 @@
+---
+title: "Quarto lightbox機能をプロットの出力がある特定のセルで試す"
+# date:
+abstract: |
+    図をいい感じに見せてくれるlightbox機能を、HTML全体ではなくプロットの出力がある特定のセルで試してみた。
+categories: [Quarto, R memo]
+# image: 
+format:
+  html:
+    toc-depth: 4
+knitr:
+  opts_chunk: 
+    fig.align: center
+    fig-width: 4
+    fig-asp: .6
+    out-width: 50%
+    dev: ragg_png
+    R.options:
+      width: 100
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| label: thumbnail
+#| echo: false
+#| out-width: 75%
+#| fig-width: 5
+#| fig-asp: 0.525
+ggplot2::ggplot() +
+  ggplot2::theme_void() +
+  ggplot2::annotate(
+    geom = "text",
+    x = 0,
+    y = 0,
+    label = "Quarto:\nlightbox機能を\nプロットの出力がある\n特定のセルで試してみる",
+    family = "Gen Jyuu GothicX",
+    fontface = "bold",
+    size = 8
+  )
+```
+
+## Packages
+```{r}
+#| output: false
+pacman::p_load(
+  tidyverse,
+  see
+)
+```
+
+## Contents
+### Background
+画像をクリックするとズームしてくれるlightbox機能。ファイルの画像全部に適用させたい場合はYAMLヘッダーで`lightbox: true`とすればいいのですが、（複数の）画像の出力がある特定のセルだけに適用させたいということもあると思います。というわけで試してみました。（といいつつ、過去の記事ではすでに使っています。）
+Quartoのウェブサイトの[Guide](https://quarto.org/docs/output-formats/html-lightbox-figures.html)にコードはあるんですが、セル出力の場合だと実際どういった感じになるのかという実演がなかったので、やってみることにしました。使用しているQuartoのバージョンは {{< version >}} です。
+
+### 出力が1つの場合
+#### デフォルト
+```{r}
+iris |>
+  ggplot(aes(x = Sepal.Length, y = Sepal.Width)) +
+  geom_point(aes(color = Species)) +
+  ggtitle("左クリックできない")
+```
+
+#### lightbox
+```{{r}}
+#| lightbox: true
+iris |>
+  ggplot(aes(x = Sepal.Length, y = Sepal.Width)) +
+  geom_point(aes(color = Species)) +
+  ggtitle("左クリックでズームできる！")
+```
+
+```{r}
+#| echo: false
+#| lightbox: true
+iris |>
+  ggplot(aes(x = Sepal.Length, y = Sepal.Width)) +
+  geom_point(aes(color = Species)) +
+  ggtitle("左クリックでズームできる！")
+```
+
+
+#### デフォルト: キャプション付き
+```{{r}}
+#| fig-cap: "プロットのキャプション"
+iris |>
+  ggplot(aes(x = Sepal.Length, y = Sepal.Width)) +
+  geom_point(aes(color = Species)) +
+  ggtitle("キャプションはデフォルトだと下")
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "プロットのキャプション"
+iris |>
+  ggplot(aes(x = Sepal.Length, y = Sepal.Width)) +
+  geom_point(aes(color = Species)) +
+  ggtitle("キャプションはデフォルトだと下")
+```
+
+#### lightbox: キャプション付き
+```{{r}}
+#| lightbox: true
+#| fig-cap: "プロットのキャプション"
+iris |>
+  ggplot(aes(x = Sepal.Length, y = Sepal.Width)) +
+  geom_point(aes(color = Species)) +
+  ggtitle("ズームしてもキャプションがついてくる！")
+```
+
+```{r}
+#| echo: false
+#| lightbox: true
+#| fig-cap: "プロットのキャプション"
+iris |>
+  ggplot(aes(x = Sepal.Length, y = Sepal.Width)) +
+  geom_point(aes(color = Species)) +
+  ggtitle("ズームしてもキャプションがついてくる！")
+```
+
+#### lightbox: description
+lightboxの方はキャプションとは別に説明もつけられるらしい。
+```{{r}}
+#| fig-cap: "これはキャプション"
+#| lightbox:
+#|   description: "ここに説明をつけることができる！"
+iris |>
+  ggplot(aes(x = Sepal.Length, y = Sepal.Width)) +
+  geom_point(aes(color = Species)) +
+  ggtitle("lightboxは説明もつけられる")
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "これはキャプション"
+#| lightbox:
+#|   description: "ここに説明をつけることができる！"
+iris |>
+  ggplot(aes(x = Sepal.Length, y = Sepal.Width)) +
+  geom_point(aes(color = Species)) +
+  ggtitle("lightboxは説明もつけられる")
+```
+
+### 出力が複数の場合
+R 4.5から標準で使えるようになった`penguins`データセット。`palmerpenguins::penguins`とは列名がちょっと違う。`dplyr::group_map()`を使って、性別ごとにplotを作ってlistに収めたオブジェクト（`plots_penguins`）を作ります。
+```{r}
+#| code-fold: true
+plots_penguins <- 
+  penguins |>
+  drop_na(sex) |>
+  group_by(sex) |>
+  group_map(
+    .f = \(x, idx) {
+      x |>
+        ggplot(aes(x = species, y = bill_len)) +
+        see::geom_violindot(
+          aes(fill = species),
+          color = NA,
+          show.legend = FALSE,
+          binwidth = 1/3,
+          dots_size = 2,
+          position_dots = position_nudge(x = -.08)
+        ) +
+        geom_boxplot(
+          width = .1,
+          outliers = FALSE
+        ) +
+        scale_y_continuous(
+          limits = c(30, 60),
+          expand = expansion(mult = .01)
+        ) +
+        theme_bw() +
+        ggtitle(paste0("Penguins: ", idx$sex))
+    }
+  )
+```
+
+#### デフォルト
+```{r}
+#| message: false
+plots_penguins
+```
+
+#### lightbox: そのまま
+そのままだと1枚ずつに適用されます。
+```{{r}}
+#| lightbox: true
+plots_penguins
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| lightbox: true
+plots_penguins
+```
+
+#### lightbox: グループ化
+インデントをつけて`group: <group_name>`の形でチャンクオプションに追加すると、グループ化できます。同じグループのものは画面左右端の左右ボタンで行き来できます。
+```{{r}}
+#| lightbox:
+#|   group: penguins_data # <1>
+plots_penguins
+```
+1. ここ。
+
+```{r}
+#| echo: false
+#| message: false
+#| lightbox:
+#|   group: penguins_data
+plots_penguins
+```
+
+#### lightbox: 複数列
+チャンクオプションの`layout-ncol`と組み合わせると複数列で並べることができます。listの出力の場合、インデックスだけで1セル分持ってかれるようです。チャンクオプション`results`を` hide`または`false`にしてインデックスの出力は消しておくのがいいと思います。
+```{{r}}
+#| results: hide
+#| lightbox:
+#|   group: penguins_ncol2
+#| layout-ncol: 2
+plots_penguins
+```
+
+```{r}
+#| echo: false
+#| results: hide
+#| lightbox:
+#|   group: penguins_ncol2
+#| layout-ncol: 2
+plots_penguins
+```
+
+::: {.callout-warning collapse=true}
+#### そのまま出力するとこうなるの例
+```{{r}}
+#| lightbox:
+#|   group: penguins_ncol2_list
+#| layout-ncol: 2
+plots_penguins
+```
+
+```{r}
+#| echo: false
+#| lightbox:
+#|   group: penguins_ncol2_list
+#| layout-ncol: 2
+plots_penguins
+```
+
+:::
+
+#### lightbox: キャプションとdescription
+複数枚出力でも、それぞれの出力にキャプションやdescriptionはつけられます。
+```{{r}}
+#| results: hide
+#| fig-cap:
+#|   - これは１枚目の出力のキャプションです。
+#|   - キャプション（2枚目）
+#| lightbox:
+#|   group: penguins_ncol2_cap
+#|   description:
+#|     - description（1枚目）
+#|     - ここは2枚目の出力に対するdescriptionです。
+#| layout-ncol: 2
+plots_penguins
+```
+
+```{r}
+#| echo: false
+#| results: hide
+#| fig-cap:
+#|   - これは１枚目の出力のキャプションです。
+#|   - キャプション（2枚目）
+#| lightbox:
+#|   group: penguins_ncol2_cap
+#|   description:
+#|     - description（1枚目）
+#|     - ここは2枚目の出力に対するdescriptionです。
+#| layout-ncol: 2
+plots_penguins
+```
+
+## Conclusion
+というわけで、特定のセル出力でのlightbox機能を試してみました。セルのチャンクオプションでいろいろ設定すればいいみたいですね。
+
+## Session Infomation
+
+:::{.callout-note collapse=true title="sessioninfo"}
+
+```{r}
+#| echo: false
+sessionInfo()
+```
+
+:::

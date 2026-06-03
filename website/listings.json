@@ -2,6 +2,7 @@
   {
     "listing": "/content.html",
     "items": [
+      "/posts/20260603_quarto_lightbox_cell_outputs/index.html",
       "/posts/20260506_nature_of_6661661161/index.html",
       "/posts/20260411_benchmark_dim_vs_matrix/index.html",
       "/posts/20260221_gt_tab_spanner_delim_md/index.html",
@@ -20,6 +21,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/20260603_quarto_lightbox_cell_outputs/index.html",
       "/posts/20260506_nature_of_6661661161/index.html",
       "/posts/20260411_benchmark_dim_vs_matrix/index.html",
       "/posts/20260221_gt_tab_spanner_delim_md/index.html",
