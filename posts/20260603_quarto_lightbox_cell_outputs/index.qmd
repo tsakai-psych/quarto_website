@@ -1,10 +1,9 @@
 ---
 title: "Quarto lightbox機能をプロットの出力がある特定のセルで試す"
-# date:
+date: 2026-06-03
 abstract: |
     図をいい感じに見せてくれるlightbox機能を、HTML全体ではなくプロットの出力がある特定のセルで試してみた。
 categories: [Quarto, R memo]
-# image: 
 format:
   html:
     toc-depth: 4
